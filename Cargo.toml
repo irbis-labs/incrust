@@ -18,7 +18,7 @@ publish = true
 
 [dependencies]
 clippy      = { version = "*", optional = true }
-log         = "*"
+log         = "0.3"
 nom         = "~1.2.2"
 
 [features]
