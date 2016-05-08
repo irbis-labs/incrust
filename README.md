@@ -1,9 +1,9 @@
 
-[![](https://img.shields.io/crates/v/incrust.svg)](https://crates.io/crates/incrust)
+![](https://img.shields.io/crates/l/incrust.svg) [![](https://img.shields.io/crates/v/incrust.svg)](https://crates.io/crates/incrust)
 
 ## Incrust
 
-Incrust is a template engine written in Rust, inspired by Jinja2.
+> Incrust is a template engine written in Rust, inspired by Jinja2.
 
 The implementation is at a very early stage.
 
