@@ -3,13 +3,15 @@
 
 Incrust is a template engine written in Rust, inspired by Jinja2.
 
+The implementation is at a very early stage.
+
 ## Installation
 
 incrust is available on crates.io and can be included in your Cargo enabled project like this:
 
 ```
 [dependencies]
-incrust = "0.1"
+incrust = "0.0"
 ```
 
 Then include it in your code like this:

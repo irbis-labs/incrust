@@ -9,8 +9,14 @@ exclude = [
     "appveyor.yml",
 ]
 #build = "build.rs"
-publish = false
+publish = true
 
 
 [dependencies]
+clippy      = { version = "*", optional = true }
+log         = "*"
 nom         = "~1.2.2"
+
+[features]
+default     = []
+dev         = ["clippy"]
