@@ -1,0 +1,16 @@
+[package]
+name = "incrust"
+version = "0.0.1"
+authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
+license = "MIT/Apache-2.0"
+exclude = [
+    ".gitignore",
+    ".travis.yml",
+    "appveyor.yml",
+]
+#build = "build.rs"
+publish = false
+
+
+[dependencies]
+nom         = "~1.2.2"
