@@ -1,4 +1,6 @@
 
+[![](https://img.shields.io/crates/v/incrust.svg)](https://crates.io/crates/incrust)
+
 ## Incrust
 
 Incrust is a template engine written in Rust, inspired by Jinja2.
@@ -7,7 +9,7 @@ The implementation is at a very early stage.
 
 ## Installation
 
-incrust is available on crates.io and can be included in your Cargo enabled project like this:
+incrust is [available on crates.io](https://crates.io/crates/incrust) and can be included in your Cargo enabled project like this:
 
 ```
 [dependencies]
