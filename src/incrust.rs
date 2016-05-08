@@ -31,7 +31,7 @@ impl Incrust {
         Err(abc::LoadError::NotFound)
     }
 
-    #[allow(let_and_return)]
+    #[cfg_attr(feature = "clippy", allow(let_and_return))]
     pub fn parse_template(&self, template: &str) -> abc::ParseResult {
         let template = parser::parse(template)?;
         Ok(template)

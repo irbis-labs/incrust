@@ -3,6 +3,10 @@ name = "incrust"
 version = "0.0.1"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
+description = "Rust template engine inspired by Jinja2."
+repository = "https://github.com/alexander-irbis/incrust"
+#documentation = ""
+keywords = ["web", "template", "jinja2"]
 exclude = [
     ".gitignore",
     ".travis.yml",
