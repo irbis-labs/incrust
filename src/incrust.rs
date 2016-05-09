@@ -24,7 +24,7 @@ impl Incrust {
         self.loaders.push(loader);
     }
 
-    pub fn load_template(&self, name: &str) -> abc::LoadResult {
+    pub fn load(&self, name: &str) -> abc::LoadResult {
         for loader in &self.loaders {
             if let Ok(template) = loader.load(&name) { return Ok(template) }
         }
@@ -32,20 +32,20 @@ impl Incrust {
     }
 
     #[cfg_attr(feature = "clippy", allow(let_and_return))]
-    pub fn parse_template(&self, template: &str) -> abc::ParseResult {
+    pub fn parse(&self, template: &str) -> abc::ParseResult {
         let template = parser::Template::parse(template)?;
         Ok(template)
     }
 
     #[allow(unused_variables)]
     pub fn render_text(&self, template: &str, args: abc::Args) -> abc::RenderResult {
-        let template = self.parse_template(&template)?;
+        let template = self.parse(&template)?;
         template.render(args)
     }
 
-    pub fn render_template(&self, name: &str, args: abc::Args) -> abc::RenderResult {
-        let template = self.load_template(&name)?;
-        let template = self.parse_template(&template)?;
+    pub fn render(&self, name: &str, args: abc::Args) -> abc::RenderResult {
+        let template = self.load(&name)?;
+        let template = self.parse(&template)?;
         template.render(args)
     }
 }
@@ -60,19 +60,17 @@ mod tests {
     fn text() {
         let templ = "Hello, World!";
         let expected = "Hello, World!";
-        let args = hashmap!{ "" => "", };
         let incrust = Incrust::new();
-        let result = incrust.render_text(templ, args).unwrap();
+        let result = incrust.render_text(templ, hashmap!{}).unwrap();
         assert_eq!(result, expected);
     }
 
     #[test]
     fn comments() {
-        let templ = "<p>Visible {# partially #} paragraph</p>";
-        let args = hashmap!{ "" => "", };
-        let expected = "<p>Visible  paragraph</p>";
         let incrust = Incrust::new();
-        let result = incrust.render_text(templ, args).unwrap();
+        let templ = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
+        let expected = "<p>Visible  paragraph</p>";
+        let result = templ.render(hashmap!{}).unwrap();
         assert_eq!(result, expected);
     }
 

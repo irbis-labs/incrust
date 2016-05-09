@@ -9,7 +9,7 @@ The implementation is at a very early stage.
 
 ## Installation
 
-incrust is [available on crates.io](https://crates.io/crates/incrust) and can be included in your Cargo enabled project like this:
+Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be included in your Cargo enabled project like this:
 
 ```
 [dependencies]
@@ -24,7 +24,7 @@ extern crate incrust;
 
 ## Examples
 
-Variables
+### Variables
 
 ```rust
 use incrust::Incrust;
@@ -36,15 +36,15 @@ fn main() {
 }
 ```
 
-Comments
+### Comments
 
 ```rust
 use incrust::Incrust;
 
 fn main() {
-    let tpl = "<p>Visible {# partially #} paragraph</p>";
     let incrust = Incrust::new();
-    let result = incrust.render_text(tpl, hashmap!{ "name" => "World", }).unwrap();
+    let tpl = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
+    let result = tpl.render(hashmap!{}).unwrap();
     assert_eq!(result, "<p>Visible  paragraph</p>");
 }
 ```
