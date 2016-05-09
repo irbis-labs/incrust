@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::collections::HashMap;
 use super::parser;
 
 
@@ -45,3 +46,5 @@ impl From<ParseError> for RenderError {
     }
 }
 
+
+pub type Args = HashMap<&'static str, &'static str>;

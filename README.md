@@ -22,6 +22,34 @@ Then include it in your code like this:
 extern crate incrust;
 ```
 
+## Examples
+
+Variables
+
+```rust
+use incrust::Incrust;
+
+fn main() {
+    let incrust = Incrust::new();
+    let result = incrust.render_text("Hello, {{name}}!", hashmap!{ "name" => "World", }).unwrap();
+    assert_eq!(result, "Hello, World!");
+}
+```
+
+Comments
+
+```rust
+use incrust::Incrust;
+
+fn main() {
+    let tpl = "<p>Visible {# partially #} paragraph</p>";
+    let incrust = Incrust::new();
+    let result = incrust.render_text(tpl, hashmap!{ "name" => "World", }).unwrap();
+    assert_eq!(result, "<p>Visible  paragraph</p>");
+}
+```
+
+
 ## License
 
 Licensed under either of
