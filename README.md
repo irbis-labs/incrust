@@ -24,41 +24,50 @@ extern crate incrust;
 
 ## Examples
 
-### Comments
+All examples assume prepared instance of incrust. For ease of use hashmaps, we use the macro `maplit`
 
 ```rust
+#[macro_use]
+extern crate maplit;
+extern crate incrust;
+
 use incrust::Incrust;
 
 fn main() {
     let incrust = Incrust::new();
-    let tpl = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
-    let result = incrust.render_parsed(tpl, hashmap!{}).unwrap();
-    assert_eq!(result, "<p>Visible  paragraph</p>");
+    // ...
 }
 ```
 
 ### Variables
 
 ```rust
-use incrust::Incrust;
-
-fn main() {
-    let incrust = Incrust::new();
-    let result = incrust.render_text("Hello, {{name}}!", hashmap!{ "name" => "World", }).unwrap();
-    assert_eq!(result, "Hello, World!");
-}
+let result = incrust.render_text("Hello, {{name}}!", hashmap!{ "name" => "World", }).unwrap();
+assert_eq!(result, "Hello, World!");
 ```
 
 ### Filters
 
 ```rust
-use incrust::Incrust;
+let result = incrust.render_text("<h1>{{ text | e }}</h1>", hashmap!{ "text" => "<Cats & Dogs>", }).unwrap();
+assert_eq!(result, "<h1>&lt;Cats &amp; Dogs&gt;</h1>");
+```
 
-fn main() {
-    let incrust = Incrust::new();
-    let result = incrust.render_text("<h1>{{ text | e }}</h1>", hashmap!{ "text" => "<Cats & Dogs>", }).unwrap();
-    assert_eq!(result, "<h1>&lt;Cats &amp; Dogs&gt;</h1>");
+### Comments
+
+```rust
+let tpl = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
+let result = incrust.render_parsed(tpl, hashmap!{}).unwrap();
+assert_eq!(result, "<p>Visible  paragraph</p>");
 }
+```
+
+### Escaping
+
+```rust
+let tpl = "Example: {% raw %}{{ mustaches }}{% endraw %}";
+let result = incrust.render_text(tpl, hashmap!{}).unwrap();
+assert_eq!(result, "Example: {{ mustaches }}");
 ```
 
 

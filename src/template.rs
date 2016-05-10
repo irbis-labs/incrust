@@ -23,7 +23,7 @@ impl Template {
 
 // ---------------------------------------------------------------------------
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Parsed {
     Text(String),
     Comment(String),
@@ -45,6 +45,18 @@ pub enum Expression {
 pub enum FilterItem {
     Simple(String),
 }
+
+#[derive(Debug, PartialEq)]
+pub struct Statement {
+    cmd: String,
+    id: Option<String>,
+}
+
+impl Into<Statement> for (String, Option<String>) {
+    fn into(self) -> Statement { Statement{cmd: self.0, id: self.1} }
+}
+
+
 
 // ---------------------------------------------------------------------------
 

@@ -3,7 +3,44 @@ use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, alpha, alphanumeric, eof, space, multispace};
 
-use ::template::{Parsed, Mustache, Expression, FilterItem};
+use ::template::{Parsed, Mustache, Expression, FilterItem, Statement};
+
+// ---------------------------------------------------------------------------
+
+macro_rules! stmt {
+    ( $i:expr, $cmd: expr ) => ({
+        chaining_parser!($i, 0usize,
+            tag!("{%")              ~
+            opt!(multispace)        ~
+            tag!($cmd)              ~
+            opt!(multispace)        ~
+            id: opt!(identifier)    ~
+            opt!(multispace)        ~
+            tag!("%}")              ,
+            || -> Statement { ($cmd.to_owned(), id).into() }
+        )
+    });
+}
+
+
+/// `take_till!(T -> bool) => &[T] -> IResult<&[T], &[T]>`
+/// returns the longest list of bytes until the provided function succeeds
+///
+/// The argument is either a function `&[T] -> bool` or a macro returning a `bool
+#[macro_export]
+macro_rules! take_till_slc (
+  ($input:expr, $submac:ident!( $($args:tt)* )) => (
+    {
+      match $input.iter().enumerate().position(|(i, _)| $submac!(&$input[i..], $($args)*)) {
+        Some(n) => IResult::Done(&$input[n..], &$input[..n]),
+        None    => IResult::Done(&$input[($input).input_len()..], $input)
+      }
+    }
+  );
+  ($input:expr, $f:expr) => (
+    take_till_slc!($input, call!($f));
+  );
+);
 
 
 // ---------------------------------------------------------------------------
@@ -16,9 +53,11 @@ named!(pub text<&[u8], Vec<Parsed> >,
     )
 );
 
+
 named!(parsed<&[u8], Parsed>,
     alt_complete!(
         comment             |
+        raw_block           |
         mustache            |
         start_mustache      |
         not_start_mustache
@@ -26,26 +65,31 @@ named!(parsed<&[u8], Parsed>,
 );
 
 
-fn not_start_mustache(input: &[u8]) -> IResult<&[u8], Parsed> {
-    let (i, text) = try_parse!(input,
-        tuple!(
-            map_res!(
-                is_not!("{"),
-                str::from_utf8
-            )
-        )
-    );
-    IResult::Done(i, Parsed::Text(text.to_owned()))
-}
+// ---------------------------------------------------------------------------
 
-fn start_mustache(input: &[u8]) -> IResult<&[u8], Parsed> {
-    let (i, text) = try_parse!(input,
-        map_res!(
-            tag!("{"),
-            str::from_utf8
+#[cfg_attr(feature = "clippy", allow(cyclomatic_complexity))]
+fn raw_block(input: &[u8]) -> IResult<&[u8], Parsed> {
+    #[cfg_attr(feature = "clippy", allow(needless_lifetimes))]
+    fn is_end<'a>(input: &'a [u8]) -> bool {
+        let b = || -> IResult<&'a [u8], ()> {
+            let _ = try_parse!(input, stmt!("endraw") );
+            IResult::Done(input, ())
+        };
+        b().is_done()
+    }
+
+    let (i, txt) = try_parse!(input,
+        chain!(
+            stmt!("raw")~
+            raw: map_res!(
+                take_till_slc!(is_end),
+                str::from_utf8
+            )~
+            stmt!("endraw"),
+            || Parsed::Text(raw.to_owned())
         )
     );
-    IResult::Done(i, Parsed::Text(text.to_owned()))
+    IResult::Done(i, txt)
 }
 
 // ---------------------------------------------------------------------------
@@ -119,6 +163,28 @@ fn identifier(input: &[u8]) -> IResult<&[u8], String> {
     IResult::Done(i, id)
 }
 
+fn not_start_mustache(input: &[u8]) -> IResult<&[u8], Parsed> {
+    let (i, text) = try_parse!(input,
+        tuple!(
+            map_res!(
+                is_not!("{"),
+                str::from_utf8
+            )
+        )
+    );
+    IResult::Done(i, Parsed::Text(text.to_owned()))
+}
+
+fn start_mustache(input: &[u8]) -> IResult<&[u8], Parsed> {
+    let (i, text) = try_parse!(input,
+        map_res!(
+            tag!("{"),
+            str::from_utf8
+        )
+    );
+    IResult::Done(i, Parsed::Text(text.to_owned()))
+}
+
 // ---------------------------------------------------------------------------
 
 #[cfg(test)]
@@ -136,12 +202,22 @@ mod tests {
     }
 
     #[test]
-    fn filter() {
+    fn format() {
         use ::template::FilterItem::Simple;
         assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"|e"));
         assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"| e"));
         assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"|  e"));
         assert!(super::filter(b"| 1wrong").is_err());
         assert!(super::filter(b"| _wrong").is_err());
+    }
+
+    #[test]
+    fn raw() {
+        use ::template::Parsed::Text;
+        assert_eq!(Done(&b""[..], Text("{{ raw }}".into())), super::raw_block(b"{% raw %}{{ raw }}{% endraw %}"));
+        assert_eq!(Done(&b""[..], Text("{% if %}".into())), super::raw_block(b"{% raw %}{% if %}{% endraw %}"));
+        assert_eq!(Done(&b""[..], Text("{% if %}".into())), super::raw_block(b"{%  raw %}{% if %}{%  endraw %}"));
+//        assert!(super::filter(b"| 1wrong").is_err());
+//        assert!(super::filter(b"| _wrong").is_err());
     }
 }
