@@ -13,8 +13,9 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![cfg_attr(feature = "clippy", allow(items_after_statements))]
-#![cfg_attr(feature = "clippy", allow(items_after_statements))]
 
+
+extern crate marksman_escape;
 #[macro_use]
 extern crate log;
 #[macro_use]
@@ -24,7 +25,10 @@ extern crate nom;
 
 
 pub mod abc;
+pub mod formatter;
 pub mod incrust;
 pub mod parser;
+pub mod render;
+pub mod template;
 
 

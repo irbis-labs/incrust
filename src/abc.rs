@@ -1,6 +1,8 @@
 use std::fmt::Debug;
 use std::collections::HashMap;
-use super::parser;
+
+use ::incrust::Incrust;
+use ::template::Template;
 
 
 pub type LoadResult = Result<String, LoadError>;
@@ -16,7 +18,22 @@ pub trait Loader: Debug {
 }
 
 
-pub type ParseResult = Result<parser::Template, ParseError>;
+pub type FormatResult = Result<String, FormatError>;
+
+#[derive(Debug)]
+pub enum FormatError {
+    UnknownFormatter(String),
+    Input(String),
+    Process(String),
+}
+
+
+pub trait Formatter: Debug {
+    fn format(&self, value: &str, args: &[&str], env: &Incrust) -> FormatResult;
+}
+
+
+pub type ParseResult = Result<Template, ParseError>;
 
 #[derive(Debug)]
 pub enum ParseError {
@@ -31,6 +48,7 @@ pub enum RenderError {
     LoadTemplate(LoadError),
     ParseTemplate(ParseError),
     VariableNotExists(String),
+    Formatter(FormatError),
     FunctionCallException(String),
 }
 
@@ -43,6 +61,12 @@ impl From<LoadError> for RenderError {
 impl From<ParseError> for RenderError {
     fn from(err: ParseError) -> Self {
         RenderError::ParseTemplate(err)
+    }
+}
+
+impl From<FormatError> for RenderError {
+    fn from(err: FormatError) -> Self {
+        RenderError::Formatter(err)
     }
 }
 

@@ -24,6 +24,19 @@ extern crate incrust;
 
 ## Examples
 
+### Comments
+
+```rust
+use incrust::Incrust;
+
+fn main() {
+    let incrust = Incrust::new();
+    let tpl = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
+    let result = incrust.render_parsed(tpl, hashmap!{}).unwrap();
+    assert_eq!(result, "<p>Visible  paragraph</p>");
+}
+```
+
 ### Variables
 
 ```rust
@@ -36,16 +49,15 @@ fn main() {
 }
 ```
 
-### Comments
+### Filters
 
 ```rust
 use incrust::Incrust;
 
 fn main() {
     let incrust = Incrust::new();
-    let tpl = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
-    let result = tpl.render(hashmap!{}).unwrap();
-    assert_eq!(result, "<p>Visible  paragraph</p>");
+    let result = incrust.render_text("<h1>{{ text | e }}</h1>", hashmap!{ "text" => "<Cats & Dogs>", }).unwrap();
+    assert_eq!(result, "<h1>&lt;Cats &amp; Dogs&gt;</h1>");
 }
 ```
 

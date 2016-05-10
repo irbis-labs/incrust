@@ -1,6 +1,6 @@
 [package]
 name = "incrust"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Rust template engine inspired by Jinja2."
@@ -17,11 +17,12 @@ publish = true
 
 
 [dependencies]
-clippy      = { version = "0.0", optional = true }
-log         = "0.3"
-maplit      = "0.1"
-nom         = "~1.2.2"
+clippy          = { version = "0.0", optional = true }
+marksman_escape = "0.1.2"
+log             = "0.3"
+maplit          = "0.1"
+nom             = "~1.2.2"
 
 [features]
-default     = []
-dev         = ["clippy"]
+default         = []
+dev             = ["clippy"]
