@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use ::context::{Context};
 use ::incrust::Incrust;
 use ::template::Template;
 
@@ -17,18 +18,18 @@ pub trait Loader: Debug {
 }
 
 
-pub type FormatResult = Result<String, FormatError>;
+pub type FilterResult = Result<Option<String>, FilterError>;
 
 #[derive(Debug)]
-pub enum FormatError {
+pub enum FilterError {
     UnknownFormatter(String),
     Input(String),
     Process(String),
 }
 
 
-pub trait Formatter: Debug {
-    fn format(&self, value: &str, args: &[&str], env: &Incrust) -> FormatResult;
+pub trait Filter: Debug {
+    fn filter(&self, value: Option<String>, context: &Context, env: &Incrust) -> FilterResult;
 }
 
 
@@ -47,24 +48,18 @@ pub enum RenderError {
     LoadTemplate(LoadError),
     ParseTemplate(ParseError),
     VariableNotExists(String),
-    Formatter(FormatError),
+    Filter(FilterError),
     FunctionCallException(String),
 }
 
 impl From<LoadError> for RenderError {
-    fn from(err: LoadError) -> Self {
-        RenderError::LoadTemplate(err)
-    }
+    fn from(err: LoadError) -> Self { RenderError::LoadTemplate(err) }
 }
 
 impl From<ParseError> for RenderError {
-    fn from(err: ParseError) -> Self {
-        RenderError::ParseTemplate(err)
-    }
+    fn from(err: ParseError) -> Self { RenderError::ParseTemplate(err) }
 }
 
-impl From<FormatError> for RenderError {
-    fn from(err: FormatError) -> Self {
-        RenderError::Formatter(err)
-    }
+impl From<FilterError> for RenderError {
+    fn from(err: FilterError) -> Self { RenderError::Filter(err) }
 }

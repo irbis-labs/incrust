@@ -1,17 +1,23 @@
 
-use ::abc::{Formatter, FormatResult, FormatError};
-use ::incrust::Incrust;
+use ::abc::{Filter, FilterResult, FilterError};
+use ::incrust::{Incrust, Context};
 
 
 #[derive(Debug)]
 pub struct Escape;
 
-impl Formatter for Escape {
+impl Filter for Escape {
     #[allow(unused_variables)]
-    fn format(&self, value: &str, args: &[&str], env: &Incrust) -> FormatResult {
+    fn filter(&self, value: Option<String>, context: &Context, env: &Incrust) -> FilterResult {
         use marksman_escape::Escape as F;
-        String::from_utf8(F::new(value.bytes()).collect())
-            .map_err(|err| FormatError::Process(format!("{:?}", err)))
+        match value {
+            Some(string) => {
+                String::from_utf8(F::new(string.bytes()).collect())
+                    .map(Some)
+                    .map_err(|err| FilterError::Process(format!("{:?}", err)))
+            },
+            None => Ok(None)
+        }
     }
 }
 
@@ -19,12 +25,18 @@ impl Formatter for Escape {
 #[derive(Debug)]
 pub struct Unescape;
 
-impl Formatter for Unescape {
+impl Filter for Unescape {
     #[allow(unused_variables)]
-    fn format(&self, value: &str, args: &[&str], env: &Incrust) -> FormatResult {
+    fn filter(&self, value: Option<String>, context: &Context, env: &Incrust) -> FilterResult {
         use marksman_escape::Unescape as F;
-        String::from_utf8(F::new(value.bytes()).collect())
-            .map_err(|err| FormatError::Process(format!("{:?}", err)))
+        match value {
+            Some(string) => {
+                String::from_utf8(F::new(string.bytes()).collect())
+                    .map(Some)
+                    .map_err(|err| FilterError::Process(format!("{:?}", err)))
+            },
+            None => Ok(None)
+        }
     }
 }
 

@@ -46,7 +46,7 @@ pub struct KVIterator<'a> {
 
 pub struct Context<'a> {
     parent_scope: Option<&'a Context<'a>>,
-    local_scope: Args,
+    local_scope: &'a Args,
 }
 
 pub enum Var {
@@ -54,6 +54,8 @@ pub enum Var {
     Array(Box<Array>),
     Map(Box<Map>),
 }
+
+// --------------------------------------------------------------------------------------------------------------------
 
 impl Var {
     pub fn ex<A:Into<Var>>(v: A) -> Var { Var::from(v.into()) }
@@ -128,3 +130,16 @@ impl <'a> Iterator for KVIterator<'a> {
     }
 }
 
+// --------------------------------------------------------------------------------------------------------------------
+
+impl <'a> Into<Context<'a>> for &'a Args { fn into(self) -> Context<'a> { Context::new(None, self) } }
+
+impl <'a> Context<'a> {
+    pub fn new(parent_scope: Option<&'a Context<'a>>, local_scope: &'a Args) -> Self {
+        Context { parent_scope: parent_scope, local_scope: local_scope }
+    }
+
+    pub fn get(&self, id: &str) -> Option<&Var> {
+        self.local_scope.get(id).or_else(|| self.parent_scope.and_then(|scope| scope.get(id)))
+    }
+}

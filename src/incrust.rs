@@ -2,14 +2,14 @@
 use std::collections::HashMap;
 
 use ::abc;
-pub use ::context::{Args, Var};
+pub use ::context::{Args, Var, Context, EntityId};
 pub use ::template::Template;
 
 
 #[derive(Debug)]
 pub struct Incrust {
     loaders: Vec<Box<abc::Loader>>,
-    formatters: HashMap<&'static str, Box<abc::Formatter>>,
+    formatters: HashMap<&'static str, Box<abc::Filter>>,
 }
 
 
@@ -17,7 +17,7 @@ impl Default for Incrust {
     fn default() -> Self {
         use ::formatter::{Escape, Unescape};
 
-        let mut f: HashMap<&'static str, Box<abc::Formatter>> = HashMap::new();
+        let mut f: HashMap<&'static str, Box<abc::Filter>> = HashMap::new();
 
         f.insert("e", Box::new(Escape));
         f.insert("escape", Box::new(Escape));
@@ -51,10 +51,10 @@ impl Incrust {
         Err(abc::LoadError::NotFound)
     }
 
-    pub fn format(&self, id: &str, value: &str, args: &[&str]) -> abc::FormatResult {
-        match self.formatters.get(id) {
-            Some(ref formatter) => formatter.format(value, args, self),
-            None => Err(abc::FormatError::UnknownFormatter(id.to_owned()))
+    pub fn filter(&self, id: &str, value: Option<String>, context: &Context) -> abc::FilterResult {
+        match self.formatters.get(&id) {
+            Some(ref filter) => filter.filter(value, context, self),
+            None => Err(abc::FilterError::UnknownFormatter(id.to_owned()))
         }
     }
 
@@ -64,18 +64,21 @@ impl Incrust {
         Ok(template)
     }
 
-    pub fn render(&self, name: &str, args: &Args) -> abc::RenderResult {
+    pub fn render<'a, C:Into<Context<'a>>>(&self, name: &str, args: C) -> abc::RenderResult {
         let template = self.load(name)?;
         self.render_text(&template, args)
     }
 
-    pub fn render_text(&self, text: &str, args: &Args) -> abc::RenderResult {
+    pub fn render_text<'a, C:Into<Context<'a>>>(&self, text: &str, args: C) -> abc::RenderResult {
         let template = self.parse(text)?;
         self.render_parsed(&template, args)
     }
 
-    pub fn render_parsed(&self, template: &Template, args: &Args) -> abc::RenderResult {
-        ::render::text(template.parsed.as_slice(), args, self)
+    pub fn render_parsed<'a, C:Into<Context<'a>>>(&self, template: &Template, args: C) -> abc::RenderResult {
+        let context: Context = args.into();
+//        let mut buffer: Vec<u8> = Vec::new();
+//        ::render::text(&mut buffer[..], template.parsed.as_slice(), &context, self)
+        ::render::text(template.parsed.as_slice(), &context, self)
     }
 }
 
