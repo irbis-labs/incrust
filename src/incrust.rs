@@ -2,7 +2,8 @@
 use std::collections::HashMap;
 
 use ::abc;
-use ::template::Template;
+pub use ::context::{Args, Var};
+pub use ::template::Template;
 
 
 #[derive(Debug)]
@@ -45,14 +46,14 @@ impl Incrust {
 
     pub fn load(&self, name: &str) -> abc::LoadResult {
         for loader in &self.loaders {
-            if let Ok(template) = loader.load(&name) { return Ok(template) }
+            if let Ok(template) = loader.load(name) { return Ok(template) }
         }
         Err(abc::LoadError::NotFound)
     }
 
     pub fn format(&self, id: &str, value: &str, args: &[&str]) -> abc::FormatResult {
         match self.formatters.get(id) {
-            Some(ref formatter) => formatter.format(value, args, &self),
+            Some(ref formatter) => formatter.format(value, args, self),
             None => Err(abc::FormatError::UnknownFormatter(id.to_owned()))
         }
     }
@@ -63,18 +64,18 @@ impl Incrust {
         Ok(template)
     }
 
-    pub fn render(&self, name: &str, args: &abc::Args) -> abc::RenderResult {
+    pub fn render(&self, name: &str, args: &Args) -> abc::RenderResult {
         let template = self.load(name)?;
         self.render_text(&template, args)
     }
 
-    pub fn render_text(&self, text: &str, args: &abc::Args) -> abc::RenderResult {
+    pub fn render_text(&self, text: &str, args: &Args) -> abc::RenderResult {
         let template = self.parse(text)?;
         self.render_parsed(&template, args)
     }
 
-    pub fn render_parsed(&self, template: &Template, args: &abc::Args) -> abc::RenderResult {
-        ::render::text(template.parsed.as_slice(), args, &self)
+    pub fn render_parsed(&self, template: &Template, args: &Args) -> abc::RenderResult {
+        ::render::text(template.parsed.as_slice(), args, self)
     }
 }
 
@@ -105,18 +106,17 @@ mod tests {
     #[test]
     fn mustache() {
         let templ = "Hello, {{name}}!";
-        let args = hashmap!{ "name" => "World", };
         let expected = "Hello, World!";
         let incrust = Incrust::new();
-        let result = incrust.render_text(templ, &args).unwrap();
+        let result = incrust.render_text(templ, &hashmap!{ "name" => Var::ex("World") }).unwrap();
         assert_eq!(result, expected);
     }
 
     #[test]
     fn filter() {
         let templ = "<textarea>{{ html | e }}</textarea>";
-        let args = hashmap!{ "html" => "<h1>Hello, World!</h1>", };
-         let expected = "<textarea>&lt;h1&gt;Hello, World&#33;&lt;/h1&gt;</textarea>";
+        let args: Args = hashmap!{ "html" => Var::ex("<h1>Hello, World!</h1>") };
+        let expected = "<textarea>&lt;h1&gt;Hello, World&#33;&lt;/h1&gt;</textarea>";
         let incrust = Incrust::new();
         let result = incrust.render_text(templ, &args).unwrap();
         assert_eq!(result, expected);

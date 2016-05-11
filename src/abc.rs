@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::collections::HashMap;
 
 use ::incrust::Incrust;
 use ::template::Template;
@@ -69,6 +68,3 @@ impl From<FormatError> for RenderError {
         RenderError::Formatter(err)
     }
 }
-
-
-pub type Args = HashMap<&'static str, &'static str>;

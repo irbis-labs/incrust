@@ -8,6 +8,7 @@
 
 #![allow(unstable_features)]
 #![feature(question_mark)]
+#![feature(associated_type_defaults)]
 
 
 #![cfg_attr(feature = "clippy", feature(plugin))]
@@ -25,6 +26,7 @@ extern crate nom;
 
 
 pub mod abc;
+pub mod context;
 pub mod formatter;
 pub mod incrust;
 pub mod parser;
