@@ -28,10 +28,16 @@ pub enum Parsed {
     Text(String),
     Comment(String),
     Mustache(Mustache),
+    ForEach(ForEach),
 }
 
 #[derive(Debug, PartialEq)]
 pub struct Mustache {
+    pub expr: FullExpression,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct FullExpression {
     pub expr: Expression,
     pub filters: Vec<FilterItem>
 }
@@ -39,6 +45,15 @@ pub struct Mustache {
 #[derive(Debug, PartialEq)]
 pub enum Expression {
     Variable(String),
+    Literal(Literal),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Literal {
+    Char(char),
+    Str(String),
+    Int(isize),
+    Real(f64),
 }
 
 #[derive(Debug, PartialEq)]
@@ -48,24 +63,41 @@ pub enum FilterItem {
 
 #[derive(Debug, PartialEq)]
 pub struct Statement {
-    cmd: String,
-    id: Option<String>,
+
 }
 
-impl Into<Statement> for (String, Option<String>) {
-    fn into(self) -> Statement { Statement{cmd: self.0, id: self.1} }
+#[derive(Debug, PartialEq)]
+pub struct ForEach {
+    pub begin: Statement,
+    pub end: Statement,
+    pub expr: Expression,
+    pub loop_var: String,
 }
 
-
+impl Into<Statement> for () {
+    fn into(self) -> Statement { Statement {} }
+}
 
 // ---------------------------------------------------------------------------
 
 impl Mustache {
-    pub fn new(expr: Expression, filters: Vec<FilterItem>) -> Self {
-        Mustache { expr: expr, filters: filters }
+    pub fn new(expr: FullExpression) -> Self {
+        Mustache { expr: expr }
     }
 }
 
 impl From<Mustache> for Parsed {
     fn from(v: Mustache) -> Self { Parsed::Mustache(v) }
 }
+
+
+impl FullExpression {
+    pub fn new(expr: Expression, filters: Vec<FilterItem>) -> Self {
+        FullExpression { expr: expr, filters: filters }
+    }
+}
+
+impl From<Literal> for Expression {
+    fn from(v: Literal) -> Self { Expression::Literal(v) }
+}
+

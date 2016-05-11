@@ -58,6 +58,13 @@ let result = incrust.render_text("<h1>{{ text | e }}</h1>", &args).unwrap();
 assert_eq!(result, "<h1>&lt;Cats &amp; Dogs&gt;</h1>");
 ```
 
+### Literals
+
+```rust
+let result = incrust.render_text(r#"An escaped braces: {{ "{{" }}"#, &hashmap!{}).unwrap();
+assert_eq!(result, "An escaped braces: {{");
+```
+
 ### Comments
 
 ```rust

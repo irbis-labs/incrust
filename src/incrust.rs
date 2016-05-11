@@ -124,4 +124,12 @@ mod tests {
         let result = incrust.render_text(templ, &args).unwrap();
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn literal() {
+        let templ = r#"An escaped braces: {{ "{{" }}"#;
+        let expected = "An escaped braces: {{";
+        let incrust = Incrust::new();
+        assert_eq!(expected, incrust.render_text(templ, &hashmap!{}).unwrap());
+    }
 }
