@@ -3,13 +3,13 @@
 
 ## Incrust
 
-> Incrust is a template engine written in Rust, inspired by Jinja2.
+> Incrust is a template engine inspired by Jinja2 and written in Rust.
 
 **NOTA BENE**
 
 This is a work in progress and (as may be assumed reasonably enough) may be highly *unstable* just yet.
 
-The implementation is at a very early stage.
+The implementation is at a very early stage and the API is a subject of changes.
 
 ## Installation
 
@@ -28,7 +28,7 @@ extern crate incrust;
 
 ## Examples
 
-All examples assume a prepared instance of Incrust. For ease of use hashmaps, we use the macro `maplit`
+All examples assume a prepared instance of Incrust. For ease of use hashmaps, we use the macro [maplit](https://crates.io/crates/maplit)
 
 ```rust
 #[macro_use]
@@ -53,7 +53,8 @@ assert_eq!(result, "Hello, World!");
 ### Filters
 
 ```rust
-let result = incrust.render_text("<h1>{{ text | e }}</h1>", &hashmap!{ "text" => Var::ex("<Cats & Dogs>"), }).unwrap();
+let args: Args = hashmap!{ "text" => Var::ex("<Cats & Dogs>") };
+let result = incrust.render_text("<h1>{{ text | e }}</h1>", &args).unwrap();
 assert_eq!(result, "<h1>&lt;Cats &amp; Dogs&gt;</h1>");
 ```
 
