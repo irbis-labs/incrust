@@ -127,9 +127,9 @@ mod tests {
 
     #[test]
     fn literal() {
-        let templ = r#"An escaped braces: {{ "{{" }}"#;
-        let expected = "An escaped braces: {{";
         let incrust = Incrust::new();
-        assert_eq!(expected, incrust.render_text(templ, &hashmap!{}).unwrap());
+        assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, &hashmap!{}).unwrap());
+        assert_eq!("The answer: 42", incrust.render_text(r#"The answer: {{ 42 }}"#, &hashmap!{}).unwrap());
+        assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, &hashmap!{}).unwrap());
     }
 }

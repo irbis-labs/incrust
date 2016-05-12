@@ -58,10 +58,10 @@ pub fn variable<'a>(id: &'a str, context: &'a Context, _: &'a Incrust) -> abc::F
 
 #[allow(unused_variables)]
 pub fn literal<'a>(l: &'a Literal, _: &'a Context, _: &'a Incrust) -> abc::FilterResult {
-    Ok(match *l {
-        Literal::Char(ref c) => unimplemented!(),
-        Literal::Str(ref s) => Some(s.clone()),
-        Literal::Int(ref i) => unimplemented!(),
-        Literal::Real(ref f) => unimplemented!(),
-    })
+    Ok(Some(match *l {
+        Literal::Str(ref s) => s.clone(),
+        Literal::Char(ref c) => format!("{}", c),
+        Literal::Int(ref i) => format!("{}", i),
+        Literal::Real(ref f) => format!("{}", f),
+    }))
 }

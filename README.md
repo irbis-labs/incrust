@@ -1,7 +1,7 @@
 
 ![](https://img.shields.io/crates/l/incrust.svg) [![](https://img.shields.io/crates/v/incrust.svg)](https://crates.io/crates/incrust)
 
-## Incrust
+## {% Incrust %}
 
 > Incrust is a template engine inspired by Jinja2 and written in Rust.
 
@@ -61,8 +61,9 @@ assert_eq!(result, "<h1>&lt;Cats &amp; Dogs&gt;</h1>");
 ### Literals
 
 ```rust
-let result = incrust.render_text(r#"An escaped braces: {{ "{{" }}"#, &hashmap!{}).unwrap();
-assert_eq!(result, "An escaped braces: {{");
+assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, &hashmap!{}).unwrap());
+assert_eq!("The answer: 42", incrust.render_text(r#"The answer: {{ 42 }}"#, &hashmap!{}).unwrap());
+assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, &hashmap!{}).unwrap());
 ```
 
 ### Comments
