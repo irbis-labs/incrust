@@ -6,7 +6,7 @@ license = "MIT/Apache-2.0"
 description = "Template engine inspired by Jinja2"
 repository = "https://github.com/alexander-irbis/incrust"
 #documentation = ""
-keywords = ["web", "template", "jinja2"]
+keywords = ["web", "template", "jinja2", "jinja", "html"]
 exclude = [
     ".gitignore",
     ".travis.yml",
@@ -21,7 +21,7 @@ clippy          = { version = "0.0", optional = true }
 marksman_escape = "0.1.2"
 log             = "0.3"
 maplit          = "0.1"
-nom             = "~1.2.2"
+nom             = "1.2"
 
 [features]
 default         = []
