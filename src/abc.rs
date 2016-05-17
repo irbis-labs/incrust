@@ -1,6 +1,8 @@
+use std::collections::hash_map::HashMap;
 use std::fmt::Debug;
 
-use ::context::{Context};
+use ::types::abc::{Type};
+use ::types::context::{Context};
 use ::incrust::Incrust;
 use ::template::Template;
 
@@ -15,6 +17,26 @@ pub enum LoadError {
 
 pub trait Loader: Debug {
     fn load(&self, name: &str) -> LoadResult;
+}
+
+
+pub type EvalResult = Result<Option<Box<Type>>, EvalError>;
+
+#[derive(Debug)]
+pub enum EvalError {
+    Input(String),
+    Process(String),
+}
+
+
+//pub trait Eval: Debug {
+//    fn eval(&self, op: EvalOp, other: Option<Value>, context: &Context, env: &Incrust) -> EvalResult;
+//}
+
+
+#[derive(Debug)]
+pub enum CloneError {
+    Error
 }
 
 
@@ -48,18 +70,14 @@ pub enum RenderError {
     LoadTemplate(LoadError),
     ParseTemplate(ParseError),
     VariableNotExists(String),
+    EvalExpression(EvalError),
     Filter(FilterError),
     FunctionCallException(String),
 }
 
-impl From<LoadError> for RenderError {
-    fn from(err: LoadError) -> Self { RenderError::LoadTemplate(err) }
-}
+impl From<LoadError>   for RenderError { fn from(err: LoadError)   -> Self { RenderError::LoadTemplate(err) } }
+impl From<EvalError>   for RenderError { fn from(err: EvalError)   -> Self { RenderError::EvalExpression(err) } }
+impl From<ParseError>  for RenderError { fn from(err: ParseError)  -> Self { RenderError::ParseTemplate(err) } }
+impl From<FilterError> for RenderError { fn from(err: FilterError) -> Self { RenderError::Filter(err) } }
 
-impl From<ParseError> for RenderError {
-    fn from(err: ParseError) -> Self { RenderError::ParseTemplate(err) }
-}
-
-impl From<FilterError> for RenderError {
-    fn from(err: FilterError) -> Self { RenderError::Filter(err) }
-}
+impl From<CloneError>  for EvalError   { fn from(err: CloneError)  -> Self { EvalError::Input(format!("{:?}", err)) } }

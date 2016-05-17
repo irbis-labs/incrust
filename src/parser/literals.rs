@@ -1,15 +1,17 @@
+#![cfg_attr(feature = "clippy", allow(many_single_char_names))]
+
 use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, eof, space, multispace};
 
-use ::template::{Expression, Literal};
+use ::template::{Factor, Literal};
 
 
 
 
-pub fn literal(input: &[u8]) -> IResult<&[u8], Expression> {
+pub fn literal(input: &[u8]) -> IResult<&[u8], Factor> {
     let (i, l) = try_parse!(input, alt!(lit_str | lit_char | lit_num) );
-    IResult::Done(i, Expression::Literal(l))
+    IResult::Done(i, Factor::Literal(l))
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -44,7 +46,7 @@ fn lit_char(input: &[u8]) -> IResult<&[u8], Literal> {
     );
     println!("lit_char {:?}", s);
     match parse_char(s.as_str()) {
-        Ok(res) => IResult::Done(i, res),
+        Ok(chr) => IResult::Done(i, Literal::Char(chr)),
         Err(err) => IResult::Error(NomErr::Code(ErrorKind::Custom(err))),
     }
 }
@@ -79,14 +81,14 @@ named!(pub char_escaped<&[u8], &str>, chain!(
     }
 ));
 
-fn parse_char(s: &str) -> Result<Literal, u32> {
+fn parse_char(s: &str) -> Result<char, u32> {
     let mut i = s.chars();
     let (a, b) = (i.next(), i.next());
     match a {
         None => Err(1303u32),
         Some(c) => match b {
             Some(_) => Err(1304u32),
-            None => Ok(Literal::Char(c))
+            None => Ok(c)
         },
     }
 }
@@ -146,8 +148,8 @@ mod tests {
 
         assert_eq!(Done(&b""[..], r#"\"#),                  super::char_escaped(br#"\\"#));
 
-        assert_eq!(Ok(Char('\\')),                          super::parse_char("\\"));
-        assert_eq!(Ok(Char('\n')),                          super::parse_char("\n"));
+        assert_eq!(Ok('\\'),                                super::parse_char("\\"));
+        assert_eq!(Ok('\n'),                                super::parse_char("\n"));
 
         assert_eq!(Done(&b""[..], Char('\\').into()),       super::lit_char(br#"'\\'"#));
         assert_eq!(Done(&b""[..], Char('\'').into()),       super::lit_char(br#"'\''"#));

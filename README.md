@@ -62,8 +62,23 @@ assert_eq!(result, "<h1>&lt;Cats &amp; Dogs&gt;</h1>");
 
 ```rust
 assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, &hashmap!{}).unwrap());
-assert_eq!("The answer: 42", incrust.render_text(r#"The answer: {{ 42 }}"#, &hashmap!{}).unwrap());
 assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, &hashmap!{}).unwrap());
+```
+
+### Expressions
+
+```rust
+let args = hashmap!{
+    "what" => ex("Hello"),
+    "who" => ex("World")
+};
+assert_eq!(r#"Say: "Hello, World!""#, incrust.render_text(r#"Say: "{{ what + ", " + who }}!""#, args).unwrap());
+
+let args = hashmap!{
+    "alpha" => ex(6isize),
+    "omega" => ex(7f64)
+};
+assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
 ```
 
 ### Comments
@@ -81,8 +96,6 @@ let tpl = "Example: {% raw %}{{ mustaches }}{% endraw %}";
 let result = incrust.render_text(tpl, &hashmap!{}).unwrap();
 assert_eq!(result, "Example: {{ mustaches }}");
 ```
-
-
 
 ## License
 

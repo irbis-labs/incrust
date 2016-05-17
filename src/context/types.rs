@@ -1,45 +1,14 @@
-use std::collections::hash_map::{HashMap};
 use ::context::{EntityId, Var, Value, Array, Map, KIterator, VIterator, KVIterator};
-
-pub struct Empty;
-impl Into<Var> for Empty { fn into(self) -> Var { Var::Value(Box::new(self)) } }
-impl Value for Empty {
-    fn v_render(&self) -> String { "".into() }
-}
-
 
 
 impl <'a> Into<Var> for &'a str { fn into(self) -> Var { self.to_owned().into() } }
-
-impl Into<Var> for String { fn into(self) -> Var { Var::Value(Box::new(self)) } }
-impl Value for String {
-    fn v_render(&self) -> String { self.clone() }
-}
-//impl Array for String {
-//    fn a_len(&self) -> usize { self.chars().len() }
-//    fn a_is_empty(&self) -> bool { self.chars().is_empty() }
-//    fn a_values<'a>(&'a self) -> VIterator<'a> {
-//        VIterator { me: self.chars() }
-//    }
-//}
-
-
-impl Into<Var> for usize { fn into(self) -> Var { Var::Value(Box::new(self)) } }
-impl Value for usize {
-    fn v_render(&self) -> String { format!("{}", self) }
-}
-
-
-impl Into<Var> for isize { fn into(self) -> Var { Var::Value(Box::new(self)) } }
-impl Value for isize {
-    fn v_render(&self) -> String { format!("{}", self) }
-}
 
 
 impl Into<Var> for HashMap<EntityId, Var> { fn into(self) -> Var { Var::Map(Box::new(self)) } }
 
 impl Value for HashMap<EntityId, Var> {
     fn v_render(&self) -> String { format!("HashMap({})", self.len()) }
+    fn f_value(&self) -> f64 { if self.is_empty() { 0 } else { 1 } }
 }
 
 impl Array for HashMap<EntityId, Var> {

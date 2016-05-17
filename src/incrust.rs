@@ -2,7 +2,8 @@
 use std::collections::HashMap;
 
 use ::abc;
-pub use ::context::{Args, Var, Context, EntityId};
+pub use ::types::abc::{Args, EntityId, Type, BType, ex};
+pub use ::types::context::{Context};
 pub use ::template::Template;
 
 
@@ -15,7 +16,7 @@ pub struct Incrust {
 
 impl Default for Incrust {
     fn default() -> Self {
-        use ::formatter::{Escape, Unescape};
+        use ::renderer::filter::{Escape, Unescape};
 
         let mut f: HashMap<&'static str, Box<abc::Filter>> = HashMap::new();
 
@@ -64,21 +65,22 @@ impl Incrust {
         Ok(template)
     }
 
-    pub fn render<'a, C:Into<Context<'a>>>(&self, name: &str, args: C) -> abc::RenderResult {
+    pub fn render<'a, C:Into<Args<'a>>>(&self, name: &str, args: C) -> abc::RenderResult {
         let template = self.load(name)?;
         self.render_text(&template, args)
     }
 
-    pub fn render_text<'a, C:Into<Context<'a>>>(&self, text: &str, args: C) -> abc::RenderResult {
+    pub fn render_text<'a, C:Into<Args<'a>>>(&self, text: &str, args: C) -> abc::RenderResult {
         let template = self.parse(text)?;
         self.render_parsed(&template, args)
     }
 
-    pub fn render_parsed<'a, C:Into<Context<'a>>>(&self, template: &Template, args: C) -> abc::RenderResult {
-        let context: Context = args.into();
+    pub fn render_parsed<'a, C:Into<Args<'a>>>(&self, template: &Template, args: C) -> abc::RenderResult {
+        let args: Args = args.into();
+        let context = Context::new(None, &args);
 //        let mut buffer: Vec<u8> = Vec::new();
 //        ::render::text(&mut buffer[..], template.parsed.as_slice(), &context, self)
-        ::render::text(template.parsed.as_slice(), &context, self)
+        ::renderer::text(template.parsed.as_slice(), &context, self)
     }
 }
 
@@ -93,7 +95,7 @@ mod tests {
         let templ = "Hello, World!";
         let expected = "Hello, World!";
         let incrust = Incrust::new();
-        let result = incrust.render_text(templ, &hashmap!{}).unwrap();
+        let result = incrust.render_text(templ, hashmap!{}).unwrap();
         assert_eq!(result, expected);
     }
 
@@ -102,7 +104,7 @@ mod tests {
         let incrust = Incrust::new();
         let templ = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
         let expected = "<p>Visible  paragraph</p>";
-        let result = incrust.render_parsed(&templ, &hashmap!{}).unwrap();
+        let result = incrust.render_parsed(&templ, hashmap!{}).unwrap();
         assert_eq!(result, expected);
     }
 
@@ -111,25 +113,40 @@ mod tests {
         let templ = "Hello, {{name}}!";
         let expected = "Hello, World!";
         let incrust = Incrust::new();
-        let result = incrust.render_text(templ, &hashmap!{ "name" => Var::ex("World") }).unwrap();
+        let result = incrust.render_text(templ, hashmap!{ "name" => ex("World") }).unwrap();
         assert_eq!(result, expected);
     }
 
     #[test]
     fn filter() {
         let templ = "<textarea>{{ html | e }}</textarea>";
-        let args: Args = hashmap!{ "html" => Var::ex("<h1>Hello, World!</h1>") };
+        let args: Args = hashmap!{ "html" => ex("<h1>Hello, World!</h1>") };
         let expected = "<textarea>&lt;h1&gt;Hello, World&#33;&lt;/h1&gt;</textarea>";
         let incrust = Incrust::new();
-        let result = incrust.render_text(templ, &args).unwrap();
+        let result = incrust.render_text(templ, args).unwrap();
         assert_eq!(result, expected);
     }
 
     #[test]
     fn literal() {
         let incrust = Incrust::new();
-        assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, &hashmap!{}).unwrap());
-        assert_eq!("The answer: 42", incrust.render_text(r#"The answer: {{ 42 }}"#, &hashmap!{}).unwrap());
-        assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, &hashmap!{}).unwrap());
+        assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, hashmap!{}).unwrap());
+        assert_eq!("The answer: 42", incrust.render_text(r#"The answer: {{ 42 }}"#, hashmap!{}).unwrap());
+        assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, hashmap!{}).unwrap());
+    }
+
+    #[test]
+    fn expression() {
+        let incrust = Incrust::new();
+        let args = hashmap!{
+            "what" => ex("Hello"),
+            "who" => ex("World")
+        };
+        assert_eq!(r#"Say: "Hello, World!""#, incrust.render_text(r#"Say: "{{ what + ", " + who }}!""#, args).unwrap());
+        let args = hashmap!{
+            "alpha" => ex(6isize),
+            "omega" => ex(7f64)
+        };
+        assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
     }
 }

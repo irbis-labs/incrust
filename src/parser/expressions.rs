@@ -2,7 +2,12 @@ use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, alpha, alphanumeric, eof, space, multispace};
 
-use ::template::{Expression, FullExpression, FilterItem};
+use ::template::{
+    FullExpression, FilterItem,
+    SumOp, MulOp,
+    Expr, Term, Factor,
+    ExprItem, TermItem,
+};
 
 use super::literals::literal;
 
@@ -10,12 +15,7 @@ use super::literals::literal;
 // ---------------------------------------------------------------------------
 
 pub fn full_expression(input: &[u8]) -> IResult<&[u8], FullExpression> {
-    let (i, (expr, filters)) = try_parse!(input,
-        tuple!(
-            expression,
-            filter_agg
-        )
-    );
+    let (i, (expr, filters)) = try_parse!(input, tuple!( sum, filter_agg ) );
     IResult::Done(i, FullExpression::new(expr, filters))
 }
 
@@ -41,38 +41,6 @@ fn filter(input: &[u8]) -> IResult<&[u8], FilterItem> {
 
 // ---------------------------------------------------------------------------
 
-fn expression(input: &[u8]) -> IResult<&[u8], Expression> {
-    let (i, (_, expr)) = try_parse!(input, tuple!( opt!(un_op), expression_item ) );
-    IResult::Done(i, expr)
-}
-
-fn expression_item(input: &[u8]) -> IResult<&[u8], Expression> {
-    let (i, expr) = try_parse!(input, alt!( literal | variable ) );
-    IResult::Done(i, expr)
-}
-
-fn variable(input: &[u8]) -> IResult<&[u8], Expression> {
-    let (i, id) = try_parse!(input, identifier );
-    IResult::Done(i, Expression::Variable(id))
-}
-
-// ---------------------------------------------------------------------------
-
-named!(pub un_plus<&[u8], char>, char!('+') );
-named!(pub un_minus<&[u8], char>, char!('-') );
-
-fn un_op(input: &[u8]) -> IResult<&[u8], char> {
-    let (i, (op, _)) = try_parse!(input,
-        tuple!(
-            alt!( un_plus | un_minus ),
-            opt!(multispace)
-        )
-    );
-    IResult::Done(i, op)
-}
-
-// ---------------------------------------------------------------------------
-
 #[cfg_attr(feature = "clippy", allow(cyclomatic_complexity))]
 fn identifier(input: &[u8]) -> IResult<&[u8], String> {
     let (i, id) = try_parse!(input,
@@ -92,6 +60,62 @@ fn identifier(input: &[u8]) -> IResult<&[u8], String> {
 
 // ---------------------------------------------------------------------------
 
+pub fn sum(input: &[u8]) -> IResult<&[u8], Expr> {
+    let (i, sum) = try_parse!(input, chain!(
+        a: tuple!(value!(SumOp::Add), mul) ~
+        mut b: many0!(tuple!(op_sum_bin, mul)) ,
+        || { b.insert(0, a); b }
+    ));
+    IResult::Done(i, Expr { sum: sum.into_iter().map(|(op, t)| ExprItem(op, t) ).collect() })
+}
+
+fn mul(input: &[u8]) -> IResult<&[u8], Term> {
+    let (i, mul) = try_parse!(input, chain!(
+        a: tuple!(value!(MulOp::Mul), factor) ~
+        mut b: many0!(tuple!(op_mul_bin, factor)) ,
+        || { b.insert(0, a); b }
+    ));
+    IResult::Done(i, Term{mul: mul.into_iter().map(|(op, f)| TermItem(op, f) ).collect()} )
+}
+
+fn factor(input: &[u8]) -> IResult<&[u8], Factor> {
+    let (i, f) = try_parse!(input, alt!(literal | variable | subexpression) );
+    IResult::Done(i, f.into())
+}
+
+fn subexpression(input: &[u8]) -> IResult<&[u8], Factor> {
+    let (i, (_, _, e, _, _)) = try_parse!(input, tuple!(
+        char!('('), many0!(multispace), sum, many0!(multispace), char!(')')
+    ));
+    IResult::Done(i, Factor::Subexpression(e))
+}
+
+fn variable(input: &[u8]) -> IResult<&[u8], Factor> {
+    let (i, id) = try_parse!(input, identifier);
+    IResult::Done(i, Factor::Variable(id))
+}
+
+
+fn op_sum_bin(input: &[u8]) -> IResult<&[u8], SumOp> {
+    let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("+") | tag!("-")), many0!(multispace)) );
+    IResult::Done(i, match o {
+        b"+" => SumOp::Add,
+        b"-" => SumOp::Sub,
+        _ => unreachable!()
+    })
+}
+
+fn op_mul_bin(input: &[u8]) -> IResult<&[u8], MulOp> {
+    let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("*") | tag!("/")), many0!(multispace)) );
+    IResult::Done(i, match o {
+        b"*" => MulOp::Mul,
+        b"/" => MulOp::Div,
+        _ => unreachable!()
+    })
+}
+
+// ---------------------------------------------------------------------------
+
 #[cfg(test)]
 mod tests {
     #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
@@ -106,6 +130,16 @@ mod tests {
         assert!(super::identifier(b"1wrong").is_err());
     }
 
+//    #[test]
+//    fn expression() {
+//        use ::template::{Expr, ExprItem, Factor, Literal};
+//
+//        let int_one: Factor = Literal::Int(1isize).into();
+//
+//
+//        assert_eq!(Done(&b""[..], Expr), super::factor(b"1"));
+//    }
+
     #[test]
     fn format() {
         use ::template::FilterItem::Simple;
@@ -116,3 +150,111 @@ mod tests {
         assert!(super::filter(b"| _wrong").is_err());
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+http://codinghighway.com/2015/05/25/down-with-redundant-parenthesis/
+
+expr -> term expr_r
+
+expr_r -> '+' term expr_r
+        | '-' term expr_r
+        | e
+
+term -> factor term_r
+
+term_r -> '*' factor term_r
+        | '/' factor term_r
+        | e
+
+factor -> number
+        | '(' expr ')'
+*/
+
+/*
+
+5 + 6
+
+expr [5 + 6
+expr [term [5 + 6
+expr [term [factor [5 + 6
+expr [term [factor [number[5 + 6
+expr [term [factor [number[5] + 6
+expr [term [factor [number[5]] + 6
+expr [term [factor [number[5]] expr_r [ + 6
+expr [term [factor [number[5]] expr_r ['+' 6
+expr [term [factor [number[5]] expr_r ['+' term [6
+expr [term [factor [number[5]] expr_r ['+' term [factor [6
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]]
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]] term_r [
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]] term_r [e
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]] term_r [e]
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]] term_r [e]] expr_r [
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]] term_r [e]] expr_r [e
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]] term_r [e]] expr_r [e]
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]] term_r [e]] expr_r [e]]
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]] term_r [e]] expr_r [e]]]
+expr [term [factor [number[5]] expr_r ['+' term [factor [number[6]] term_r [e]] expr_r [e]]]]
+
+expr
+term
+factor   expr_r
+number   '+' term              expr_r
+5            factor   term_r   e
+             number   e
+             6
+
+
+5        '+' 6
+
+
+5 + 6
+
+expr [
+    term [
+        factor [
+            number[5]
+        ]
+        expr_r [
+            '+'
+            term [
+                factor [
+                    number[6]
+                ]
+                term_r[e]
+            ]
+            expr_r[e]
+        ]
+    ]
+]
+
+
+expr:
+    term:
+        factor:
+            number:
+                5
+        expr_r:
+            '+'
+            term:
+                factor:
+                    number:
+                        6
+                term_r:
+                    e
+            expr_r:
+                e
+*/

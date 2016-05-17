@@ -8,6 +8,7 @@
 
 #![allow(unstable_features)]
 #![feature(question_mark)]
+#![feature(specialization)]
 #![feature(associated_type_defaults)]
 
 
@@ -26,11 +27,10 @@ extern crate nom;
 
 
 pub mod abc;
-pub mod context;
-pub mod formatter;
 pub mod incrust;
 pub mod parser;
-pub mod render;
+pub mod renderer;
 pub mod template;
+pub mod types;
 
 

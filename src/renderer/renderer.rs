@@ -1,7 +1,12 @@
 use ::abc;
-use ::context::{Context};
-use ::incrust::Incrust;
-use ::template::{Parsed, Mustache, ForEach, FullExpression, Expression, FilterItem, Literal};
+use ::incrust::{Incrust, Context};
+use ::template::{
+    Parsed, Mustache, ForEach,
+    FullExpression, FilterItem,
+};
+
+use super::evaluator::eval_expr;
+
 
 //pub fn text<'a>(buffer: &mut[u8], tpl: &'a[Parsed], context: &'a Context, env: &'a Incrust) -> abc::RenderResult {
 pub fn text<'a>(tpl: &'a[Parsed], context: &'a Context, env: &'a Incrust) -> abc::RenderResult {
@@ -19,14 +24,14 @@ pub fn text<'a>(tpl: &'a[Parsed], context: &'a Context, env: &'a Incrust) -> abc
 
 //pub fn mustache(buffer: &mut[u8], mustache: &Mustache, context: &Context, env: &Incrust) -> abc::RenderResult {
 pub fn mustache(mus: &Mustache, context: &Context, env: &Incrust) -> abc::RenderResult {
-    full_expression(&mus.expr, context, env)
+    expression(&mus.expr, context, env)
 }
 
 
 //pub fn full_expression(buffer: &mut[u8], mustache: &Mustache, context: &Context, env: &Incrust) -> abc::RenderResult {
-pub fn full_expression(fe: &FullExpression, context: &Context, env: &Incrust) -> abc::RenderResult {
-    Ok(fe.filters.iter().fold(
-        Ok(expression(&fe.expr, context, env)?),
+pub fn expression(expr: &FullExpression, context: &Context, env: &Incrust) -> abc::RenderResult {
+    Ok(expr.filters.iter().fold(
+        Ok(eval_expr(&expr.expr, context, env)?.and_then(|val| val.to_istring())),
         |result: abc::FilterResult, filter: &FilterItem| -> abc::FilterResult {
             match result {
                 Err(err)    => Err(err),
@@ -44,24 +49,3 @@ pub fn foreach(fe: &ForEach, context: &Context, env: &Incrust) -> abc::RenderRes
     Ok("".into())
 }
 
-
-pub fn expression<'a>(expr: &'a Expression, context: &'a Context, env: &'a Incrust) -> abc::FilterResult {
-    Ok(match *expr {
-        Expression::Variable(ref id) => variable(id.as_str(), context, env)?,
-        Expression::Literal(ref lit) => literal(lit, context, env)?,
-    })
-}
-
-pub fn variable<'a>(id: &'a str, context: &'a Context, _: &'a Incrust) -> abc::FilterResult {
-    Ok(context.get(id).map(|var| var.render()))
-}
-
-#[allow(unused_variables)]
-pub fn literal<'a>(l: &'a Literal, _: &'a Context, _: &'a Incrust) -> abc::FilterResult {
-    Ok(Some(match *l {
-        Literal::Str(ref s) => s.clone(),
-        Literal::Char(ref c) => format!("{}", c),
-        Literal::Int(ref i) => format!("{}", i),
-        Literal::Real(ref f) => format!("{}", f),
-    }))
-}
