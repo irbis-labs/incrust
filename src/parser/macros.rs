@@ -2,13 +2,17 @@
 macro_rules! stmt {
     ( $i:expr, $cmd: expr ) => ({
         use nom::multispace;
+        use ::parser::expressions::full_expression;
         chaining_parser!($i, 0usize,
-            tag!("{%")              ~
-            opt!(multispace)        ~
-            tag!($cmd)              ~
-            opt!(multispace)        ~
-            tag!("%}")              ,
-            || -> Statement { ().into() }
+            tag!("{%")                  ~
+            l: opt!(tag!("-"))          ~
+            many0!(multispace)          ~
+            tag!($cmd)                  ~
+            many0!(multispace)          ~
+            e: opt!(chain!(f: full_expression ~ many0!(multispace), || f)) ~
+            r: opt!(tag!("-"))          ~
+            tag!("%}")                  ,
+            || Statement { strip_left: l.is_some(), strip_right: r.is_some(), expression: e }
         )
     });
 }

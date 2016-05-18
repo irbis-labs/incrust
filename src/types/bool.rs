@@ -14,3 +14,7 @@ impl ToINumeric for bool {
 impl IClone for bool {
     fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Ok( Box::new(*self) ) }
 }
+
+
+
+impl <'a> Into<BType<'a>> for bool { fn into(self) -> BType<'a> { Box::new(self) } }

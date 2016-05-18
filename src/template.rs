@@ -4,7 +4,7 @@ use nom::{IResult};
 use ::abc;
 
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Template {
     pub parsed: Vec<Parsed>,
 }
@@ -23,20 +23,21 @@ impl Template {
 
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Parsed {
     Text(String),
     Comment(String),
     Mustache(Mustache),
     ForEach(ForEach),
+    If(IfStatement),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Mustache {
     pub expr: FullExpression,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct FullExpression {
     pub expr: Expr,
     pub filters: Vec<FilterItem>
@@ -57,33 +58,32 @@ pub enum MulOp {
     And,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Expr {
     pub sum: Vec<ExprItem>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ExprItem(pub SumOp, pub Term);
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Term {
     pub mul: Vec<TermItem>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct TermItem(pub MulOp, pub Factor);
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Factor {
     Variable(String),
     Literal(Literal),
-//    Literal(BType),
     Subexpression(Expr),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Literal {
     Char(char),
     Str(String),
@@ -91,17 +91,32 @@ pub enum Literal {
     Real(f64),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum FilterItem {
     Simple(String),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Statement {
-
+    pub strip_left: bool,
+    pub strip_right: bool,
+    pub expression: Option<FullExpression>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
+pub struct IfBranch {
+    pub begin: Statement,
+    pub block: Template,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct IfStatement {
+    pub if_branches: Vec<IfBranch>,
+    pub else_branch: Option<IfBranch>,
+    pub end: Statement,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct ForEach {
     pub begin: Statement,
     pub end: Statement,
@@ -110,10 +125,20 @@ pub struct ForEach {
 }
 
 impl Into<Statement> for () {
-    fn into(self) -> Statement { Statement {} }
+    fn into(self) -> Statement { Statement::default() }
 }
 
 // ---------------------------------------------------------------------------
+
+impl Default for Statement {
+    fn default() -> Self {
+        Statement {
+            strip_left: false,
+            strip_right: false,
+            expression: None,
+        }
+    }
+}
 
 impl Mustache { pub fn new(expr: FullExpression) -> Self { Mustache { expr: expr } } }
 impl From<Mustache> for Parsed { fn from(v: Mustache) -> Self { Parsed::Mustache(v) } }
@@ -129,4 +154,6 @@ impl FullExpression {
 impl From<Literal> for Factor { fn from(v: Literal) -> Self { Factor::Literal(v) } }
 impl From<String> for Factor { fn from(v: String) -> Self { Factor::Variable(v) } }
 impl From<Expr> for Factor { fn from(v: Expr) -> Self { Factor::Subexpression(v) } }
+
+impl From<IfStatement> for Parsed { fn from(v: IfStatement) -> Self { Parsed::If(v) } }
 

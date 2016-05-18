@@ -81,7 +81,6 @@ mod tests {
             "one" => ex(1isize),
             "two" => ex(2isize),
         };
-        let args: Args = hashmap!{  };
         let context = Context::new(None, &args);
         let incrust = Incrust::new();
 

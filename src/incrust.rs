@@ -11,11 +11,13 @@ pub use ::template::Template;
 pub struct Incrust {
     loaders: Vec<Box<abc::Loader>>,
     formatters: HashMap<&'static str, Box<abc::Filter>>,
+    env_context: Args<'static>,
 }
 
 
 impl Default for Incrust {
     fn default() -> Self {
+        #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
         use ::renderer::filter::{Escape, Unescape};
 
         let mut f: HashMap<&'static str, Box<abc::Filter>> = HashMap::new();
@@ -24,9 +26,17 @@ impl Default for Incrust {
         f.insert("escape", Box::new(Escape));
         f.insert("unescape", Box::new(Unescape));
 
+        let env: Args = hashmap!{
+            "True"  => ex(true),
+            "true"  => ex(true),
+            "False" => ex(false),
+            "false" => ex(false),
+        };
+
         Incrust {
             loaders: Vec::new(),
             formatters: f,
+            env_context: env,
         }
     }
 }
@@ -38,6 +48,7 @@ impl Incrust {
         Incrust {
             loaders: Vec::new(),
             formatters: HashMap::new(),
+            env_context: HashMap::new(),
         }
     }
 
@@ -77,7 +88,8 @@ impl Incrust {
 
     pub fn render_parsed<'a, C:Into<Args<'a>>>(&self, template: &Template, args: C) -> abc::RenderResult {
         let args: Args = args.into();
-        let context = Context::new(None, &args);
+        let env = Context::new(None, &self.env_context);
+        let context = Context::new(Some(&env), &args);
 //        let mut buffer: Vec<u8> = Vec::new();
 //        ::render::text(&mut buffer[..], template.parsed.as_slice(), &context, self)
         ::renderer::text(template.parsed.as_slice(), &context, self)
@@ -148,5 +160,13 @@ mod tests {
             "omega" => ex(7f64)
         };
         assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
+    }
+
+    #[test]
+    fn if_statement() {
+        let incrust = Incrust::new();
+        assert_eq!("Mode: on", incrust.render_text(r#"Mode: {% if True %}on{% endif %}"#, hashmap!{}).unwrap());
+        assert_eq!("String is empty", incrust.render_text(r#"String {% if "" %}has chars{% else %}is empty{% endif %}"#, hashmap!{}).unwrap());
+        assert_eq!("String is true", incrust.render_text(r#"String {% if "" %}has chars{% elif True %}is true{% else %}is empty{% endif %}"#, hashmap!{}).unwrap());
     }
 }

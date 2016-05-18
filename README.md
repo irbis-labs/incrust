@@ -9,7 +9,12 @@
 
 This is a work in progress and (as may be assumed reasonably enough) may be highly *unstable* just yet.
 
+### Unstable
+
 The implementation is at a very early stage and the API is a subject of changes.
+
+Since Incrust developed with unstable features it depends on nightly Rust.
+Release version will be refactored to build on stable channel.
 
 ## Installation
 
@@ -46,23 +51,23 @@ fn main() {
 ### Variables
 
 ```rust
-let result = incrust.render_text("Hello, {{name}}!", &hashmap!{ "name" => Var::ex("World") }.unwrap();
+let result = incrust.render_text("Hello, {{name}}!", hashmap!{ "name" => ex("World") }.unwrap();
 assert_eq!(result, "Hello, World!");
 ```
 
 ### Filters
 
 ```rust
-let args: Args = hashmap!{ "text" => Var::ex("<Cats & Dogs>") };
-let result = incrust.render_text("<h1>{{ text | e }}</h1>", &args).unwrap();
+let args: Args = hashmap!{ "text" => ex("<Cats & Dogs>") };
+let result = incrust.render_text("<h1>{{ text | e }}</h1>", args).unwrap();
 assert_eq!(result, "<h1>&lt;Cats &amp; Dogs&gt;</h1>");
 ```
 
 ### Literals
 
 ```rust
-assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, &hashmap!{}).unwrap());
-assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, &hashmap!{}).unwrap());
+assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, hashmap!{}).unwrap());
+assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, hashmap!{}).unwrap());
 ```
 
 ### Expressions
@@ -81,11 +86,18 @@ let args = hashmap!{
 assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
 ```
 
+### Conditional statements
+
+```rust
+assert_eq!("String is empty", incrust.render_text(r#"String {% if "" %}has chars{% else %}is empty{% endif %}"#, hashmap!{}).unwrap());
+assert_eq!("It's true", incrust.render_text(r#"It's {% if False %}false{% elif True %}true{% endif %}"#, hashmap!{}).unwrap());
+```
+
 ### Comments
 
 ```rust
 let tpl = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
-let result = incrust.render_parsed(tpl, &hashmap!{}).unwrap();
+let result = incrust.render_parsed(tpl, hashmap!{}).unwrap();
 assert_eq!(result, "<p>Visible  paragraph</p>");
 ```
 
@@ -93,7 +105,7 @@ assert_eq!(result, "<p>Visible  paragraph</p>");
 
 ```rust
 let tpl = "Example: {% raw %}{{ mustaches }}{% endraw %}";
-let result = incrust.render_text(tpl, &hashmap!{}).unwrap();
+let result = incrust.render_text(tpl, hashmap!{}).unwrap();
 assert_eq!(result, "Example: {{ mustaches }}");
 ```
 
