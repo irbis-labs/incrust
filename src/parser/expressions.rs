@@ -4,9 +4,9 @@ use nom::{IResult, alpha, alphanumeric, eof, space, multispace};
 
 use ::template::{
     FullExpression, FilterItem,
-    SumOp, MulOp,
-    Expr, Term, Factor,
-    ExprItem, TermItem,
+    DisjOp, ConjOp, CmpOp, SumOp, MulOp,
+    DisjExpr, ConjExpr, CmpExpr, Expr, Term, Factor,
+    DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
 };
 
 use super::literals::literal;
@@ -15,7 +15,7 @@ use super::literals::literal;
 // ---------------------------------------------------------------------------
 
 pub fn full_expression(input: &[u8]) -> IResult<&[u8], FullExpression> {
-    let (i, (expr, filters)) = try_parse!(input, tuple!( sum, filter_agg ) );
+    let (i, (expr, filters)) = try_parse!(input, tuple!( expression, filter_agg ) );
     IResult::Done(i, FullExpression::new(expr, filters))
 }
 
@@ -60,6 +60,33 @@ fn identifier(input: &[u8]) -> IResult<&[u8], String> {
 
 // ---------------------------------------------------------------------------
 
+pub fn expression(input: &[u8]) -> IResult<&[u8], DisjExpr> {
+    let (i, lst) = try_parse!(input, chain!(
+        a: tuple!(value!(DisjOp::Or), conj) ~
+        mut b: many0!(tuple!(op_disj_bin, conj)) ,
+        || { b.insert(0, a); b }
+    ));
+    IResult::Done(i, DisjExpr { list: lst.into_iter().map(|(op, t)| DisjItem(op, t) ).collect() })
+}
+
+pub fn conj(input: &[u8]) -> IResult<&[u8], ConjExpr> {
+    let (i, lst) = try_parse!(input, chain!(
+        a: tuple!(value!(ConjOp::And), cmp) ~
+        mut b: many0!(tuple!(op_conj_bin, cmp)) ,
+        || { b.insert(0, a); b }
+    ));
+    IResult::Done(i, ConjExpr { list: lst.into_iter().map(|(op, t)| ConjItem(op, t) ).collect() })
+}
+
+pub fn cmp(input: &[u8]) -> IResult<&[u8], CmpExpr> {
+    let (i, lst) = try_parse!(input, chain!(
+        a: tuple!(value!(CmpOp::Eq), sum) ~
+        mut b: many0!(tuple!(op_cmp_bin, sum)) ,
+        || { b.insert(0, a); b }
+    ));
+    IResult::Done(i, CmpExpr { list: lst.into_iter().map(|(op, t)| CmpItem(op, t) ).collect() })
+}
+
 pub fn sum(input: &[u8]) -> IResult<&[u8], Expr> {
     let (i, sum) = try_parse!(input, chain!(
         a: tuple!(value!(SumOp::Add), mul) ~
@@ -85,7 +112,7 @@ fn factor(input: &[u8]) -> IResult<&[u8], Factor> {
 
 fn subexpression(input: &[u8]) -> IResult<&[u8], Factor> {
     let (i, (_, _, e, _, _)) = try_parse!(input, tuple!(
-        char!('('), many0!(multispace), sum, many0!(multispace), char!(')')
+        char!('('), many0!(multispace), expression, many0!(multispace), char!(')')
     ));
     IResult::Done(i, Factor::Subexpression(e))
 }
@@ -96,8 +123,46 @@ fn variable(input: &[u8]) -> IResult<&[u8], Factor> {
 }
 
 
+fn op_disj_bin(input: &[u8]) -> IResult<&[u8], DisjOp> {
+    let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("or")), many0!(multispace)) );
+
+    IResult::Done(i, match o {
+        b"or"      => DisjOp::Or,
+        _ => unreachable!()
+    })
+}
+
+fn op_conj_bin(input: &[u8]) -> IResult<&[u8], ConjOp> {
+    let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("and")), many0!(multispace)) );
+
+    IResult::Done(i, match o {
+        b"and"      => ConjOp::And,
+        _ => unreachable!()
+    })
+}
+
+fn op_cmp_bin(input: &[u8]) -> IResult<&[u8], CmpOp> {
+    let (i, (_, o, _)) = try_parse!(input, tuple!(
+        many0!(multispace),
+        alt!(tag!("<") | tag!("<=") | tag!("==") | tag!("!=") | tag!("in") | tag!("not in") | tag!(">=") | tag!(">")),
+        many0!(multispace)
+    ));
+    IResult::Done(i, match o {
+        b"<"        => CmpOp::Lt,
+        b"<="       => CmpOp::Lte,
+        b"=="       => CmpOp::Eq,
+        b"!="       => CmpOp::Neq,
+        b"in"       => CmpOp::In,
+        b"not in"   => CmpOp::Nin,
+        b">="       => CmpOp::Gte,
+        b">"        => CmpOp::Gt,
+        _ => unreachable!()
+    })
+}
+
 fn op_sum_bin(input: &[u8]) -> IResult<&[u8], SumOp> {
     let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("+") | tag!("-")), many0!(multispace)) );
+
     IResult::Done(i, match o {
         b"+" => SumOp::Add,
         b"-" => SumOp::Sub,
@@ -107,6 +172,7 @@ fn op_sum_bin(input: &[u8]) -> IResult<&[u8], SumOp> {
 
 fn op_mul_bin(input: &[u8]) -> IResult<&[u8], MulOp> {
     let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("*") | tag!("/")), many0!(multispace)) );
+
     IResult::Done(i, match o {
         b"*" => MulOp::Mul,
         b"/" => MulOp::Div,

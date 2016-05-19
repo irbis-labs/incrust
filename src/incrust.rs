@@ -160,6 +160,12 @@ mod tests {
             "omega" => ex(7f64)
         };
         assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
+
+        let args = hashmap!{ "amount" => ex(6isize) };
+        assert_eq!("Amount: 6 pcs", incrust.render_text(r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#, args).unwrap());
+
+        let args = hashmap!{ "amount" => ex(0isize) };
+        assert_eq!("Amount: -", incrust.render_text(r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#, args).unwrap());
     }
 
     #[test]

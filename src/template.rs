@@ -39,24 +39,71 @@ pub struct Mustache {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FullExpression {
-    pub expr: Expr,
+    pub expr: DisjExpr,
     pub filters: Vec<FilterItem>
 }
 
 
 #[derive(Debug, PartialEq, Clone)]
+pub enum ConjOp {
+    And,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum DisjOp {
+    Or,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum CmpOp {
+    Lt,
+    Lte,
+    Eq,
+    Neq,
+    In,
+    Nin,
+    Gte,
+    Gt,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum SumOp {
     Add,
     Sub,
-    Or,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum MulOp {
     Mul,
     Div,
-    And,
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct DisjExpr {
+    pub list: Vec<DisjItem>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct DisjItem(pub DisjOp, pub ConjExpr);
+
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ConjExpr {
+    pub list: Vec<ConjItem>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ConjItem(pub ConjOp, pub CmpExpr);
+
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct CmpExpr {
+    pub list: Vec<CmpItem>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct CmpItem(pub CmpOp, pub Expr);
+
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Expr {
@@ -80,8 +127,10 @@ pub struct TermItem(pub MulOp, pub Factor);
 pub enum Factor {
     Variable(String),
     Literal(Literal),
-    Subexpression(Expr),
+    Subexpression(DisjExpr),
 }
+
+// ---------------------------------------------------------------------------
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Literal {
@@ -145,7 +194,7 @@ impl From<Mustache> for Parsed { fn from(v: Mustache) -> Self { Parsed::Mustache
 
 
 impl FullExpression {
-    pub fn new(expr: Expr, filters: Vec<FilterItem>) -> Self {
+    pub fn new(expr: DisjExpr, filters: Vec<FilterItem>) -> Self {
         FullExpression { expr: expr, filters: filters }
     }
 }
@@ -153,7 +202,7 @@ impl FullExpression {
 
 impl From<Literal> for Factor { fn from(v: Literal) -> Self { Factor::Literal(v) } }
 impl From<String> for Factor { fn from(v: String) -> Self { Factor::Variable(v) } }
-impl From<Expr> for Factor { fn from(v: Expr) -> Self { Factor::Subexpression(v) } }
+impl From<DisjExpr> for Factor { fn from(v: DisjExpr) -> Self { Factor::Subexpression(v) } }
 
 impl From<IfStatement> for Parsed { fn from(v: IfStatement) -> Self { Parsed::If(v) } }
 

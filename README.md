@@ -86,6 +86,14 @@ let args = hashmap!{
 assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
 ```
 
+### Lazy boolean evaluation
+
+```rust
+let tpl = r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#;
+assert_eq!("Amount: 6 pcs", incrust.render_text(tpl, hashmap!{ "amount" => ex(6isize) }).unwrap());
+assert_eq!("Amount: -", incrust.render_text(tpl, hashmap!{ "amount" => ex(0isize) }).unwrap());
+```
+
 ### Conditional statements
 
 ```rust

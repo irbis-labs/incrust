@@ -1,13 +1,59 @@
 use ::abc::RenderResult;
 use ::incrust::{Incrust, Context};
 use ::template::{
-    Expr, Term,
-    SumOp, MulOp,
-    ExprItem, TermItem,
+    DisjExpr, ConjExpr, CmpExpr, Expr, Term,
+    DisjOp, ConjOp, CmpOp, SumOp, MulOp,
+    DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
     Factor, Literal,
 };
 
-pub fn render_expr<'a, 'b>(expr: &'a Expr, context: &'b Context, env: &'b Incrust) -> RenderResult {
+pub fn render_expr<'a, 'b>(expr: &'a DisjExpr, context: &'b Context, env: &'b Incrust) -> RenderResult {
+    let mut itr = expr.list.iter();
+    match itr.next() {
+        None => unreachable!(),
+        Some(&DisjItem(ref _op, ref conj)) => {
+            let start = render_conj(conj, context, env);
+            itr.fold(start, |acc: RenderResult, &DisjItem(ref op, ref conj)| -> RenderResult {
+                Ok( format!("{} {} {}", acc?, match *op {
+                    DisjOp::Or => "or",
+                }, render_conj(conj, context, env)? ) )
+            } ) } } }
+
+
+pub fn render_conj<'a, 'b>(expr: &'a ConjExpr, context: &'b Context, env: &'b Incrust) -> RenderResult {
+    let mut itr = expr.list.iter();
+    match itr.next() {
+        None => unreachable!(),
+        Some(&ConjItem(ref _op, ref cmp)) => {
+            let start = render_cmp(cmp, context, env);
+            itr.fold(start, |acc: RenderResult, &ConjItem(ref op, ref cmp)| -> RenderResult {
+                Ok( format!("{} {} {}", acc?, match *op {
+                    ConjOp::And => "and",
+                }, render_cmp(cmp, context, env)? ) )
+            } ) } } }
+
+
+pub fn render_cmp<'a, 'b>(expr: &'a CmpExpr, context: &'b Context, env: &'b Incrust) -> RenderResult {
+    let mut itr = expr.list.iter();
+    match itr.next() {
+        None => unreachable!(),
+        Some(&CmpItem(ref _op, ref sum)) => {
+            let start = render_sum(sum, context, env);
+            itr.fold(start, |acc: RenderResult, &CmpItem(ref op, ref sum)| -> RenderResult {
+                Ok( format!("{} {} {}", acc?, match *op {
+                    CmpOp::Lt   => "<",
+                    CmpOp::Lte  => "<=",
+                    CmpOp::Eq   => "==",
+                    CmpOp::Neq  => "!=",
+                    CmpOp::In   => "in",
+                    CmpOp::Nin  => "not in",
+                    CmpOp::Gte  => ">=",
+                    CmpOp::Gt   => ">",
+                }, render_sum(sum, context, env)? ) )
+            } ) } } }
+
+
+pub fn render_sum<'a, 'b>(expr: &'a Expr, context: &'b Context, env: &'b Incrust) -> RenderResult {
     let mut itr = expr.sum.iter();
     match itr.next() {
         None => unreachable!(),
@@ -17,7 +63,6 @@ pub fn render_expr<'a, 'b>(expr: &'a Expr, context: &'b Context, env: &'b Incrus
                 Ok( format!("{} {} {}", acc?, match *op {
                     SumOp::Add => "+",
                     SumOp::Sub => "-",
-                    SumOp::Or => "or",
                 }, render_prod(term, context, env)? ) )
             } ) } } }
 
@@ -32,7 +77,6 @@ pub fn render_prod<'a, 'b>(term: &'a Term, context: &'b Context, env: &'b Incrus
                 acc = format!("{} {} {}", acc, match *op {
                     MulOp::Mul => "*",
                     MulOp::Div => "/",
-                    MulOp::And => "and",
                 }, render_factor(factor, context, env)? )
             }
             Ok(acc)
@@ -74,7 +118,7 @@ mod tests {
     #[test]
     fn eval_expr() {
         use ::incrust::{Incrust, Context, Args, ex};
-        use ::parser::expressions::sum as parse_expr;
+        use ::parser::expressions::expression as parse_expr;
 
         let args: Args = hashmap!{
             "the_one" => ex("World"),
@@ -86,16 +130,20 @@ mod tests {
 
         let parse = |s| unwrap_iresult(parse_expr(s));
 
-        assert_eq!("1"                , super::render_expr(&parse(b"1"), &context, &incrust).unwrap());
-        assert_eq!("1 + 1"            , super::render_expr(&parse(b"1+1"), &context, &incrust).unwrap());
-        assert_eq!("1 + 1"            , super::render_expr(&parse(b"1 + 1"), &context, &incrust).unwrap());
-        assert_eq!("1 - 1"            , super::render_expr(&parse(b"1 \n -\t1"), &context, &incrust).unwrap());
-        assert_eq!("(1 / 1)"          , super::render_expr(&parse(b"(1 / 1)"), &context, &incrust).unwrap());
+        assert_eq!("1"                  , super::render_expr(&parse(b"1"), &context, &incrust).unwrap());
+        assert_eq!("1 + 1"              , super::render_expr(&parse(b"1+1"), &context, &incrust).unwrap());
+        assert_eq!("1 + 1"              , super::render_expr(&parse(b"1 + 1"), &context, &incrust).unwrap());
+        assert_eq!("1 - 1"              , super::render_expr(&parse(b"1 \n -\t1"), &context, &incrust).unwrap());
+        assert_eq!("(1 / 1)"            , super::render_expr(&parse(b"(1 / 1)"), &context, &incrust).unwrap());
 
-        assert_eq!("1 * 1"            , super::render_expr(&parse(b"1 * 1"), &context, &incrust).unwrap());
-        assert_eq!("1 + 1 * 1"        , super::render_expr(&parse(b"1 + 1 * 1"), &context, &incrust).unwrap());
-        assert_eq!("(1 + 1) * 1"      , super::render_expr(&parse(b"(1 + 1) * 1"), &context, &incrust).unwrap());
-        assert_eq!("(1 + (1 / 1)) * 1", super::render_expr(&parse(b"(1+(1/1))*1"), &context, &incrust).unwrap());
+        assert_eq!("1 * 1"              , super::render_expr(&parse(b"1 * 1"), &context, &incrust).unwrap());
+        assert_eq!("1 + 1 * 1"          , super::render_expr(&parse(b"1 + 1 * 1"), &context, &incrust).unwrap());
+        assert_eq!("(1 + 1) * 1"        , super::render_expr(&parse(b"(1 + 1) * 1"), &context, &incrust).unwrap());
+        assert_eq!("(1 + (1 / 1)) * 1"  , super::render_expr(&parse(b"(1+(1/1))*1"), &context, &incrust).unwrap());
+
+        assert_eq!("True and False"     , super::render_expr(&parse(b"True and False"), &context, &incrust).unwrap());
+        assert_eq!("0 or 1 and 2"       , super::render_expr(&parse(b"0 or 1 and 2"), &context, &incrust).unwrap());
+
 //        assert!("World" == x(super::eval_factor(&the_one, &context, &incrust)));
 //        assert!("Space" != x(super::eval_factor(&the_one, &context, &incrust)));
     }

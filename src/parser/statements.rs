@@ -152,7 +152,9 @@ mod tests {
     #[test]
     fn if_() {
         use ::template::Parsed::Text;
-        use ::template::{Statement, IfStatement, IfBranch, FullExpression, Expr, ExprItem, SumOp, Term, TermItem, MulOp, Factor, Template};
+        use ::template::{Statement, IfStatement, IfBranch, FullExpression, Template,
+            DisjExpr, DisjOp, DisjItem, ConjExpr, ConjOp, ConjItem,
+            CmpExpr, CmpOp, CmpItem, Expr, ExprItem, SumOp, Term, TermItem, MulOp, Factor};
 
         let sample = |r| IfStatement {
             if_branches: vec![
@@ -161,9 +163,15 @@ mod tests {
                         strip_left: false,
                         strip_right: r,
                         expression: Some(FullExpression {
-                            expr: Expr {
-                                sum: vec![ExprItem(SumOp::Add, Term {
-                                    mul: vec![TermItem(MulOp::Mul, Factor::Variable("True".into()) )],
+                            expr: DisjExpr {
+                                list: vec![DisjItem(DisjOp::Or, ConjExpr {
+                                    list: vec![ConjItem(ConjOp::And, CmpExpr {
+                                        list: vec![CmpItem(CmpOp::Eq, Expr {
+                                            sum: vec![ExprItem(SumOp::Add, Term {
+                                                mul: vec![TermItem(MulOp::Mul, Factor::Variable("True".into()) )],
+                                            })],
+                                        })],
+                                    })],
                                 })],
                             },
                             filters: Vec::new(),

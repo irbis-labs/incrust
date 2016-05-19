@@ -1,13 +1,75 @@
 use ::abc::EvalResult;
 use ::incrust::{Incrust, Context};
 use ::template::{
-    Expr, Term,
-    SumOp, MulOp,
-    ExprItem, TermItem,
+    DisjExpr, ConjExpr, CmpExpr, Expr, Term,
+    DisjOp, ConjOp, CmpOp, SumOp, MulOp,
+    DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
     Factor, Literal,
 };
 
-pub fn eval_expr<'a>(expr: &'a Expr, context: &'a Context, env: &'a Incrust) -> EvalResult {
+pub fn eval_expr<'a>(disj_expr: &'a DisjExpr, context: &'a Context, env: &'a Incrust) -> EvalResult {
+    let mut itr = disj_expr.list.iter();
+    match itr.next() {
+        None => unreachable!(),
+        Some(&DisjItem(ref _op, ref conj)) => {
+            let mut acc = eval_conj(conj, context, env)?;
+            for &DisjItem(ref op, ref conj) in itr {
+                acc = match acc {
+                    // FIXME eval None as False?
+                    None => return Ok(None),
+                    Some(acc) => match *op {
+                        DisjOp::Or => match acc.to_bool() {
+                            true => return Ok(Some(acc)),
+                            false => eval_conj(conj, context, env)?,
+                        },
+                    } } }
+            Ok(acc)
+        } } }
+
+pub fn eval_conj<'a>(conj_expr: &'a ConjExpr, context: &'a Context, env: &'a Incrust) -> EvalResult {
+    let mut itr = conj_expr.list.iter();
+    match itr.next() {
+        None => unreachable!(),
+        Some(&ConjItem(ref _op, ref cmp)) => {
+            let mut acc = eval_cmp(cmp, context, env)?;
+            for &ConjItem(ref op, ref cmp) in itr {
+                acc = match acc {
+                    // FIXME eval None as False?
+                    None => return Ok(None),
+                    Some(acc) => match *op {
+                        ConjOp::And => match acc.to_bool() {
+                            true => eval_cmp(cmp, context, env)?,
+                            false => return Ok(Some(acc))
+                        },
+                    } } }
+            Ok(acc)
+        } } }
+
+pub fn eval_cmp<'a>(cmp_expr: &'a CmpExpr, context: &'a Context, env: &'a Incrust) -> EvalResult {
+    let mut itr = cmp_expr.list.iter();
+    match itr.next() {
+        None => unreachable!(),
+        Some(&CmpItem(ref _op, ref expr)) => {
+            let mut acc = eval_sum(expr, context, env)?;
+            for &CmpItem(ref op, ref expr) in itr {
+                acc = match acc {
+                    None => return Ok(None),
+                    Some(acc) => match eval_sum(expr, context, env)? {
+                        None => return Ok(None),
+                        Some(expr) => match *op {
+                            CmpOp::Lt   => unimplemented!(),
+                            CmpOp::Lte  => unimplemented!(),
+                            CmpOp::Eq   => unimplemented!(),
+                            CmpOp::Neq  => unimplemented!(),
+                            CmpOp::In   => unimplemented!(),
+                            CmpOp::Nin  => unimplemented!(),
+                            CmpOp::Gte  => unimplemented!(),
+                            CmpOp::Gt   => unimplemented!(),
+                        } } } }
+            Ok(acc)
+        } } }
+
+pub fn eval_sum<'a>(expr: &'a Expr, context: &'a Context, env: &'a Incrust) -> EvalResult {
     let mut itr = expr.sum.iter();
     match itr.next() {
         None => unreachable!(),
@@ -21,7 +83,6 @@ pub fn eval_expr<'a>(expr: &'a Expr, context: &'a Context, env: &'a Incrust) -> 
                         Some(term) => match *op {
                             SumOp::Add => acc.iadd(term),
                             SumOp::Sub => acc.isub(term),
-                            SumOp::Or => unimplemented!(),
                         } } } )
             } ) } } }
 
@@ -39,7 +100,6 @@ pub fn eval_prod<'a>(term: &'a Term, context: &'a Context, env: &'a Incrust) -> 
                         Some(factor) => match *op {
                             MulOp::Mul => acc.imul(factor),
                             MulOp::Div => acc.idiv(factor),
-                            MulOp::And => unimplemented!(),
                         } } } }
             Ok(acc)
         } } }
@@ -87,7 +147,7 @@ mod tests {
         use ::abc::EvalResult;
         use ::template::{Factor, Literal};
         use ::incrust::{Incrust, Context, Args, ex};
-        use ::parser::expressions::sum as parse_expr;
+        use ::parser::expressions::expression as parse_expr;
 
         let int_one: Factor = Literal::Int(1isize).into();
         let the_one = Factor::Variable("the_one".into());
@@ -111,6 +171,33 @@ mod tests {
         assert_eq!("1.5"  , x(super::eval_expr(&parse(b"3.0 / 2"), &context, &incrust)));
 
         assert_eq!("ab"   , x(super::eval_expr(&parse(br#""a" + "b""#), &context, &incrust)));
+    }
+
+    #[test]
+    fn eval_bool() {
+        use ::abc::EvalResult;
+        use ::template::{Factor, Literal};
+        use ::incrust::{Incrust, Context, Args, ex};
+        use ::parser::expressions::expression as parse_expr;
+
+        let int_one: Factor = Literal::Int(1isize).into();
+        let the_one = Factor::Variable("the_one".into());
+
+        let args: Args = hashmap!{ "the_one" => ex("World") };
+        let context = Context::new(None, &args);
+        let incrust = Incrust::new();
+
+        let parse = |s| unwrap_iresult(parse_expr(s));
+        let x = |r: EvalResult| r.unwrap().unwrap().to_istring().unwrap();
+
+        assert_eq!("1"      , x(super::eval_expr(&parse(b"0 or 1"), &context, &incrust)));
+        assert_eq!("0"      , x(super::eval_expr(&parse(b"0 and 1"), &context, &incrust)));
+        assert_eq!("str"    , x(super::eval_expr(&parse(br#""" or "str""#), &context, &incrust)));
+        assert_eq!(""       , x(super::eval_expr(&parse(br#""" and "str""#), &context, &incrust)));
+        assert_eq!("2"      , x(super::eval_expr(&parse(br#"0 and 1 or 2"#), &context, &incrust)));
+        assert_eq!("2"      , x(super::eval_expr(&parse(br#"0 or 1 and 2"#), &context, &incrust)));
+        assert_eq!("1"      , x(super::eval_expr(&parse(br#"0 or 1 or 2"#), &context, &incrust)));
+        assert_eq!("1"      , x(super::eval_expr(&parse(br#"1 or 0 and 2"#), &context, &incrust)));
     }
 
 //    #[test]
