@@ -1,5 +1,7 @@
 use std::collections::hash_map::{HashMap};
 use std::fmt::{Display, Debug};
+use std::iter::Iterator;
+use std::slice::Iter;
 
 use ::abc::CloneError;
 
@@ -13,7 +15,7 @@ pub type Args<'a> = HashMap<EntityId, BType<'a>>;
 pub type EntityId = &'static str;
 
 pub type BType<'a> = Box<Type + 'a>;
-pub trait Type: ToIString + IArithm + ToINumeric + IClone + Debug {
+pub trait Type: ToIString + IArithm + ToINumeric + IClone + AsIIter + Send + Sync + Debug {
     fn to_bool(self: &Self) -> bool;
 }
 
@@ -50,7 +52,49 @@ pub trait IArithm {
     fn idiv(self: Box<Self>, other: BType) -> Option<BType>;
 }
 
+pub trait AsIIter {
+    fn as_iiter<'a>(self: &Self) -> Option<&IIter<'a>>;
+}
+
+pub trait IIter<'a>: Send + Sync {
+    fn is_empty(self: &Self) -> bool;
+//    fn len(self: &Self) -> usize;
+    fn ivalues(self: &Self) -> VIterator;
+}
+
+pub struct VIterator<'a> {
+    pub me: Iter<'a, BType<'a>>,
+}
+
+
+//pub trait IMap {
+//    fn ivalues(self: &Self) -> Option<Box<Iterator<Item=BType>>>;
+////    fn ikeys(self: &Self) -> Option<KIterator>;
+////    fn ikeyvalues(self: &Self) -> Option<KVIterator>;
+//}
+
+
 // --- [ default implementations ] ------------------------------------------------------------------------------------
+
+impl <T> AsIIter for T where T: Type {
+    default fn as_iiter<'a>(self: &Self) -> Option<&IIter<'a>> { None }
+}
+
+impl <'a> Iterator for VIterator<'a> {
+    type Item = BType<'a>;
+
+    fn next(&mut self) -> Option<BType<'a>> {
+        if let Some(next) = self.me.next() {
+            if let Ok(next) = next.iclone() {
+                return Some(next)
+            }
+        }
+        None
+    }
+}
+
+
+
 
 impl <T> IClone for T where T: Type {
     default fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Err(CloneError::Error) }
@@ -76,3 +120,12 @@ impl <S> IArithm for S where S: Type {
     default fn imul(self: Box<Self>, _other: BType) -> Option<BType> { None }
     default fn idiv(self: Box<Self>, _other: BType) -> Option<BType> { None }
 }
+
+
+//impl <T> IMap for T where T: Type {
+//    default fn ivalues(self: &Self) -> Option<Box<Iterator<Item=BType>>> { None }
+////    default fn ikeys(self: &Self) -> Option<KIterator> { None }
+////    default fn ikeyvalues(self: &Self) -> Option<KVIterator> { None }
+//}
+
+
