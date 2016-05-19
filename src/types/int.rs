@@ -16,7 +16,7 @@ impl IClone for isize {
 }
 
 
-#[allow(boxed_local)]
+#[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for isize {
     fn iadd(self: Box<Self>, other: BType) -> Option<BType> { other.to_int().map(|s| -> BType { Box::new(*self + s) }) }
     fn isub(self: Box<Self>, other: BType) -> Option<BType> { other.to_int().map(|s| -> BType { Box::new(*self - s) }) }

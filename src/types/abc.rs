@@ -113,7 +113,7 @@ impl <T> ToINumeric for T where T: Type {
     default fn to_int(self: &Self) -> Option<isize> { None }
 }
 
-#[allow(boxed_local)]
+#[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl <S> IArithm for S where S: Type {
     default fn iadd(self: Box<Self>, _other: BType) -> Option<BType> { None }
     default fn isub(self: Box<Self>, _other: BType) -> Option<BType> { None }

@@ -20,7 +20,7 @@ impl IClone for String {
     fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Ok( Box::new(self.to_string()) ) }
 }
 
-#[allow(boxed_local)]
+#[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for String {
     fn iadd(self: Box<Self>, other: BType) -> Option<BType> {
         other.to_istring().map(move |s| -> BType { Box::new(*self + s.as_str()) })

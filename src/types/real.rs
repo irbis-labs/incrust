@@ -15,7 +15,7 @@ impl IClone for f64 {
     fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Ok( Box::new(*self) ) }
 }
 
-#[allow(boxed_local)]
+#[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for f64 {
     fn iadd(self: Box<Self>, other: BType) -> Option<BType> { other.to_real().map(|s| -> BType { Box::new(*self + s) }) }
     fn isub(self: Box<Self>, other: BType) -> Option<BType> { other.to_real().map(|s| -> BType { Box::new(*self - s) }) }
