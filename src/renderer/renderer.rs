@@ -51,28 +51,25 @@ pub fn for_(stmt: &ForStatement, context: &Context, env: &Incrust) -> RenderResu
 
     // FIXME implement instead: expression(&stmt.begin.expression, context, env)
     Ok(match stmt.begin.expression {
-        None => { println!("stmt.begin.expression is None"); "".into()},
+        None => "".into(),
         Some(ref expr) => {
             let iterable = eval_expr(&expr.expr, context, env)?;
-            println!(":::: iterable: {:?}", iterable);
             match iterable {
-                None => { println!("eval_expr is None"); "".into()},
+                None => "".into(),
                 Some(iterable) => match iterable.as_iiter() {
-                    None => { println!("iterable.as_iiter() is None"); "".into()},
+                    None => "".into(),
                     Some(mut iterable) => {
                         let mut buf: Vec<String> = Vec::new();
-                        let mut index = 0;
-                        for v in iterable.ivalues() {
+                        for (index, v) in iterable.ivalues().enumerate() {
                             let local_scope: Args = hashmap!{
                                 stmt.value_var.as_str() => v,
-                                "index0" => ex(index),
-                                "index" => ex(index + 1),
+                                "index0" => ex(index as isize),
+                                "index" => ex(index as isize + 1),
                                 "first" => ex(index == 0),
                                 "last" => ex(false), // TODO the "last" marker in a loop
                             };
                             let local_context = Context::new(Some(context), &local_scope);
                             buf.push(text(&stmt.block.parsed, &local_context, env)?);
-                            index += 1;
                         }
                         buf.join("")
                     }
