@@ -1,6 +1,6 @@
 [package]
 name = "incrust"
-version = "0.0.14"
+version = "0.0.15"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Template engine inspired by Jinja2"

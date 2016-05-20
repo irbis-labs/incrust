@@ -101,6 +101,15 @@ assert_eq!("String is empty", incrust.render_text(r#"String {% if "" %}has chars
 assert_eq!("It's true", incrust.render_text(r#"It's {% if False %}false{% elif True %}true{% endif %}"#, hashmap!{}).unwrap());
 ```
 
+### For-Loop statements
+
+```rust
+let args = hashmap!{ "fruits" => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")]) };
+let tpl = r#"<ul>{% for fruit in fruits %}<li>{{ index }}. {{ fruit | e }}</li>{% endfor %}</ul>"#;
+let expected = r#"<ul><li>1. Orange</li><li>2. Apple</li><li>3. Banana</li></ul>"#;
+assert_eq!(expected, incrust.render_text(tpl, args).unwrap());
+```
+
 ### Comments
 
 ```rust

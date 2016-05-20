@@ -175,4 +175,13 @@ mod tests {
         assert_eq!("String is empty", incrust.render_text(r#"String {% if "" %}has chars{% else %}is empty{% endif %}"#, hashmap!{}).unwrap());
         assert_eq!("String is true", incrust.render_text(r#"String {% if "" %}has chars{% elif True %}is true{% else %}is empty{% endif %}"#, hashmap!{}).unwrap());
     }
+
+    #[test]
+    fn for_statement() {
+        let incrust = Incrust::new();
+        let args = hashmap!{ "fruits" => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")]) };
+        let tpl = r#"<ul>{% for fruit in fruits %}<li>{{ index }}. {{ fruit | e }}</li>{% endfor %}</ul>"#;
+        let expected = r#"<ul><li>1. Orange</li><li>2. Apple</li><li>3. Banana</li></ul>"#;
+        assert_eq!(expected, incrust.render_text(tpl, args).unwrap());
+    }
 }

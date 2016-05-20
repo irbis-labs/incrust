@@ -28,7 +28,7 @@ pub enum Parsed {
     Text(String),
     Comment(String),
     Mustache(Mustache),
-    ForEach(ForEach),
+    For(ForStatement),
     If(IfStatement),
 }
 
@@ -166,11 +166,12 @@ pub struct IfStatement {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct ForEach {
+pub struct ForStatement {
     pub begin: Statement,
+    pub block: Template,
+    pub key_var: Option<String>,
+    pub value_var: String,
     pub end: Statement,
-    pub expr: FullExpression,
-    pub loop_var: String,
 }
 
 impl Into<Statement> for () {
@@ -205,4 +206,5 @@ impl From<String> for Factor { fn from(v: String) -> Self { Factor::Variable(v) 
 impl From<DisjExpr> for Factor { fn from(v: DisjExpr) -> Self { Factor::Subexpression(v) } }
 
 impl From<IfStatement> for Parsed { fn from(v: IfStatement) -> Self { Parsed::If(v) } }
+impl From<ForStatement> for Parsed { fn from(v: ForStatement) -> Self { Parsed::For(v) } }
 

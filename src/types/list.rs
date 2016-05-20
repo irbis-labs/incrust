@@ -16,6 +16,12 @@ impl <'a> IClone for Vec<BType<'a>> {
     }
 }
 
+impl <'aa> AsIIter for Vec<BType<'aa>> {
+    fn as_iiter<'a, 'c: 'a>(&'c self) -> Option<&'a IIter<'a>> {
+        Some(self)
+    }
+}
+
 impl <'a, 'b: 'a> IIter<'a> for Vec<BType<'b>> {
     fn is_empty(self: &Self) -> bool {
         Vec::is_empty(self)
@@ -27,6 +33,11 @@ impl <'a, 'b: 'a> IIter<'a> for Vec<BType<'b>> {
         VIterator { me: self.iter() }
     }
 }
+
+
+impl <'a> Into<BType<'a>> for Vec<BType<'a>> { fn into(self) -> BType<'a> { Box::new(self) } }
+
+
 
 //impl <'a> IIter for Vec<BType<'a>> {
 //    fn ivalues<'b>(self: &Self) -> Iterator<Item=BType<'b>> {

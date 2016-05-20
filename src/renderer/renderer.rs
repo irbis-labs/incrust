@@ -1,9 +1,9 @@
 use ::abc::{RenderResult, FilterResult};
-use ::incrust::{Incrust, Context};
+use ::incrust::{Incrust, Context, Args, ex};
 use ::template::{
-    Parsed, Mustache, ForEach,
+    Parsed, Mustache,
     FullExpression, FilterItem,
-    IfStatement,
+    IfStatement, ForStatement,
 };
 
 use super::evaluator::eval_expr;
@@ -17,8 +17,8 @@ pub fn text<'a>(tpl: &'a[Parsed], context: &'a Context, env: &'a Incrust) -> Ren
             Parsed::Text(ref txt) => txt.to_owned(),
             Parsed::Comment(_) => "".to_owned(),
             Parsed::Mustache(ref mus) => mustache(mus, context, env)?,
-            Parsed::ForEach(ref fe) => foreach(fe, context, env)?,
-            Parsed::If(ref stmt) => if_statement(stmt, context, env)?,
+            Parsed::For(ref stmt) => for_(stmt, context, env)?,
+            Parsed::If(ref stmt) => if_(stmt, context, env)?,
         })
     }
     Ok(res.join(""))
@@ -46,15 +46,46 @@ pub fn expression(expr: &FullExpression, context: &Context, env: &Incrust) -> Re
 }
 
 
-#[allow(unused_variables, dead_code)]
-pub fn foreach(fe: &ForEach, context: &Context, env: &Incrust) -> RenderResult {
-    Ok("".into())
+pub fn for_(stmt: &ForStatement, context: &Context, env: &Incrust) -> RenderResult {
+    #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
+
+    // FIXME implement instead: expression(&stmt.begin.expression, context, env)
+    Ok(match stmt.begin.expression {
+        None => { println!("stmt.begin.expression is None"); "".into()},
+        Some(ref expr) => {
+            let iterable = eval_expr(&expr.expr, context, env)?;
+            println!(":::: iterable: {:?}", iterable);
+            match iterable {
+                None => { println!("eval_expr is None"); "".into()},
+                Some(iterable) => match iterable.as_iiter() {
+                    None => { println!("iterable.as_iiter() is None"); "".into()},
+                    Some(mut iterable) => {
+                        let mut buf: Vec<String> = Vec::new();
+                        let mut index = 0;
+                        for v in iterable.ivalues() {
+                            let local_scope: Args = hashmap!{
+                                stmt.value_var.as_str() => v,
+                                "index0" => ex(index),
+                                "index" => ex(index + 1),
+                                "first" => ex(index == 0),
+                                "last" => ex(false), // TODO the "last" marker in a loop
+                            };
+                            let local_context = Context::new(Some(context), &local_scope);
+                            buf.push(text(&stmt.block.parsed, &local_context, env)?);
+                            index += 1;
+                        }
+                        buf.join("")
+                    }
+                }
+            }
+        }
+    })
 }
 
 
-pub fn if_statement(stmt: &IfStatement, context: &Context, env: &Incrust) -> RenderResult {
+pub fn if_(stmt: &IfStatement, context: &Context, env: &Incrust) -> RenderResult {
     for branch in &stmt.if_branches {
-        // FIXME use instead: expression(&branch.begin.expression, context, env)
+        // FIXME implement instead: expression(&branch.begin.expression, context, env)
         if let Some(ref expr) = branch.begin.expression {
             if let Some(res) = eval_expr(&expr.expr, context, env)? {
                 if res.to_bool() { return text(&branch.block.parsed, context, env) }

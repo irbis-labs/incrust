@@ -8,11 +8,11 @@ use ::abc::CloneError;
 
 // --------------------------------------------------------------------------------------------------------------------
 
-pub type Args<'a> = HashMap<EntityId, BType<'a>>;
+pub type Args<'a> = HashMap<EntityId<'a>, BType<'a>>;
 
 // TODO EntityId: String vs &'static str
 //pub type EntityId = String;
-pub type EntityId = &'static str;
+pub type EntityId<'a> = &'a str;
 
 pub type BType<'a> = Box<Type + 'a>;
 pub trait Type: ToIString + IArithm + ToINumeric + IClone + AsIIter + Send + Sync + Debug {
@@ -53,7 +53,7 @@ pub trait IArithm {
 }
 
 pub trait AsIIter {
-    fn as_iiter<'a>(self: &Self) -> Option<&IIter<'a>>;
+    fn as_iiter<'a, 'c: 'a>(&'c self) -> Option<&'a IIter<'a>>;
 }
 
 pub trait IIter<'a>: Send + Sync {
@@ -73,11 +73,22 @@ pub struct VIterator<'a> {
 ////    fn ikeyvalues(self: &Self) -> Option<KVIterator>;
 //}
 
+pub trait AsIIndexable {
+    fn as_iindexable<'a>(self: &Self) -> Option<&IIndexable<'a>>;
+}
+
+pub trait IIndexable<'a>: Send + Sync {
+    fn has_index(self: &Self, index: usize) -> bool;
+    fn get_index(self: &Self, index: usize) -> &BType;
+//    fn as_slice(self: &Self, range: Range) -> &[BType];
+}
+
+
 
 // --- [ default implementations ] ------------------------------------------------------------------------------------
 
 impl <T> AsIIter for T where T: Type {
-    default fn as_iiter<'a>(self: &Self) -> Option<&IIter<'a>> { None }
+    default fn as_iiter<'a, 'c: 'a>(&'c self) -> Option<&'a IIter<'a>> { None }
 }
 
 impl <'a> Iterator for VIterator<'a> {
