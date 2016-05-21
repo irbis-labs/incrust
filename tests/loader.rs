@@ -7,9 +7,29 @@ use incrust::{Incrust, ex, Loader, FilesystemLoader, NamespaceLoader};
 
 
 #[test]
-fn direct() {
+fn dict() {
     let mut incrust = Incrust::new();
-    incrust.add_loader(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
+    incrust.loaders.push(Box::new(hashmap!{
+        "1".into() => r#"<h1>{{ title | e }}</h1>
+
+<menu>{% if fruits %}<ul>{% for fruit in fruits %}<li>{{ index }}. {{ fruit | e }}</li>{% endfor %}</ul>{% endif %}</menu>
+"#.into(),
+    }));
+    let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
+
+    let sample_a = sample_loader.load("1-a.html").unwrap();
+    let args = || hashmap!{
+        "title" => ex("fruits"),
+        "fruits" => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")])
+    };
+
+    assert_eq!(sample_a, incrust.render("1", args()).unwrap());
+}
+
+#[test]
+fn filesystem() {
+    let mut incrust = Incrust::new();
+    incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
     let sample_a = sample_loader.load("1-a.html").unwrap();
@@ -23,9 +43,9 @@ fn direct() {
 }
 
 #[test]
-fn with_namespace() {
+fn namespace() {
     let mut incrust = Incrust::new();
-    incrust.add_loader(NamespaceLoader::new("simple:", FilesystemLoader::new(&Path::new("./assets/tpl/simple"))));
+    incrust.loaders.push(NamespaceLoader::new("simple:", FilesystemLoader::new(&Path::new("./assets/tpl/simple"))));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
     let sample_a = sample_loader.load("1-a.html").unwrap();

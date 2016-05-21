@@ -36,16 +36,16 @@ extern crate incrust;
 
 use incrust::ex;
 
-fn make_incrust() -> Incrust {
+fn create_env() -> Incrust {
     use incrust::{Incrust, FilesystemLoader};
 
     let mut instance = Incrust::new();
-    instance.add_loader(FilesystemLoader::new(&Path::new("./assets/tpl")));
+    instance.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl")));
     instance
 }
 
 fn main() {
-    let incrust = make_incrust();
+    let incrust = create_env();
     let args = hashmap!{ "name" => ex("World") };
     incrust.render("hello", args).unwrap();
 }

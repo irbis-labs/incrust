@@ -5,11 +5,11 @@ use ::abc;
 pub use ::types::abc::{Args, EntityId, Type, BType, ex};
 pub use ::types::context::{Context};
 pub use ::template::Template;
-
+use ::loader::GroupLoader;
 
 #[derive(Debug)]
 pub struct Incrust<'a> {
-    loaders: Vec<Box<abc::Loader>>,
+    pub loaders: GroupLoader,
     formatters: HashMap<&'a str, Box<abc::Filter>>,
     env_context: Args<'a>,
 }
@@ -50,10 +50,6 @@ impl <'aa> Incrust<'aa> {
             formatters: HashMap::new(),
             env_context: HashMap::new(),
         }
-    }
-
-    pub fn add_loader(&mut self, loader: Box<abc::Loader>) {
-        self.loaders.push(loader);
     }
 
     pub fn load(&self, name: &str) -> abc::LoadResult {
