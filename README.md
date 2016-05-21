@@ -5,7 +5,9 @@
 
 > Incrust is a template engine inspired by Jinja2 and written in Rust.
 
-In fact it is a Django, Jinja2, Twig, Swig (and probably others) template engines constellation, wich uses similar methodologies.
+In fact it is a [Jinja2](http://jinja.pocoo.org/), [Django](https://docs.djangoproject.com/en/1.10/topics/templates/),
+[Twig](http://twig.sensiolabs.org/), [Swig](http://paularmstrong.github.io/swig/) (and probably others)
+template engines constellation, which uses similar methodologies.
 
 ### Unstable
 

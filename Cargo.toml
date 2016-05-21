@@ -6,7 +6,7 @@ license = "MIT/Apache-2.0"
 description = "Template engine inspired by Jinja2"
 repository = "https://github.com/alexander-irbis/incrust"
 #documentation = ""
-keywords = ["template", "web", "html", "jinja2", "jinja", "django", "twig", "swig"]
+keywords = ["template", "jinja2", "django", "twig", "swig"]
 exclude = [
     ".gitignore",
     ".travis.yml",
