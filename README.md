@@ -6,8 +6,8 @@
 > Incrust is a template engine inspired by Jinja2 and written in Rust.
 
 In fact it is a [Jinja2](http://jinja.pocoo.org/), [Django](https://docs.djangoproject.com/en/1.10/topics/templates/),
-[Twig](http://twig.sensiolabs.org/), [Swig](http://paularmstrong.github.io/swig/) (and probably others)
-template engines constellation, which uses similar methodologies.
+[Twig](http://twig.sensiolabs.org/), [Swig](http://paularmstrong.github.io/swig/), [Liquid](https://shopify.github.io/liquid/)
+(and probably others) template engines constellation, which uses similar methodologies.
 
 ### Unstable
 
@@ -173,7 +173,8 @@ If you are looking for a template engine for your project, you may also look at 
 
 ### With a similar to Incrust syntax
 
- * [colin-kiegel/twig-rust](https://github.com/colin-kiegel/twig-rust)   Rust port of the twig-php template library http://colin-kiegel.github.io/twig-rust
+ * [cobalt-org/liquid-rust](https://github.com/cobalt-org/liquid-rust)   Liquid templating for Rust
+ * [colin-kiegel/twig-rust](https://github.com/colin-kiegel/twig-rust)   Rust port of the twig-php template library
  * [Nercury/twig-rs](https://github.com/Nercury/twig-rs)   The Twig templating engine for Rust (work in progress)
  * [Keats/tera](https://github.com/Keats/tera)   A template engine for Rust
 
