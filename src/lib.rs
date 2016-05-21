@@ -28,9 +28,15 @@ extern crate nom;
 
 pub mod abc;
 pub mod incrust;
+pub mod loader;
 pub mod parser;
 pub mod renderer;
 pub mod template;
 pub mod types;
 
-
+pub use self::abc::{Loader};
+pub use self::incrust::Incrust;
+pub use self::loader::{FilesystemLoader, NamespaceLoader};
+pub use self::types::abc::{Args, EntityId, Type, BType, ex};
+pub use self::types::context::{Context};
+pub use self::template::Template;

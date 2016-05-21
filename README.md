@@ -5,16 +5,14 @@
 
 > Incrust is a template engine inspired by Jinja2 and written in Rust.
 
-**NOTA BENE**
-
-This is a work in progress and (as may be assumed reasonably enough) may be highly *unstable* just yet.
+In fact it is a Django, Jinja2, Twig, Swig (and probably others) template engines constellation, wich uses similar methodologies.
 
 ### Unstable
 
 The implementation is at a very early stage and the API is a subject of changes.
 
-Since Incrust developed with unstable features it depends on nightly Rust.
-Release version will be refactored to build on stable channel.
+__Note that Incrust currently requires the nightly version of the Rust compiler.__
+
 
 ## Installation
 
@@ -22,52 +20,69 @@ Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be
 
 ```
 [dependencies]
-incrust = "0.0"
+incrust = "0.1"
 ```
 
-Then include it in your code like this:
+For ease of use hashmaps you may use the [maplit](https://crates.io/crates/maplit)
 
-```rust
-extern crate incrust;
-```
-
-## Examples
-
-All examples assume a prepared instance of Incrust. For ease of use hashmaps, we use the macro [maplit](https://crates.io/crates/maplit)
+Then you need to setup your environment:
 
 ```rust
 #[macro_use]
 extern crate maplit;
 extern crate incrust;
 
-use incrust::{Incrust, Args, Var};
+use incrust::ex;
+
+fn make_incrust() -> Incrust {
+    use incrust::{Incrust, FilesystemLoader};
+
+    let mut instance = Incrust::new();
+    instance.add_loader(FilesystemLoader::new(&Path::new("./assets/tpl")));
+    instance
+}
 
 fn main() {
-    let incrust = Incrust::new();
-    // ...
+    let incrust = make_incrust();
+    let args = hashmap!{ "name" => ex("World") };
+    incrust.render("hello", args).unwrap();
 }
 ```
 
-### Variables
+Though Incrust has smart loaders, it may be used just as advanced formatter to render directly from string template
 
 ```rust
-let result = incrust.render_text("Hello, {{name}}!", hashmap!{ "name" => ex("World") }.unwrap();
-assert_eq!(result, "Hello, World!");
+incrust.render_text("Hello, {{ name | e }}!", hashmap!{ "name" => ex("World") }).unwrap();
+// or with prepared template
+let hello = incrust.parse("Hello, {{ name | e }}!");
+let args = hashmap!{ "name" => ex("World") };
+incrust.render_parsed(&hello, args).unwrap();
 ```
+
+
+## Syntax examples
 
 ### Filters
 
 ```rust
-let args: Args = hashmap!{ "text" => ex("<Cats & Dogs>") };
-let result = incrust.render_text("<h1>{{ text | e }}</h1>", args).unwrap();
-assert_eq!(result, "<h1>&lt;Cats &amp; Dogs&gt;</h1>");
+let args = hashmap!{ "title" => ex("<Cats & Dogs>") };
+```
+```twig
+<h1>{{ title | escape }}</h1>
+```
+```html
+<h1>&lt;Cats &amp; Dogs&gt;</h1>
 ```
 
 ### Literals
 
-```rust
-assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, hashmap!{}).unwrap());
-assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, hashmap!{}).unwrap());
+```twig
+Braces: {{ "{{" }}
+Pi: {{ 3.1415926 }}
+```
+```html
+Braces: {{
+Pi: 3.1415926
 ```
 
 ### Expressions
@@ -77,54 +92,94 @@ let args = hashmap!{
     "what" => ex("Hello"),
     "who" => ex("World")
 };
-assert_eq!(r#"Say: "Hello, World!""#, incrust.render_text(r#"Say: "{{ what + ", " + who }}!""#, args).unwrap());
+```
+```twig
+Say: "{{ what + ", " + who }}!"
+```
+```html
+Say: "Hello, World!"
+```
 
+```rust
 let args = hashmap!{
     "alpha" => ex(6isize),
     "omega" => ex(7f64)
 };
-assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
+```
+```twig
+The answer is {{ alpha * omega }}
+```
+```html
+The answer is 42
 ```
 
 ### Lazy boolean evaluation
 
+```twig
+Amount: {{ amount and ("" + amount + " pcs") or "-" }}
+```
 ```rust
-let tpl = r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#;
-assert_eq!("Amount: 6 pcs", incrust.render_text(tpl, hashmap!{ "amount" => ex(6isize) }).unwrap());
-assert_eq!("Amount: -", incrust.render_text(tpl, hashmap!{ "amount" => ex(0isize) }).unwrap());
+assert_eq!("Amount: 6 pcs", incrust.render("tpl", hashmap!{ "amount" => ex(6isize) }).unwrap());
+assert_eq!("Amount: -", incrust.render("tpl", hashmap!{ "amount" => ex(0isize) }).unwrap());
 ```
 
 ### Conditional statements
 
-```rust
-assert_eq!("String is empty", incrust.render_text(r#"String {% if "" %}has chars{% else %}is empty{% endif %}"#, hashmap!{}).unwrap());
-assert_eq!("It's true", incrust.render_text(r#"It's {% if False %}false{% elif True %}true{% endif %}"#, hashmap!{}).unwrap());
+```twig
+String {% if "" %}has chars{% else %}is empty{% endif %}
+It's {% if False %}false{% elif True %}true{% endif %}
+```
+```html
+String is empty
+It's true
 ```
 
 ### For-Loop statements
 
 ```rust
 let args = hashmap!{ "fruits" => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")]) };
-let tpl = r#"<ul>{% for fruit in fruits %}<li>{{ index }}. {{ fruit | e }}</li>{% endfor %}</ul>"#;
-let expected = r#"<ul><li>1. Orange</li><li>2. Apple</li><li>3. Banana</li></ul>"#;
-assert_eq!(expected, incrust.render_text(tpl, args).unwrap());
+```
+```twig
+<ul>{% for fruit in fruits %}<li>{{ index }}. {{ fruit | e }}</li>{% endfor %}</ul>
+```
+```html
+<ul><li>1. Orange</li><li>2. Apple</li><li>3. Banana</li></ul>
 ```
 
 ### Comments
 
-```rust
-let tpl = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
-let result = incrust.render_parsed(tpl, hashmap!{}).unwrap();
-assert_eq!(result, "<p>Visible  paragraph</p>");
+```twig
+<p>Visible {# partially #} paragraph</p>
+```
+```html
+<p>Visible  paragraph</p>
 ```
 
 ### Escaping
 
-```rust
-let tpl = "Example: {% raw %}{{ mustaches }}{% endraw %}";
-let result = incrust.render_text(tpl, hashmap!{}).unwrap();
-assert_eq!(result, "Example: {{ mustaches }}");
+```twig
+Example: {% raw %}{{ mustaches }}{% endraw %}
 ```
+```html
+Example: {{ mustaches }}
+```
+
+
+## Alternatives
+
+If you are looking for a template engine for your project, you may also look at these projects.
+
+### With a similar to Incrust syntax
+
+ * [colin-kiegel/twig-rust](https://github.com/colin-kiegel/twig-rust)   Rust port of the twig-php template library http://colin-kiegel.github.io/twig-rust
+ * [Nercury/twig-rs](https://github.com/Nercury/twig-rs)   The Twig templating engine for Rust (work in progress)
+ * [Keats/tera](https://github.com/Keats/tera)   A template engine for Rust
+
+### Others
+
+ * [sunng87/handlebars-rust](https://github.com/sunng87/handlebars-rust)   Rust templating with Handlebars
+ * [nickel-org/rust-mustache](https://github.com/nickel-org/rust-mustache)   Mustache template library for rust
+
 
 ## License
 
@@ -132,6 +187,7 @@ Licensed under either of
  * Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
  * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 at your option.
+
 
 ### Contribution
 

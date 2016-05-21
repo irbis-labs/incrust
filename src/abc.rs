@@ -8,8 +8,10 @@ use ::template::Template;
 
 pub type LoadResult = Result<String, LoadError>;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum LoadError {
+    BadName(String),
+    IoError(String),
     NotFound,
 }
 

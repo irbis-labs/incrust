@@ -8,14 +8,14 @@ pub use ::template::Template;
 
 
 #[derive(Debug)]
-pub struct Incrust {
+pub struct Incrust<'a> {
     loaders: Vec<Box<abc::Loader>>,
-    formatters: HashMap<&'static str, Box<abc::Filter>>,
-    env_context: Args<'static>,
+    formatters: HashMap<&'a str, Box<abc::Filter>>,
+    env_context: Args<'a>,
 }
 
 
-impl Default for Incrust {
+impl <'a> Default for Incrust<'a> {
     fn default() -> Self {
         #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
         use ::renderer::filter::{Escape, Unescape};
@@ -41,7 +41,7 @@ impl Default for Incrust {
     }
 }
 
-impl Incrust {
+impl <'aa> Incrust<'aa> {
     pub fn new() -> Self { Incrust::default() }
 
     pub fn no_default() -> Self {
@@ -90,6 +90,10 @@ impl Incrust {
         let args: Args = args.into();
         let env = Context::new(None, &self.env_context);
         let context = Context::new(Some(&env), &args);
+        self.render_prepared(template, &context)
+    }
+
+    pub fn render_prepared(&self, template: &Template, context: &Context) -> abc::RenderResult {
 //        let mut buffer: Vec<u8> = Vec::new();
 //        ::render::text(&mut buffer[..], template.parsed.as_slice(), &context, self)
         ::renderer::text(template.parsed.as_slice(), &context, self)
