@@ -45,12 +45,6 @@ impl <'a, 'b: 'a> IIterable<'a> for Vec<BType<'b>> {
 
 
 impl <'a, 'b: 'a> IComposable<'a> for Vec<BType<'b>> {
-    fn has_attr(&self, id: &str) -> bool {
-        match id {
-            "length" => true,
-            _ => false,
-        }
-    }
     fn get_attr(&self, id: &str) -> Option<BType> {
         match id {
             "length" => Some(ex(self.len() as isize)),

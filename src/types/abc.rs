@@ -92,7 +92,6 @@ pub trait IIndexable<'a>: Send + Sync {
 }
 
 pub trait IComposable<'a>: Send + Sync {
-    fn has_attr(&self, id: &str) -> bool;
     fn get_attr(&self, id: &str) -> Option<BType>;
 //    fn attrs(&self) -> &[BType];
 }

@@ -5,9 +5,9 @@ use super::abc::*;
 
 // --- [ default implementations ] ------------------------------------------------------------------------------------
 
-impl <T> IClone for T where T: Type {
-    default fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Err(CloneError::Error) }
-}
+//impl <T> IClone for T where T: Type {
+//    default fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Err(CloneError::Error) }
+//}
 
 impl <T> ToIString for T where T: Type {
     default fn to_istring(self: &Self) -> Option<String> { None }
