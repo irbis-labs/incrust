@@ -5,7 +5,7 @@ use nom::{IResult, alpha, alphanumeric, eof, space, multispace};
 use ::template::{
     FullExpression, FilterItem,
     DisjOp, ConjOp, CmpOp, SumOp, MulOp,
-    DisjExpr, ConjExpr, CmpExpr, Expr, Term, Factor,
+    DisjExpr, ConjExpr, CmpExpr, Expr, Term, Factor, Attribute,
     DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
 };
 
@@ -106,8 +106,17 @@ fn mul(input: &[u8]) -> IResult<&[u8], Term> {
 }
 
 fn factor(input: &[u8]) -> IResult<&[u8], Factor> {
+    let (i, res) = try_parse!(input, chain!(
+        a: simple_factor ~
+        b: many0!(chain!(many0!(multispace) ~ char!('.') ~ many0!(multispace) ~ id: identifier, || id)),
+        || b.into_iter().fold(a, |acc, arg| Factor::Attribute(Attribute{ id: arg, on: Box::new(acc) }) )
+    ) );
+    IResult::Done(i, res.into())
+}
+
+fn simple_factor(input: &[u8]) -> IResult<&[u8], Factor> {
     let (i, f) = try_parse!(input, alt!(literal | variable | subexpression) );
-    IResult::Done(i, f.into())
+    IResult::Done(i, f)
 }
 
 fn subexpression(input: &[u8]) -> IResult<&[u8], Factor> {

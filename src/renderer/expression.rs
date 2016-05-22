@@ -88,6 +88,7 @@ pub fn render_factor<'a, 'b>(fctr: &'a Factor, context: &'b Context, env: &'b In
         Factor::Literal(ref lit) => render_literal(lit, context, env)?,
         Factor::Subexpression(ref expr) => format!("({})", render_expr(expr, context, env)? ),
         Factor::Variable(ref id) => id.clone(),
+        Factor::Attribute(ref attr) => format!("{}.{}", render_factor(&*attr.on, context, env)?, attr.id ),
     })
 }
 

@@ -110,11 +110,32 @@ pub fn eval_factor<'a>(fctr: &'a Factor, context: &'a Context, env: &'a Incrust)
         Factor::Literal(ref lit) => literal(lit, context, env)?,
         Factor::Subexpression(ref expr) => eval_expr(expr, context, env)?,
         Factor::Variable(ref id) => match context.get(id) {
-            Some(v) => Some(v.iclone().map_err(|err| EvalError::Input(format!("{:?}", err)))?),
             None => None,
+            Some(v) => Some(v.iclone().map_err(|err| EvalError::Input(format!("{:?}", err)))?),
         },
+        Factor::Attribute(ref attr) => {
+            match eval_factor(&attr.on, context, env)? {
+                None => Err(EvalError::NotComposable)?,
+                Some(value) => {
+                    match value.as_composable() {
+                        None => Err(EvalError::NotComposable)?,
+                        Some(composable) => match composable.get_attr(&attr.id) {
+                            None => Err(EvalError::AttributeNotExists(attr.id.clone()))?,
+                            // FIXME why need to clone?
+                            Some(result) => Some(result.iclone().map_err(|err| EvalError::Input(format!("{:?}", err)))?),
+                        }
+                    }
+                }
+            }
+        }
     })
 }
+
+//use ::types::abc::{IClone, CloneError, BType};
+//
+//pub fn clone_value(v: &IClone) -> Result<BType, CloneError> {
+//
+//}
 
 pub fn literal<'a>(l: &'a Literal, _context: &'a Context, _env: &'a Incrust) -> EvalResult {
     Ok(Some(match *l {
@@ -140,6 +161,24 @@ mod tests {
             IResult::Error(e) => panic!("{:?}", e),
             IResult::Incomplete(i) => panic!("{:?}", i),
         }
+    }
+
+    #[test]
+    fn eval_attr() {
+        use ::abc::EvalResult;
+        use ::incrust::{Incrust, Context, Args, ex};
+        use ::parser::expressions::expression as parse_expr;
+
+        let args: Args = hashmap!{ "the_one" => ex("World") };
+        let context = Context::new(None, &args);
+        let incrust = Incrust::new();
+
+        let parse = |s| unwrap_iresult(parse_expr(s));
+        let x = |r: EvalResult| r.unwrap().unwrap().to_istring().unwrap();
+
+        assert_eq!("1"   , x(super::eval_expr(&parse(br#""a".length"#), &context, &incrust)));
+        assert_eq!("2"   , x(super::eval_expr(&parse(br#"("a" + "b").length"#), &context, &incrust)));
+        assert_eq!("5"   , x(super::eval_expr(&parse(br#"the_one . length"#), &context, &incrust)));
     }
 
     #[test]
@@ -171,6 +210,7 @@ mod tests {
         assert_eq!("1.5"  , x(super::eval_expr(&parse(b"3.0 / 2"), &context, &incrust)));
 
         assert_eq!("ab"   , x(super::eval_expr(&parse(br#""a" + "b""#), &context, &incrust)));
+        assert_eq!("ab"   , x(super::eval_expr(&parse(br#"("a" + "b")"#), &context, &incrust)));
     }
 
     #[test]

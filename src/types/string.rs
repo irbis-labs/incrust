@@ -27,4 +27,26 @@ impl IArithm for String {
 }
 
 
+impl AsComposable for String {
+    fn as_composable<'a, 'c: 'a>(&'c self) -> Option<&'a IComposable<'a>> {
+        Some(self)
+    }
+}
+
+
+impl <'a> IComposable<'a> for String {
+    fn has_attr(&self, id: &str) -> bool {
+        match id {
+            "length" => true,
+            _ => false,
+        }
+    }
+    fn get_attr(&self, id: &str) -> Option<BType> {
+        match id {
+            "length" => Some(ex(self.len() as isize)),
+            _ => None
+        }
+    }
+}
+
 impl <'a> Into<BType<'a>> for &'a str { fn into(self) -> BType<'a> { Box::new(self.to_owned()) } }

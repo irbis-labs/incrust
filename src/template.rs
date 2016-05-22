@@ -125,12 +125,17 @@ pub struct TermItem(pub MulOp, pub Factor);
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Factor {
+    Attribute(Attribute),
     Variable(String),
     Literal(Literal),
     Subexpression(DisjExpr),
 }
 
-// ---------------------------------------------------------------------------
+#[derive(Debug, PartialEq, Clone)]
+pub struct Attribute {
+    pub id: String,
+    pub on: Box<Factor>,
+}
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Literal {
@@ -174,9 +179,9 @@ pub struct ForStatement {
     pub end: Statement,
 }
 
-impl Into<Statement> for () {
-    fn into(self) -> Statement { Statement::default() }
-}
+//impl Into<Statement> for () {
+//    fn into(self) -> Statement { Statement::default() }
+//}
 
 // ---------------------------------------------------------------------------
 
@@ -204,6 +209,7 @@ impl FullExpression {
 impl From<Literal> for Factor { fn from(v: Literal) -> Self { Factor::Literal(v) } }
 impl From<String> for Factor { fn from(v: String) -> Self { Factor::Variable(v) } }
 impl From<DisjExpr> for Factor { fn from(v: DisjExpr) -> Self { Factor::Subexpression(v) } }
+impl From<Attribute> for Factor { fn from(v: Attribute) -> Self { Factor::Attribute(v) } }
 
 impl From<IfStatement> for Parsed { fn from(v: IfStatement) -> Self { Parsed::If(v) } }
 impl From<ForStatement> for Parsed { fn from(v: ForStatement) -> Self { Parsed::For(v) } }
