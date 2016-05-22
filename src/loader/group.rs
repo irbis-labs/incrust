@@ -1,6 +1,3 @@
-use std::fs::File;
-use std::path::{Path, PathBuf};
-
 use ::abc::{Loader, LoadResult, LoadError};
 
 pub type GroupLoader = Vec<Box<Loader>>;

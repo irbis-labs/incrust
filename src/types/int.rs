@@ -1,5 +1,4 @@
 use super::abc::*;
-use abc::CloneError;
 
 
 impl Type for isize {

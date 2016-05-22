@@ -1,4 +1,4 @@
-use ::abc::EvalResult;
+use ::abc::{EvalResult, EvalError};
 use ::incrust::{Incrust, Context};
 use ::template::{
     DisjExpr, ConjExpr, CmpExpr, Expr, Term,
@@ -45,12 +45,13 @@ pub fn eval_conj<'a>(conj_expr: &'a ConjExpr, context: &'a Context, env: &'a Inc
             Ok(acc)
         } } }
 
+#[allow(unused_variables)]
 pub fn eval_cmp<'a>(cmp_expr: &'a CmpExpr, context: &'a Context, env: &'a Incrust) -> EvalResult {
     let mut itr = cmp_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
         Some(&CmpItem(ref _op, ref expr)) => {
-            let mut acc = eval_sum(expr, context, env)?;
+            let acc = eval_sum(expr, context, env)?;
             for &CmpItem(ref op, ref expr) in itr {
                 acc = match acc {
                     None => return Ok(None),
@@ -109,7 +110,7 @@ pub fn eval_factor<'a>(fctr: &'a Factor, context: &'a Context, env: &'a Incrust)
         Factor::Literal(ref lit) => literal(lit, context, env)?,
         Factor::Subexpression(ref expr) => eval_expr(expr, context, env)?,
         Factor::Variable(ref id) => match context.get(id) {
-            Some(v) => Some(v.iclone()?),
+            Some(v) => Some(v.iclone().map_err(|err| EvalError::Input(format!("{:?}", err)))?),
             None => None,
         },
     })
@@ -130,7 +131,6 @@ pub fn literal<'a>(l: &'a Literal, _context: &'a Context, _env: &'a Incrust) -> 
 #[cfg(test)]
 mod tests {
     #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
-//    use ::parser::expressions::;
     use nom::IResult;
     use std::fmt::Debug;
 
@@ -176,12 +176,8 @@ mod tests {
     #[test]
     fn eval_bool() {
         use ::abc::EvalResult;
-        use ::template::{Factor, Literal};
         use ::incrust::{Incrust, Context, Args, ex};
         use ::parser::expressions::expression as parse_expr;
-
-        let int_one: Factor = Literal::Int(1isize).into();
-        let the_one = Factor::Variable("the_one".into());
 
         let args: Args = hashmap!{ "the_one" => ex("World") };
         let context = Context::new(None, &args);

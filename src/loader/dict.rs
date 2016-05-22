@@ -1,6 +1,4 @@
 use std::collections::hash_map::{HashMap};
-use std::fs::File;
-use std::path::{Path, PathBuf};
 
 use ::abc::{Loader, LoadResult, LoadError};
 

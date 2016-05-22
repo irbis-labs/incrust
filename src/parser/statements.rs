@@ -7,7 +7,7 @@ use ::template::{
     IfStatement, IfBranch, ForStatement,
     DisjExpr, ConjExpr, CmpExpr, Expr, Term,
     DisjOp, ConjOp, CmpOp,
-    DisjItem, ConjItem, CmpItem
+    DisjItem, ConjItem,
 };
 
 use super::block_level::{inner};
@@ -68,10 +68,10 @@ named!(pub for_block<&[u8], Parsed>, chain!( s: for_statement, || s.into() ));
 
 #[cfg_attr(feature = "clippy", allow(cyclomatic_complexity))]
 pub fn for_statement(input: &[u8]) -> IResult<&[u8], ForStatement> {
-    fn finish(mut begin: Statement, inner: Template, end: Statement) -> Option<(ForStatement)> {
+    fn finish(begin: Statement, inner: Template, end: Statement) -> Option<(ForStatement)> {
         match begin.expression {
             None => None,
-            Some(mut full_expr) => {
+            Some(full_expr) => {
                 let mut expr: DisjExpr = full_expr.expr;
                 if expr.list.len() != 1 {return None}
 
@@ -81,8 +81,8 @@ pub fn for_statement(input: &[u8]) -> IResult<&[u8], ForStatement> {
                 let mut expr: CmpExpr = expr.list.remove(0).1;
                 if expr.list.len() != 2 {return None}
 
-                let mut left = expr.list.remove(0);
-                let mut right = expr.list.remove(0);
+                let left = expr.list.remove(0);
+                let right = expr.list.remove(0);
 
                 match right.0 {
                     CmpOp::In => {},

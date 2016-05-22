@@ -1,14 +1,13 @@
 use super::abc::*;
-use abc::CloneError;
 
 
 impl Type for bool {
-    fn to_bool(self: &Self) -> bool { *self }
+    fn to_bool(&self) -> bool { *self }
 }
 
 impl ToINumeric for bool {
-    fn to_real(self: &Self) -> Option<f64> { Some(if *self { 1f64 } else { 0f64 }) }
-    fn to_int(self: &Self) -> Option<isize> { Some(if *self { 1isize } else { 0isize }) }
+    fn to_real(&self) -> Option<f64> { Some(if *self { 1f64 } else { 0f64 }) }
+    fn to_int(&self) -> Option<isize> { Some(if *self { 1isize } else { 0isize }) }
 }
 
 impl IClone for bool {

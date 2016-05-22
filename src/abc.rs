@@ -30,17 +30,6 @@ pub enum EvalError {
 }
 
 
-//pub trait Eval: Debug {
-//    fn eval(&self, op: EvalOp, other: Option<Value>, context: &Context, env: &Incrust) -> EvalResult;
-//}
-
-
-#[derive(Debug)]
-pub enum CloneError {
-    Error
-}
-
-
 pub type FilterResult = Result<Option<String>, FilterError>;
 
 #[derive(Debug)]
@@ -80,5 +69,3 @@ impl From<LoadError>   for RenderError { fn from(err: LoadError)   -> Self { Ren
 impl From<EvalError>   for RenderError { fn from(err: EvalError)   -> Self { RenderError::EvalExpression(err) } }
 impl From<ParseError>  for RenderError { fn from(err: ParseError)  -> Self { RenderError::ParseTemplate(err) } }
 impl From<FilterError> for RenderError { fn from(err: FilterError) -> Self { RenderError::Filter(err) } }
-
-impl From<CloneError>  for EvalError   { fn from(err: CloneError)  -> Self { EvalError::Input(format!("{:?}", err)) } }

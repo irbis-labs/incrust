@@ -1,4 +1,3 @@
-use abc::CloneError;
 use super::abc::*;
 
 
@@ -16,13 +15,23 @@ impl <'a> IClone for Vec<BType<'a>> {
     }
 }
 
-impl <'aa> AsIIter for Vec<BType<'aa>> {
-    fn as_iiter<'a, 'c: 'a>(&'c self) -> Option<&'a IIter<'a>> {
+impl <'b> AsIterable for Vec<BType<'b>> {
+    fn as_iterable<'a, 'c: 'a>(&'c self) -> Option<&'a IIterable<'a>> {
         Some(self)
     }
 }
 
-impl <'a, 'b: 'a> IIter<'a> for Vec<BType<'b>> {
+impl <'b> AsComposable for Vec<BType<'b>> {
+    fn as_composable<'a, 'c: 'a>(&'c self) -> Option<&'a IComposable<'a>> {
+        Some(self)
+    }
+}
+
+
+// --------------------------------------------------------------------------------------------------------------------
+
+
+impl <'a, 'b: 'a> IIterable<'a> for Vec<BType<'b>> {
     fn is_empty(self: &Self) -> bool {
         Vec::is_empty(self)
     }
@@ -35,11 +44,27 @@ impl <'a, 'b: 'a> IIter<'a> for Vec<BType<'b>> {
 }
 
 
+impl <'a, 'b: 'a> IComposable<'a> for Vec<BType<'b>> {
+    fn has_attr(&self, id: &str) -> bool {
+        match id {
+            "length" => true,
+            _ => false,
+        }
+    }
+    fn get_attr(&self, id: &str) -> Option<BType> {
+        match id {
+            "length" => Some(ex(self.len() as isize)),
+            _ => None
+        }
+    }
+}
+
+
 impl <'a> Into<BType<'a>> for Vec<BType<'a>> { fn into(self) -> BType<'a> { Box::new(self) } }
 
 
 
-//impl <'a> IIter for Vec<BType<'a>> {
+//impl <'a> IIterable for Vec<BType<'a>> {
 //    fn ivalues<'b>(self: &Self) -> Iterator<Item=BType<'b>> {
 //        Some(Box::new(VIterator { me: self.iter() }))
 //    }

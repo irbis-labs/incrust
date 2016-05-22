@@ -1,7 +1,6 @@
 use std::collections::hash_map::{HashMap, Keys, Values, Iter};
 use std::iter::Iterator;
 
-use abc::CloneError;
 use super::abc::*;
 
 
@@ -20,7 +19,7 @@ impl <'a> IClone for HashMap<EntityId, BType<'a>> {
 }
 
 
-impl <'a, 'b: 'a> IIter<'a> for HashMap<EntityId, BType<'a>> {
+impl <'a, 'b: 'a> IIterable<'a> for HashMap<EntityId, BType<'a>> {
     fn is_empty(self: &Self) -> bool {
         HashMap::is_empty(self)
     }

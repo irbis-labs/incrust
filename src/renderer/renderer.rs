@@ -53,12 +53,12 @@ pub fn for_(stmt: &ForStatement, context: &Context, env: &Incrust) -> RenderResu
     Ok(match stmt.begin.expression {
         None => "".into(),
         Some(ref expr) => {
-            let iterable = eval_expr(&expr.expr, context, env)?;
-            match iterable {
+            let value = eval_expr(&expr.expr, context, env)?;
+            match value {
                 None => "".into(),
-                Some(iterable) => match iterable.as_iiter() {
+                Some(value) => match value.as_iterable() {
                     None => "".into(),
-                    Some(mut iterable) => {
+                    Some(iterable) => {
                         let mut buf: Vec<String> = Vec::new();
                         for (index, v) in iterable.ivalues().enumerate() {
                             let local_scope: Args = hashmap!{
