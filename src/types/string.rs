@@ -27,10 +27,8 @@ impl IArithm for String {
 }
 
 
-impl AsComposable for String {
-    fn as_composable(&self) -> Option<&IComposable> { Some(self) }
-}
-
+impl <'a> Into<BType<'a>> for &'a str { fn into(self) -> BType<'a> { Box::new(self.to_owned()) } }
+impl AsComposable for String { fn as_composable(&self) -> Option<&IComposable> { Some(self) } }
 
 impl <'a> IComposable<'a> for String {
     fn get_attr(&self, id: &str) -> Option<BType> {
@@ -41,4 +39,3 @@ impl <'a> IComposable<'a> for String {
     }
 }
 
-impl <'a> Into<BType<'a>> for &'a str { fn into(self) -> BType<'a> { Box::new(self.to_owned()) } }

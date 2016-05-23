@@ -19,11 +19,12 @@ impl Fruit {
     pub fn new(title: &str, price: f64) -> Fruit { Fruit { title: title.to_owned(), price: price } }
 }
 
+impl Type for Fruit { fn to_bool(&self) -> bool { true } }
 impl IClone for Fruit {
     fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Ok( Box::new(self.clone()) ) }
 }
 
-impl Type for Fruit { fn to_bool(&self) -> bool { true } }
+
 impl <'a> Into<BType<'a>> for Fruit { fn into(self) -> BType<'a> { Box::new(self) } }
 impl AsComposable for Fruit { fn as_composable(&self) -> Option<&IComposable> { Some(self) } }
 
@@ -47,7 +48,6 @@ fn attributes() {
     let sample_a = sample_loader.load("2-a.html").unwrap();
     let args = || hashmap!{
         "title" => ex("fruits"),
-//        "fruits" => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")])
         "fruits" => ex(vec![
             ex(Fruit::new("Orange", 4.0)),
             ex(Fruit::new("Apple", 2.5)),

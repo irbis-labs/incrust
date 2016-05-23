@@ -39,6 +39,6 @@ impl <T> AsComposable for T where T: Type {
     default fn as_composable(&self) -> Option<&IComposable> { None }
 }
 
-//impl <'aa, T> AsComposable for T where T: Type + IComposable<'aa> {
-//    default fn as_composable<'a, 'c: 'a>(&'c self) -> Option<&'a IComposable<'a>> { Some(self) }
+//impl <'a, T> AsComposable for T where T: Type + IComposable<'a> {
+//    default fn as_composable(&self) -> Option<&IComposable> { Some(self) }
 //}

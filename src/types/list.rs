@@ -15,17 +15,8 @@ impl <'a> IClone for Vec<BType<'a>> {
     }
 }
 
-impl <'b> AsIterable for Vec<BType<'b>> {
-    fn as_iterable(&self) -> Option<&IIterable> {
-        Some(self)
-    }
-}
-
-impl <'b> AsComposable for Vec<BType<'b>> {
-    fn as_composable(&self) -> Option<&IComposable> {
-        Some(self)
-    }
-}
+impl <'b> AsIterable for Vec<BType<'b>> { fn as_iterable(&self) -> Option<&IIterable> { Some(self) } }
+impl <'b> AsComposable for Vec<BType<'b>> { fn as_composable(&self) -> Option<&IComposable> { Some(self) } }
 
 
 // --------------------------------------------------------------------------------------------------------------------
