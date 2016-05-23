@@ -2,7 +2,7 @@ use super::abc::*;
 
 
 impl <'z> Type for Vec<BType<'z>> {
-    fn to_bool(self: &Self) -> bool { !self.is_empty() }
+    fn to_bool(&self) -> bool { !self.is_empty() }
     fn iclone<'a>(&self) -> BType<'a> {
         let mut cloned: Vec<BType> = Vec::with_capacity(self.capacity());
         for v in self.iter() {
@@ -20,13 +20,13 @@ impl <'b> AsComposable for Vec<BType<'b>> { fn as_composable(&self) -> Option<&I
 
 
 impl <'a, 'b: 'a> IIterable<'a> for Vec<BType<'b>> {
-    fn is_empty(self: &Self) -> bool {
+    fn is_empty(&self) -> bool {
         Vec::is_empty(self)
     }
-//    fn len(self: &Self) -> usize {
+//    fn len(&self) -> usize {
 //        Vec::len(self)
 //    }
-    fn ivalues(self: &Self) -> VIterator {
+    fn ivalues(&self) -> VIterator {
         VIterator { me: self.iter() }
     }
 }
@@ -47,7 +47,7 @@ impl <'a> Into<BType<'a>> for Vec<BType<'a>> { fn into(self) -> BType<'a> { Box:
 
 
 //impl <'a> IIterable for Vec<BType<'a>> {
-//    fn ivalues<'b>(self: &Self) -> Iterator<Item=BType<'b>> {
+//    fn ivalues<'b>(&self) -> Iterator<Item=BType<'b>> {
 //        Some(Box::new(VIterator { me: self.iter() }))
 //    }
 //}

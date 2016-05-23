@@ -5,11 +5,11 @@ use super::abc::*;
 
 
 impl <'a> Type for HashMap<EntityId, BType<'a>> {
-    fn to_bool(self: &Self) -> bool { !self.is_empty() }
+    fn to_bool(&self) -> bool { !self.is_empty() }
 }
 
 impl <'a> IClone for HashMap<EntityId, BType<'a>> {
-    fn iclone<'b>(self: &Self) -> Result<BType<'b>, CloneError> {
+    fn iclone<'b>(&self) -> Result<BType<'b>, CloneError> {
         let cloned: HashMap<EntityId, BType<'b>> = HashMap::new();
         for (k, v) in self.iter() {
             cloned.insert(k, v.iclone()?);
@@ -20,13 +20,13 @@ impl <'a> IClone for HashMap<EntityId, BType<'a>> {
 
 
 impl <'a, 'b: 'a> IIterable<'a> for HashMap<EntityId, BType<'a>> {
-    fn is_empty(self: &Self) -> bool {
+    fn is_empty(&self) -> bool {
         HashMap::is_empty(self)
     }
-    //    fn len(self: &Self) -> usize {
+    //    fn len(&self) -> usize {
     //        HashMap::len(self)
     //    }
-    fn ivalues(self: &Self) -> VIterator {
+    fn ivalues(&self) -> VIterator {
         VIterator { me: self.values() }
     }
 }
@@ -34,13 +34,13 @@ impl <'a, 'b: 'a> IIterable<'a> for HashMap<EntityId, BType<'a>> {
 
 
 //impl <'a> IMap for HashMap<EntityId, BType<'a>> {
-//    fn ivalues(self: &Self) -> Option<Box<Iterator<Item=BType>>> {
+//    fn ivalues(&self) -> Option<Box<Iterator<Item=BType>>> {
 //        Some(Box::new(VIterator { me: self.values() }))
 //    }
-////    fn ikeys(self: &Self) -> Option<KIterator> {
+////    fn ikeys(&self) -> Option<KIterator> {
 ////        Some(KIterator { me: self.keys() })
 ////    }
-////    fn ikeyvalues(self: &Self) -> Option<KVIterator> {
+////    fn ikeyvalues(&self) -> Option<KVIterator> {
 ////        Some(KVIterator { me: self.iter() })
 ////    }
 //}

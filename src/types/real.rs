@@ -3,12 +3,12 @@ use super::abc::*;
 
 impl Type for f64 {
     fn iclone<'a>(&self) -> BType<'a> { Box::new(*self) }
-    fn to_bool(self: &Self) -> bool { *self != 0.0 }
+    fn to_bool(&self) -> bool { *self != 0.0 }
 }
 
 impl ToINumeric for f64 {
-    fn to_real(self: &Self) -> Option<f64> { Some(*self) }
-    fn to_int(self: &Self) -> Option<isize> { Some(*self as isize) }
+    fn to_real(&self) -> Option<f64> { Some(*self) }
+    fn to_int(&self) -> Option<isize> { Some(*self as isize) }
 }
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]

@@ -6,16 +6,16 @@ use super::abc::*;
 // --- [ default implementations ] ------------------------------------------------------------------------------------
 
 impl <T> ToIString for T where T: Type {
-    default fn to_istring(self: &Self) -> Option<String> { None }
+    default fn to_istring(&self) -> Option<String> { None }
 }
 
 impl <T> ToIString for T where T: Type + Display {
-    default fn to_istring(self: &Self) -> Option<String> { Some( <Self as ToString>::to_string(self)) }
+    default fn to_istring(&self) -> Option<String> { Some( <Self as ToString>::to_string(self)) }
 }
 
 impl <T> ToINumeric for T where T: Type {
-    default fn to_real(self: &Self) -> Option<f64> { None }
-    default fn to_int(self: &Self) -> Option<isize> { None }
+    default fn to_real(&self) -> Option<f64> { None }
+    default fn to_int(&self) -> Option<isize> { None }
 }
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
