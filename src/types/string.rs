@@ -2,21 +2,15 @@ use super::abc::*;
 
 
 impl Type for char {
+    fn iclone<'a>(&self) -> BType<'a> { Box::new(*self) }
     fn to_bool(self: &Self) -> bool { true }
-}
-
-impl IClone for char {
-    fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Ok( Box::new(*self) ) }
 }
 
 // -------
 
 impl Type for String {
+    fn iclone<'a>(&self) -> BType<'a> { Box::new(self.to_string()) }
     fn to_bool(self: &Self) -> bool { !self.is_empty() }
-}
-
-impl IClone for String {
-    fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Ok( Box::new(self.to_string()) ) }
 }
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]

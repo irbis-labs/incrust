@@ -13,7 +13,8 @@ pub type Args<'a> = HashMap<EntityId<'a>, BType<'a>>;
 pub type EntityId<'a> = &'a str;
 
 pub type BType<'a> = Box<Type + 'a>;
-pub trait Type: ToIString + IArithm + ToINumeric + IClone + AsIterable + AsComposable + Send + Sync + Debug {
+pub trait Type: ToIString + IArithm + ToINumeric + AsIterable + AsComposable + Send + Sync + Debug {
+    fn iclone<'a>(&self) -> BType<'a>;
     fn to_bool(&self) -> bool;
 }
 
@@ -22,19 +23,7 @@ pub trait Type: ToIString + IArithm + ToINumeric + IClone + AsIterable + AsCompo
 pub fn ex<'a, A>(v: A) -> BType<'a> where A: Into<BType<'a>> { v.into() }
 
 
-// --------------------------------------------------------------------------------------------------------------------
-
-#[derive(Debug)]
-pub enum CloneError {
-    Error
-}
-
-
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
-
-pub trait IClone {
-    fn iclone<'a>(&self) -> Result<BType<'a>, CloneError>;
-}
 
 pub trait ToIString {
     fn to_istring(&self) -> Option<String>;
@@ -112,11 +101,6 @@ impl <'a> Iterator for VIterator<'a> {
     type Item = BType<'a>;
 
     fn next(&mut self) -> Option<BType<'a>> {
-        if let Some(next) = self.me.next() {
-            if let Ok(next) = next.iclone() {
-                return Some(next)
-            }
-        }
-        None
+        self.me.next().map(|next| next.iclone())
     }
 }

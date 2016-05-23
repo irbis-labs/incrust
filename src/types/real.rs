@@ -2,16 +2,13 @@ use super::abc::*;
 
 
 impl Type for f64 {
+    fn iclone<'a>(&self) -> BType<'a> { Box::new(*self) }
     fn to_bool(self: &Self) -> bool { *self != 0.0 }
 }
 
 impl ToINumeric for f64 {
     fn to_real(self: &Self) -> Option<f64> { Some(*self) }
     fn to_int(self: &Self) -> Option<isize> { Some(*self as isize) }
-}
-
-impl IClone for f64 {
-    fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Ok( Box::new(*self) ) }
 }
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]

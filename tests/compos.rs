@@ -7,7 +7,7 @@ extern crate incrust;
 
 use std::path::Path;
 use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, BType};
-use incrust::types::abc::{AsComposable, IComposable, IClone, CloneError};
+use incrust::types::abc::{AsComposable, IComposable};
 
 #[derive(Debug, Clone)]
 struct Fruit {
@@ -19,9 +19,9 @@ impl Fruit {
     pub fn new(title: &str, price: f64) -> Fruit { Fruit { title: title.to_owned(), price: price } }
 }
 
-impl Type for Fruit { fn to_bool(&self) -> bool { true } }
-impl IClone for Fruit {
-    fn iclone<'a>(self: &Self) -> Result<BType<'a>, CloneError> { Ok( Box::new(self.clone()) ) }
+impl Type for Fruit {
+    fn iclone<'a>(&self) -> BType<'a> { Box::new(self.clone()) }
+    fn to_bool(&self) -> bool { true }
 }
 
 

@@ -1,17 +1,14 @@
 use super::abc::*;
 
 
-impl <'a> Type for Vec<BType<'a>> {
+impl <'z> Type for Vec<BType<'z>> {
     fn to_bool(self: &Self) -> bool { !self.is_empty() }
-}
-
-impl <'a> IClone for Vec<BType<'a>> {
-    fn iclone<'b>(self: &Self) -> Result<BType<'b>, CloneError> {
-        let mut cloned: Vec<BType<'b>> = Vec::with_capacity(self.capacity());
+    fn iclone<'a>(&self) -> BType<'a> {
+        let mut cloned: Vec<BType> = Vec::with_capacity(self.capacity());
         for v in self.iter() {
-            cloned.push(v.iclone()?);
+            cloned.push(v.iclone());
         }
-        Ok( Box::new(cloned) )
+        Box::new(cloned)
     }
 }
 

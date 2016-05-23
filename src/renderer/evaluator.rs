@@ -109,20 +109,16 @@ pub fn eval_factor<'a>(fctr: &'a Factor, context: &'a Context, env: &'a Incrust)
     Ok(match *fctr {
         Factor::Literal(ref lit) => literal(lit, context, env)?,
         Factor::Subexpression(ref expr) => eval_expr(expr, context, env)?,
-        Factor::Variable(ref id) => match context.get(id) {
-            None => None,
-            Some(v) => Some(v.iclone().map_err(|err| EvalError::Input(format!("{:?}", err)))?),
-        },
+        Factor::Variable(ref id) => context.get(id).map(|v| v.iclone()),
         Factor::Attribute(ref attr) => {
             match eval_factor(&attr.on, context, env)? {
                 None => Err(EvalError::NotComposable)?,
                 Some(value) => {
                     match value.as_composable() {
                         None => Err(EvalError::NotComposable)?,
-                        Some(composable) => match composable.get_attr(&attr.id) {
+                        Some(composable) => match composable.get_attr(&attr.id).map(|v| v.iclone()) {
                             None => Err(EvalError::AttributeNotExists(attr.id.clone()))?,
-                            // FIXME why need to clone?
-                            Some(result) => Some(result.iclone().map_err(|err| EvalError::Input(format!("{:?}", err)))?),
+                            Some(result) => Some(result),
                         }
                     }
                 }

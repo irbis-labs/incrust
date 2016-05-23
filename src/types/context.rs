@@ -14,7 +14,7 @@ impl <'a> Context<'a> {
         Context { parent_scope: parent_scope, local_scope: local_scope }
     }
 
-    pub fn get<'b>(&self, id: &str) -> Option<&'b BType> {
+    pub fn get(&self, id: &str) -> Option<&BType> {
         self.local_scope.get(id)
             .or_else(|| self.parent_scope.and_then(|scope| scope.get(id)))
     }
