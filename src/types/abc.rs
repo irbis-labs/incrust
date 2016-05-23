@@ -3,6 +3,9 @@ use std::fmt::{Debug};
 use std::iter::Iterator;
 use std::slice::Iter;
 
+use ::abc::{EvalResult};
+use ::incrust::{Context, Incrust};
+
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -13,7 +16,7 @@ pub type Args<'a> = HashMap<EntityId<'a>, BType<'a>>;
 pub type EntityId<'a> = &'a str;
 
 pub type BType<'a> = Box<Type + 'a>;
-pub trait Type: ToIString + IArithm + ToINumeric + AsIterable + AsComposable + Send + Sync + Debug {
+pub trait Type: ToIString + IArithm + ToINumeric + AsIterable + AsComposable + AsInvocable + Send + Sync + Debug {
     fn iclone<'a>(&self) -> BType<'a>;
     fn to_bool(&self) -> bool;
 }
@@ -41,8 +44,8 @@ pub trait IArithm {
     fn idiv(self: Box<Self>, other: BType) -> Option<BType>;
 }
 
-pub trait AsCallable {
-    fn as_callable(&self) -> Option<&ICallable>;
+pub trait AsInvocable {
+    fn as_invocable(&self) -> Option<&IInvocable>;
 }
 
 pub trait AsIterable {
@@ -64,8 +67,8 @@ pub trait AsPartialEq<T> {
 
 // --- [ impl interfaces ] --------------------------------------------------------------------------------------------
 
-pub trait ICallable<'a>: Send + Sync {
-    fn call(&self, args: &[BType]) -> Option<BType>;
+pub trait IInvocable<'a>: Send + Sync {
+    fn invoke(&self, args: &[BType], context: &Context, env: &Incrust) -> EvalResult;
 }
 
 pub trait IIterable<'a>: Send + Sync {

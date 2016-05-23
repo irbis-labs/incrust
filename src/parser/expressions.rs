@@ -5,7 +5,7 @@ use nom::{IResult, alpha, alphanumeric, eof, space, multispace};
 use ::template::{
     FullExpression, FilterItem,
     DisjOp, ConjOp, CmpOp, SumOp, MulOp,
-    DisjExpr, ConjExpr, CmpExpr, Expr, Term, Factor, Attribute,
+    DisjExpr, ConjExpr, CmpExpr, Expr, Term, Factor, Attribute, Invocation,
     DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
 };
 
@@ -55,6 +55,7 @@ fn identifier(input: &[u8]) -> IResult<&[u8], String> {
             }
         )
     );
+    println!("::: identifier {:?}", id);
     IResult::Done(i, id)
 }
 
@@ -108,10 +109,18 @@ fn mul(input: &[u8]) -> IResult<&[u8], Term> {
 fn factor(input: &[u8]) -> IResult<&[u8], Factor> {
     let (i, res) = try_parse!(input, chain!(
         a: simple_factor ~
-        b: many0!(chain!(many0!(multispace) ~ char!('.') ~ many0!(multispace) ~ id: identifier, || id)),
-        || b.into_iter().fold(a, |acc, arg| Factor::Attribute(Attribute{ id: arg, on: Box::new(acc) }) )
+        b: many0!(chain!(many0!(multispace) ~ char!('.') ~ many0!(multispace) ~ id: variable, || id)),
+        || b.into_iter().fold(a, |acc, arg| {
+            println!("::: acc, arg: {:?}, {:?}", acc, arg);
+            match arg {
+                Factor::Variable(id) => Factor::Attribute(Attribute{ id: id, on: Box::new(acc) }),
+                Factor::Invocation(inv) => Factor::Invocation(inv),
+                _ => unreachable!()
+            }
+        })
     ) );
-    IResult::Done(i, res.into())
+    println!("::: factor: {:?}", res);
+    IResult::Done(i, res)
 }
 
 fn simple_factor(input: &[u8]) -> IResult<&[u8], Factor> {
@@ -126,15 +135,50 @@ fn subexpression(input: &[u8]) -> IResult<&[u8], Factor> {
     IResult::Done(i, Factor::Subexpression(e))
 }
 
+
 fn variable(input: &[u8]) -> IResult<&[u8], Factor> {
-    let (i, id) = try_parse!(input, identifier);
-    IResult::Done(i, Factor::Variable(id))
+    let (i, (id, inv)) = try_parse!(input, tuple!(
+        identifier,
+        opt!(complete!(tuple!(
+            many0!(multispace), char!('('), many0!(multispace), expr_list, many0!(multispace), char!(')')
+        )))
+    ));
+    let var = Factor::Variable(id);
+    let v = match inv {
+        Some((_, _, _, args, _, _)) => Invocation { on: Box::new(var), args: args } .into(),
+        None => var
+    };
+    println!("::: v: {:?}", v);
+    IResult::Done(i, v)
+}
+
+fn expr_list(input: &[u8]) -> IResult<&[u8], Vec<DisjExpr> > {
+    let (i, lst) = try_parse!(input, opt!(chain!(
+        a: expression ~
+        b: many0!(tuple!(expr_sep, expression)),
+        || {
+            let mut lst = Vec::with_capacity(b.len() + 1);
+            lst.push(a);
+            lst.extend(b.into_iter().map(|(_, e)| e));
+            lst
+        }
+    )));
+    println!("::: expr_list: {:?}", lst);
+    IResult::Done(i, lst.unwrap_or_else(|| Vec::new()) )
+}
+
+
+
+fn expr_sep(input: &[u8]) -> IResult<&[u8], ()> {
+    let (i, _) = try_parse!(input, tuple!(many0!(multispace), char!(','), many0!(multispace)) );
+    IResult::Done(i, ())
 }
 
 
 fn op_disj_bin(input: &[u8]) -> IResult<&[u8], DisjOp> {
     let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("or")), many0!(multispace)) );
 
+    println!(":::: or");
     IResult::Done(i, match o {
         b"or"      => DisjOp::Or,
         _ => unreachable!()
@@ -144,6 +188,7 @@ fn op_disj_bin(input: &[u8]) -> IResult<&[u8], DisjOp> {
 fn op_conj_bin(input: &[u8]) -> IResult<&[u8], ConjOp> {
     let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("and")), many0!(multispace)) );
 
+    println!(":::: and");
     IResult::Done(i, match o {
         b"and"      => ConjOp::And,
         _ => unreachable!()

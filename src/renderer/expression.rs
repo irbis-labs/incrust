@@ -89,6 +89,11 @@ pub fn render_factor<'a, 'b>(fctr: &'a Factor, context: &'b Context, env: &'b In
         Factor::Subexpression(ref expr) => format!("({})", render_expr(expr, context, env)? ),
         Factor::Variable(ref id) => id.clone(),
         Factor::Attribute(ref attr) => format!("{}.{}", render_factor(&*attr.on, context, env)?, attr.id ),
+        Factor::Invocation(ref inv) => {
+            let mut acc: Vec<String> = Vec::with_capacity(inv.args.len());
+            for expr in inv.args.iter() { acc.push(render_expr(expr, context, env)?) }
+            format!("{}({})", render_factor(&*inv.on, context, env)?, acc.join(", "))
+        },
     })
 }
 

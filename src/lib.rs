@@ -39,4 +39,5 @@ pub use self::incrust::Incrust;
 pub use self::loader::{DictLoader, FilesystemLoader, GroupLoader, NamespaceLoader};
 pub use self::types::abc::{Args, EntityId, Type, BType, ex};
 pub use self::types::context::{Context};
+pub use self::types::function::{Function};
 pub use self::template::Template;

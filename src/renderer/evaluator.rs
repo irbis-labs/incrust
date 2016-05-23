@@ -1,10 +1,10 @@
 use ::abc::{EvalResult, EvalError};
-use ::incrust::{Incrust, Context};
+use ::incrust::{Incrust, Context, BType};
 use ::template::{
     DisjExpr, ConjExpr, CmpExpr, Expr, Term,
     DisjOp, ConjOp, CmpOp, SumOp, MulOp,
     DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
-    Factor, Literal,
+    Factor, Literal, Attribute, Invocation,
 };
 
 pub fn eval_expr<'a>(disj_expr: &'a DisjExpr, context: &'a Context, env: &'a Incrust) -> EvalResult {
@@ -106,40 +106,49 @@ pub fn eval_prod<'a>(term: &'a Term, context: &'a Context, env: &'a Incrust) -> 
         } } }
 
 pub fn eval_factor<'a>(fctr: &'a Factor, context: &'a Context, env: &'a Incrust) -> EvalResult {
-    Ok(match *fctr {
-        Factor::Literal(ref lit) => literal(lit, context, env)?,
-        Factor::Subexpression(ref expr) => eval_expr(expr, context, env)?,
-        Factor::Variable(ref id) => context.get(id).map(|v| v.iclone()),
-        Factor::Attribute(ref attr) => {
-            match eval_factor(&attr.on, context, env)? {
-                None => Err(EvalError::NotComposable)?,
-                Some(value) => {
-                    match value.as_composable() {
-                        None => Err(EvalError::NotComposable)?,
-                        Some(composable) => match composable.get_attr(&attr.id).map(|v| v.iclone()) {
-                            None => Err(EvalError::AttributeNotExists(attr.id.clone()))?,
-                            Some(result) => Some(result),
-                        }
-                    }
-                }
-            }
-        }
-    })
+    match *fctr {
+        Factor::Variable(ref id)        => Ok(context.get(id).map(|v| v.iclone())),
+        Factor::Literal(ref lit)        => literal(lit, context, env),
+        Factor::Subexpression(ref expr) => eval_expr(expr, context, env),
+        Factor::Attribute(ref attr)     => eval_attribute(attr, context, env),
+        Factor::Invocation(ref inv)     => eval_invocation(inv, context, env),
+    }
 }
 
-//use ::types::abc::{IClone, CloneError, BType};
-//
-//pub fn clone_value(v: &IClone) -> Result<BType, CloneError> {
-//
-//}
+pub fn eval_attribute<'a>(attr: &'a Attribute, context: &'a Context, env: &'a Incrust) -> EvalResult {
+    match eval_factor(&attr.on, context, env)? {
+        None => Err(EvalError::NotComposable),
+        Some(value) => match value.as_composable() {
+            None => Err(EvalError::NotComposable),
+            Some(composable) => match composable.get_attr(&attr.id).map(|v| v.iclone()) {
+                None => Err(EvalError::AttributeNotExists(attr.id.clone())),
+                Some(result) => Ok(Some(result)),
+            } } } }
+
+pub fn eval_invocation<'a>(inv: &'a Invocation, context: &'a Context, env: &'a Incrust) -> EvalResult {
+    match eval_factor(&inv.on, context, env)? {
+        None => Err(EvalError::NotInvocable),
+        Some(value) => match value.as_invocable() {
+            None => Err(EvalError::NotInvocable),
+            Some(invocable) => {
+                let mut args: Vec<BType> = Vec::with_capacity(inv.args.len());
+                for expr in inv.args.iter() {
+                    let val = eval_expr(expr, context, env)?;
+                    match val {
+                        None => return Err(EvalError::NoneArg),
+                        Some(val) => args.push(val)
+                    }
+                }
+                invocable.invoke(args.as_slice(), context, env)
+            } } } }
 
 pub fn literal<'a>(l: &'a Literal, _context: &'a Context, _env: &'a Incrust) -> EvalResult {
-    Ok(Some(match *l {
+    Ok( Some( match *l {
         Literal::Str(ref string) => Box::new(string.clone()),
         Literal::Char(ref chr) => Box::new(*chr),
         Literal::Int(ref int) => Box::new(*int),
         Literal::Real(ref real) => Box::new(*real),
-    }))
+    } ) )
 }
 
 

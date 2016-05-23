@@ -38,3 +38,8 @@ impl <T> AsComposable for T where T: Type {
 //impl <'a, T> AsComposable for T where T: Type + IComposable<'a> {
 //    default fn as_composable(&self) -> Option<&IComposable> { Some(self) }
 //}
+
+impl <T> AsInvocable for T where T: Type {
+    default fn as_invocable(&self) -> Option<&IInvocable> { None }
+}
+

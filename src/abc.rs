@@ -25,6 +25,8 @@ pub type EvalResult = Result<Option<Box<Type>>, EvalError>;
 
 #[derive(Debug)]
 pub enum EvalError {
+    NotInvocable,
+    NoneArg,
     NotComposable,
     AttributeNotExists(String),
     Input(String),

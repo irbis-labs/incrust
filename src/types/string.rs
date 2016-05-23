@@ -1,4 +1,5 @@
 use super::abc::*;
+//use super::function::Function;
 
 
 impl Type for String {
@@ -21,6 +22,7 @@ impl <'a> IComposable<'a> for String {
     fn get_attr(&self, id: &str) -> Option<BType> {
         match id {
             "length" => Some(ex(self.len() as isize)),
+//            "len" => Some(Function::new(|| self.len() )),
             _ => None
         }
     }

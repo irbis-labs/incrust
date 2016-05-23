@@ -6,8 +6,9 @@ extern crate maplit;
 extern crate incrust;
 
 use std::path::Path;
-use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, BType};
+use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, BType, Function, Context};
 use incrust::types::abc::{AsComposable, IComposable};
+use incrust::abc::{EvalResult};
 
 #[derive(Debug, Clone)]
 struct Fruit {
@@ -45,7 +46,7 @@ fn attributes() {
     incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
-    let sample_a = sample_loader.load("2-a.html").unwrap();
+    let sample_a = sample_loader.load("2a.html").unwrap();
     let args = || hashmap!{
         "title" => ex("fruits"),
         "fruits" => ex(vec![
@@ -55,5 +56,29 @@ fn attributes() {
         ])
     };
 
-    assert_eq!(sample_a, incrust.render("2", args()).unwrap());
+    assert_eq!(sample_a, incrust.render("2a", args()).unwrap());
+}
+
+
+#[test]
+fn invocables() {
+    let mut incrust = Incrust::new();
+    incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
+    let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
+
+    fn title(_: &[BType], _: &Context, _: &Incrust) -> EvalResult {
+        Ok(Some(ex("fruits")))
+    }
+
+    let sample_a = sample_loader.load("2a.html").unwrap();
+    let args = || hashmap!{
+        "title" => Function::new(title),
+        "fruits" => ex(vec![
+            ex(Fruit::new("Orange", 4.0)),
+            ex(Fruit::new("Apple", 2.5)),
+            ex(Fruit::new("Banana", 2.25)),
+        ])
+    };
+
+    assert_eq!(sample_a, incrust.render("2b", args()).unwrap());
 }

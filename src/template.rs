@@ -125,6 +125,7 @@ pub struct TermItem(pub MulOp, pub Factor);
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Factor {
+    Invocation(Invocation),
     Attribute(Attribute),
     Variable(String),
     Literal(Literal),
@@ -134,6 +135,12 @@ pub enum Factor {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Attribute {
     pub id: String,
+    pub on: Box<Factor>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Invocation {
+    pub args: Vec<DisjExpr>,
     pub on: Box<Factor>,
 }
 
@@ -210,6 +217,7 @@ impl From<Literal> for Factor { fn from(v: Literal) -> Self { Factor::Literal(v)
 impl From<String> for Factor { fn from(v: String) -> Self { Factor::Variable(v) } }
 impl From<DisjExpr> for Factor { fn from(v: DisjExpr) -> Self { Factor::Subexpression(v) } }
 impl From<Attribute> for Factor { fn from(v: Attribute) -> Self { Factor::Attribute(v) } }
+impl From<Invocation> for Factor { fn from(v: Invocation) -> Self { Factor::Invocation(v) } }
 
 impl From<IfStatement> for Parsed { fn from(v: IfStatement) -> Self { Parsed::If(v) } }
 impl From<ForStatement> for Parsed { fn from(v: ForStatement) -> Self { Parsed::For(v) } }
