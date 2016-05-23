@@ -1,13 +1,6 @@
 use super::abc::*;
 
 
-impl Type for char {
-    fn iclone<'a>(&self) -> BType<'a> { Box::new(*self) }
-    fn to_bool(&self) -> bool { true }
-}
-
-// -------
-
 impl Type for String {
     fn iclone<'a>(&self) -> BType<'a> { Box::new(self.to_string()) }
     fn to_bool(&self) -> bool { !self.is_empty() }
@@ -32,4 +25,3 @@ impl <'a> IComposable<'a> for String {
         }
     }
 }
-

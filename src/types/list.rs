@@ -2,14 +2,8 @@ use super::abc::*;
 
 
 impl <'z> Type for Vec<BType<'z>> {
+    fn iclone<'a>(&self) -> BType<'a> { Box::new(self.into_iter().map(|v| v.iclone()).collect::<Vec<BType>>()) }
     fn to_bool(&self) -> bool { !self.is_empty() }
-    fn iclone<'a>(&self) -> BType<'a> {
-        let mut cloned: Vec<BType> = Vec::with_capacity(self.capacity());
-        for v in self.iter() {
-            cloned.push(v.iclone());
-        }
-        Box::new(cloned)
-    }
 }
 
 impl <'b> AsIterable for Vec<BType<'b>> { fn as_iterable(&self) -> Option<&IIterable> { Some(self) } }

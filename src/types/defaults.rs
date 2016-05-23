@@ -10,7 +10,7 @@ impl <T> ToIString for T where T: Type {
 }
 
 impl <T> ToIString for T where T: Type + Display {
-    default fn to_istring(&self) -> Option<String> { Some( <Self as ToString>::to_string(self)) }
+    default fn to_istring(&self) -> Option<String> { Some( ToString::to_string(self)) }
 }
 
 impl <T> ToINumeric for T where T: Type {
