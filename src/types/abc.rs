@@ -53,19 +53,19 @@ pub trait IArithm {
 }
 
 pub trait AsCallable {
-    fn as_callable<'a>(&self) -> Option<&ICallable<'a>>;
+    fn as_callable(&self) -> Option<&ICallable>;
 }
 
 pub trait AsIterable {
-    fn as_iterable<'a, 'c: 'a>(&'c self) -> Option<&'a IIterable<'a>>;
+    fn as_iterable(&self) -> Option<&IIterable>;
 }
 
 pub trait AsComposable {
-    fn as_composable<'a, 'c: 'a>(&'c self) -> Option<&'a IComposable<'a>>;
+    fn as_composable(&self) -> Option<&IComposable>;
 }
 
 pub trait AsIndexable {
-    fn as_indexable<'a>(&self) -> Option<&IIndexable<'a>>;
+    fn as_indexable(&self) -> Option<&IIndexable>;
 }
 
 pub trait AsPartialEq<T> {

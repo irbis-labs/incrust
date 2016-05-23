@@ -28,7 +28,7 @@ impl IArithm for String {
 
 
 impl AsComposable for String {
-    fn as_composable<'a, 'c: 'a>(&'c self) -> Option<&'a IComposable<'a>> { Some(self) }
+    fn as_composable(&self) -> Option<&IComposable> { Some(self) }
 }
 
 

@@ -25,7 +25,7 @@ impl IClone for Fruit {
 
 impl Type for Fruit { fn to_bool(&self) -> bool { true } }
 impl <'a> Into<BType<'a>> for Fruit { fn into(self) -> BType<'a> { Box::new(self) } }
-impl AsComposable for Fruit { fn as_composable<'a, 'c: 'a>(&'c self) -> Option<&'a IComposable<'a>> { Some(self) } }
+impl AsComposable for Fruit { fn as_composable(&self) -> Option<&IComposable> { Some(self) } }
 
 impl <'a> IComposable<'a> for Fruit {
     fn get_attr(&self, id: &str) -> Option<BType> {

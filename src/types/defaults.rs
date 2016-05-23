@@ -32,9 +32,13 @@ impl <S> IArithm for S where S: Type {
 
 
 impl <T> AsIterable for T where T: Type {
-    default fn as_iterable<'a, 'c: 'a>(&'c self) -> Option<&'a IIterable<'a>> { None }
+    default fn as_iterable(&self) -> Option<&IIterable> { None }
 }
 
 impl <T> AsComposable for T where T: Type {
-    default fn as_composable<'a, 'c: 'a>(&'c self) -> Option<&'a IComposable<'a>> { None }
+    default fn as_composable(&self) -> Option<&IComposable> { None }
 }
+
+//impl <'aa, T> AsComposable for T where T: Type + IComposable<'aa> {
+//    default fn as_composable<'a, 'c: 'a>(&'c self) -> Option<&'a IComposable<'a>> { Some(self) }
+//}
