@@ -10,7 +10,7 @@ impl Type for String {
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for String {
     fn iadd(self: Box<Self>, other: BType) -> Option<BType> {
-        other.to_istring().map(move |s| -> BType { Box::new(*self + s.as_str()) })
+        other.as_string().map(move |s| -> BType { Box::new(*self + s.as_str()) })
     }
 }
 

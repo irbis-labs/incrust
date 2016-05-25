@@ -16,7 +16,7 @@ pub type Args<'a> = HashMap<EntityId<'a>, BType<'a>>;
 pub type EntityId<'a> = &'a str;
 
 pub type BType<'a> = Box<Type + 'a>;
-pub trait Type: ToIString + IArithm + ToINumeric + AsIterable + AsComposable + AsInvocable + Send + Sync + Debug {
+pub trait Type: AsString + IArithm + AsReal + AsInt + AsIterable + AsComposable + AsInvocable + Send + Sync + Debug {
     fn iclone<'a>(&self) -> BType<'a>;
     fn to_bool(&self) -> bool;
 }
@@ -28,20 +28,23 @@ pub fn ex<'a, A>(v: A) -> BType<'a> where A: Into<BType<'a>> { v.into() }
 
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
 
-pub trait ToIString {
-    fn to_istring(&self) -> Option<String>;
+pub trait AsString {
+    fn as_string(&self) -> Option<String>;
 }
 
-pub trait ToINumeric {
-    fn to_real(&self) -> Option<f64>;
-    fn to_int(&self) -> Option<isize>;
+pub trait AsReal {
+    fn as_real(&self) -> Option<f64>;
+}
+
+pub trait AsInt {
+    fn as_int(&self) -> Option<isize>;
 }
 
 pub trait IArithm {
-    fn iadd(self: Box<Self>, other: BType) -> Option<BType>;
-    fn isub(self: Box<Self>, other: BType) -> Option<BType>;
-    fn imul(self: Box<Self>, other: BType) -> Option<BType>;
-    fn idiv(self: Box<Self>, other: BType) -> Option<BType>;
+    fn iadd(&self, other: BType) -> Option<BType>;
+    fn isub(&self, other: BType) -> Option<BType>;
+    fn imul(&self, other: BType) -> Option<BType>;
+    fn idiv(&self, other: BType) -> Option<BType>;
 }
 
 pub trait AsInvocable {

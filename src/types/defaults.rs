@@ -5,17 +5,20 @@ use super::abc::*;
 
 // --- [ default implementations ] ------------------------------------------------------------------------------------
 
-impl <T> ToIString for T where T: Type {
-    default fn to_istring(&self) -> Option<String> { None }
+impl <T> AsString for T where T: Type {
+    default fn as_string(&self) -> Option<String> { None }
 }
 
-impl <T> ToIString for T where T: Type + Display {
-    default fn to_istring(&self) -> Option<String> { Some( ToString::to_string(self)) }
+impl <T> AsString for T where T: Type + Display {
+    default fn as_string(&self) -> Option<String> { Some( ToString::to_string(self)) }
 }
 
-impl <T> ToINumeric for T where T: Type {
-    default fn to_real(&self) -> Option<f64> { None }
-    default fn to_int(&self) -> Option<isize> { None }
+impl <T> AsReal for T where T: Type {
+    default fn as_real(&self) -> Option<f64> { None }
+}
+
+impl <T> AsInt for T where T: Type {
+    default fn as_int(&self) -> Option<isize> { None }
 }
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]

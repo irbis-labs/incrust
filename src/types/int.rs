@@ -6,18 +6,21 @@ impl Type for isize {
     fn to_bool(&self) -> bool { *self != 0 }
 }
 
-impl ToINumeric for isize {
-    fn to_real(&self) -> Option<f64> { Some(*self as f64) }
-    fn to_int(&self) -> Option<isize> { Some(*self) }
+impl AsReal for isize {
+    fn as_real(&self) -> Option<f64> { Some(*self as f64) }
+}
+
+impl AsInt for isize {
+    fn as_int(&self) -> Option<isize> { Some(*self) }
 }
 
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for isize {
-    fn iadd(self: Box<Self>, other: BType) -> Option<BType> { other.to_int().map(|s| -> BType { Box::new(*self + s) }) }
-    fn isub(self: Box<Self>, other: BType) -> Option<BType> { other.to_int().map(|s| -> BType { Box::new(*self - s) }) }
-    fn imul(self: Box<Self>, other: BType) -> Option<BType> { other.to_int().map(|s| -> BType { Box::new(*self * s) }) }
-    fn idiv(self: Box<Self>, other: BType) -> Option<BType> { other.to_int().map(|s| -> BType { Box::new(*self / s) }) }
+    fn iadd(self: Box<Self>, other: BType) -> Option<BType> { other.as_int().map(|s| -> BType { Box::new(*self + s) }) }
+    fn isub(self: Box<Self>, other: BType) -> Option<BType> { other.as_int().map(|s| -> BType { Box::new(*self - s) }) }
+    fn imul(self: Box<Self>, other: BType) -> Option<BType> { other.as_int().map(|s| -> BType { Box::new(*self * s) }) }
+    fn idiv(self: Box<Self>, other: BType) -> Option<BType> { other.as_int().map(|s| -> BType { Box::new(*self / s) }) }
 }
 
 
