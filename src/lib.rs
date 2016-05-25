@@ -11,6 +11,7 @@
 #![feature(specialization)]
 #![feature(associated_type_defaults)]
 
+#![cfg_attr(feature = "quiet", allow(warnings))]
 
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]

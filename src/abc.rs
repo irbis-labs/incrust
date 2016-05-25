@@ -16,7 +16,7 @@ pub enum LoadError {
 }
 
 
-pub trait Loader: Debug {
+pub trait Loader: Debug + Send + Sync {
     fn load(&self, name: &str) -> LoadResult;
 }
 
@@ -44,7 +44,7 @@ pub enum FilterError {
 }
 
 
-pub trait Filter: Debug {
+pub trait Filter: Debug + Send + Sync {
     fn filter(&self, value: Option<String>, context: &Context, env: &Incrust) -> FilterResult;
 }
 

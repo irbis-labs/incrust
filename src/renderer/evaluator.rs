@@ -132,7 +132,7 @@ pub fn eval_invocation<'a>(inv: &'a Invocation, context: &'a Context, env: &'a I
             None => Err(EvalError::NotInvocable),
             Some(invocable) => {
                 let mut args: Vec<BType> = Vec::with_capacity(inv.args.len());
-                for expr in inv.args.iter() {
+                for expr in &inv.args {
                     let val = eval_expr(expr, context, env)?;
                     match val {
                         None => return Err(EvalError::NoneArg),

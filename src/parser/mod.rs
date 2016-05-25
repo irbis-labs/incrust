@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "clippy", allow(cyclomatic_complexity))]
+
 #[macro_use]
 pub mod macros;
 pub mod block_level;

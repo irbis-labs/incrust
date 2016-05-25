@@ -41,7 +41,6 @@ fn filter(input: &[u8]) -> IResult<&[u8], FilterItem> {
 
 // ---------------------------------------------------------------------------
 
-#[cfg_attr(feature = "clippy", allow(cyclomatic_complexity))]
 fn identifier(input: &[u8]) -> IResult<&[u8], String> {
     let (i, id) = try_parse!(input,
         chain!(
@@ -164,7 +163,7 @@ fn expr_list(input: &[u8]) -> IResult<&[u8], Vec<DisjExpr> > {
         }
     )));
     println!("::: expr_list: {:?}", lst);
-    IResult::Done(i, lst.unwrap_or_else(|| Vec::new()) )
+    IResult::Done(i, lst.unwrap_or_else(Vec::new))
 }
 
 

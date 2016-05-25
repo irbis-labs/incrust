@@ -92,7 +92,7 @@ impl <'aa> Incrust<'aa> {
     pub fn render_prepared(&self, template: &Template, context: &Context) -> abc::RenderResult {
 //        let mut buffer: Vec<u8> = Vec::new();
 //        ::render::text(&mut buffer[..], template.parsed.as_slice(), &context, self)
-        ::renderer::text(template.parsed.as_slice(), &context, self)
+        ::renderer::text(template.parsed.as_slice(), context, self)
     }
 }
 

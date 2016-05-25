@@ -25,4 +25,5 @@ nom             = "1.2"
 
 [features]
 default         = []
-dev             = ["clippy"]
+verbose         = ["clippy"]
+quiet           = []
