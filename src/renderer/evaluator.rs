@@ -179,7 +179,7 @@ mod tests {
         let incrust = Incrust::new();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult| r.unwrap().unwrap().as_string().unwrap();
+        let x = |r: EvalResult| r.unwrap().unwrap().as_string().map(|c| c.into_owned()).unwrap();
 
         assert_eq!("1"   , x(super::eval_expr(&parse(br#""a".length"#), &context, &incrust)));
         assert_eq!("2"   , x(super::eval_expr(&parse(br#"("a" + "b").length"#), &context, &incrust)));
@@ -201,7 +201,7 @@ mod tests {
         let incrust = Incrust::new();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult| r.unwrap().unwrap().as_string().unwrap();
+        let x = |r: EvalResult| r.unwrap().unwrap().as_string().map(|c| c.into_owned()).unwrap();
 
         assert!("1"      == x(super::eval_factor(&int_one, &context, &incrust)));
         assert!("World"  == x(super::eval_factor(&the_one, &context, &incrust)));
@@ -229,7 +229,7 @@ mod tests {
         let incrust = Incrust::new();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult| r.unwrap().unwrap().as_string().unwrap();
+        let x = |r: EvalResult| r.unwrap().unwrap().as_string().map(|c| c.into_owned()).unwrap();
 
         assert_eq!("1"      , x(super::eval_expr(&parse(b"0 or 1"), &context, &incrust)));
         assert_eq!("0"      , x(super::eval_expr(&parse(b"0 and 1"), &context, &incrust)));

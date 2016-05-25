@@ -16,10 +16,10 @@ impl AsInt for f64 {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for f64 {
-    fn iadd(self: Box<Self>, other: BType) -> Option<BType> { other.as_real().map(|s| -> BType { Box::new(*self + s) }) }
-    fn isub(self: Box<Self>, other: BType) -> Option<BType> { other.as_real().map(|s| -> BType { Box::new(*self - s) }) }
-    fn imul(self: Box<Self>, other: BType) -> Option<BType> { other.as_real().map(|s| -> BType { Box::new(*self * s) }) }
-    fn idiv(self: Box<Self>, other: BType) -> Option<BType> { other.as_real().map(|s| -> BType { Box::new(*self / s) }) }
+    fn iadd<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.as_real().map(|s| -> BType { ex(*self + s) }) }
+    fn isub<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.as_real().map(|s| -> BType { ex(*self - s) }) }
+    fn imul<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.as_real().map(|s| -> BType { ex(*self * s) }) }
+    fn idiv<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.as_real().map(|s| -> BType { ex(*self / s) }) }
 }
 
 

@@ -33,7 +33,7 @@ pub fn mustache(mus: &Mustache, context: &Context, env: &Incrust) -> RenderResul
 //pub fn full_expression(buffer: &mut[u8], mustache: &Mustache, context: &Context, env: &Incrust) -> RenderResult {
 pub fn expression(expr: &FullExpression, context: &Context, env: &Incrust) -> RenderResult {
     Ok(expr.filters.iter().fold(
-        Ok(eval_expr(&expr.expr, context, env)?.and_then(|val| val.as_string())),
+        Ok(eval_expr(&expr.expr, context, env)?.and_then(|val| val.as_string().map(|s| s.into_owned()))),
         |result: FilterResult, filter: &FilterItem| -> FilterResult {
             match result {
                 Err(err)    => Err(err),

@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt::{Display};
 
 use super::abc::*;
@@ -6,11 +7,11 @@ use super::abc::*;
 // --- [ default implementations ] ------------------------------------------------------------------------------------
 
 impl <T> AsString for T where T: Type {
-    default fn as_string(&self) -> Option<String> { None }
+    default fn as_string(&self) -> Option<Cow<str>> { None }
 }
 
 impl <T> AsString for T where T: Type + Display {
-    default fn as_string(&self) -> Option<String> { Some( ToString::to_string(self)) }
+    default fn as_string(&self) -> Option<Cow<str>> { Some( Cow::Owned(ToString::to_string(self))) }
 }
 
 impl <T> AsReal for T where T: Type {
@@ -23,10 +24,10 @@ impl <T> AsInt for T where T: Type {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl <S> IArithm for S where S: Type {
-    default fn iadd(self: Box<Self>, _other: BType) -> Option<BType> { None }
-    default fn isub(self: Box<Self>, _other: BType) -> Option<BType> { None }
-    default fn imul(self: Box<Self>, _other: BType) -> Option<BType> { None }
-    default fn idiv(self: Box<Self>, _other: BType) -> Option<BType> { None }
+    default fn iadd<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
+    default fn isub<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
+    default fn imul<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
+    default fn idiv<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
 }
 
 

@@ -1,4 +1,5 @@
 use std::collections::hash_map::{HashMap};
+use std::borrow::Cow;
 use std::fmt::{Debug};
 use std::iter::Iterator;
 use std::slice::Iter;
@@ -29,7 +30,7 @@ pub fn ex<'a, A>(v: A) -> BType<'a> where A: Into<BType<'a>> { v.into() }
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
 
 pub trait AsString {
-    fn as_string(&self) -> Option<String>;
+    fn as_string(&self) -> Option<Cow<str>>;
 }
 
 pub trait AsReal {
@@ -38,13 +39,6 @@ pub trait AsReal {
 
 pub trait AsInt {
     fn as_int(&self) -> Option<isize>;
-}
-
-pub trait IArithm {
-    fn iadd(&self, other: BType) -> Option<BType>;
-    fn isub(&self, other: BType) -> Option<BType>;
-    fn imul(&self, other: BType) -> Option<BType>;
-    fn idiv(&self, other: BType) -> Option<BType>;
 }
 
 pub trait AsInvocable {
@@ -69,6 +63,13 @@ pub trait AsPartialEq<T> {
 
 
 // --- [ impl interfaces ] --------------------------------------------------------------------------------------------
+
+pub trait IArithm {
+    fn iadd<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
+    fn isub<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
+    fn imul<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
+    fn idiv<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
+}
 
 pub trait IInvocable<'a>: Send + Sync {
     fn invoke(&self, args: &[BType], context: &Context, env: &Incrust) -> EvalResult;
