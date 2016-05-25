@@ -34,7 +34,6 @@ pub fn stmt_edge(input: &[u8]) -> IResult<&[u8], Parsed> {
 named!(pub stmt_raw<&[u8], Statement>, stmt!("raw"));
 named!(pub stmt_endraw<&[u8], Statement>, stmt!("endraw"));
 
-#[cfg_attr(feature = "clippy", allow(cyclomatic_complexity))]
 fn raw_block(input: &[u8]) -> IResult<&[u8], Parsed> {
     #[cfg_attr(feature = "clippy", allow(needless_lifetimes))]
     fn is_end<'a>(input: &'a [u8]) -> bool {
@@ -66,7 +65,6 @@ named!(pub stmt_endfor<&[u8], Statement>, stmt!("endfor"));
 
 named!(pub for_block<&[u8], Parsed>, chain!( s: for_statement, || s.into() ));
 
-#[cfg_attr(feature = "clippy", allow(cyclomatic_complexity))]
 pub fn for_statement(input: &[u8]) -> IResult<&[u8], ForStatement> {
     fn finish(begin: Statement, inner: Template, end: Statement) -> Option<(ForStatement)> {
         match begin.expression {
@@ -146,7 +144,6 @@ named!(pub stmt_endif<&[u8], Statement>, stmt!("endif"));
 
 named!(pub if_block<&[u8], Parsed>, chain!( s: if_statement, || s.into() ));
 
-#[cfg_attr(feature = "clippy", allow(cyclomatic_complexity))]
 pub fn if_statement(input: &[u8]) -> IResult<&[u8], IfStatement> {
 
     named!(if_<&[u8], IfBranch>, chain!( s: stmt_if ~ b: inner, || IfBranch {begin: s, block: Template {parsed: b}} ));
