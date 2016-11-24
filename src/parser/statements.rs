@@ -1,6 +1,6 @@
 use std::str;
 #[allow(unused_imports)]
-use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, eof, space, multispace};
+use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
 
 use ::template::{
     Parsed, Statement, FullExpression, Template, Factor,
