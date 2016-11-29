@@ -1,6 +1,6 @@
 use std::str;
 #[allow(unused_imports)]
-use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, eof, space, multispace};
+use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
 
 use ::template::{Parsed, Mustache};
 
@@ -8,7 +8,7 @@ use super::statements::{statement, stmt_edge};
 use super::expressions::{full_expression};
 
 
-named!(pub text<&[u8], Vec<Parsed> >, chain!( t: inner ~ eof, || t ) );
+named!(pub text<&[u8], Vec<Parsed> >, terminated!( inner, eof!() ) );
 
 
 pub fn inner(input: &[u8]) -> IResult<&[u8], Vec<Parsed> > {
