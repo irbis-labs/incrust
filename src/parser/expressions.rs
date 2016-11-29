@@ -1,6 +1,6 @@
 use std::str;
 #[allow(unused_imports)]
-use nom::{IResult, alpha, alphanumeric, eof, space, multispace};
+use nom::{IResult, alpha, alphanumeric, space, multispace};
 
 use ::template::{
     FullExpression, FilterItem,
