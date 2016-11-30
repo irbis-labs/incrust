@@ -25,12 +25,12 @@ pub fn lit_num(input: &[u8]) -> IResult<&[u8], Literal> {
 }
 
 fn parse_float(s: &str) -> Result<Literal, u32> {
-    let n: f64 = s.parse().map_err(|_| 1301u32)?;
+    let n: f64 = s.parse().map_err(|_| 1301_u32)?;
     Ok(Literal::Real(n))
 }
 
 fn parse_int(s: &str) -> Result<Literal, u32> {
-    let n: isize = s.parse().map_err(|_| 1302u32)?;
+    let n: i64 = s.parse().map_err(|_| 1302_u32)?;
     Ok(Literal::Int(n))
 }
 

@@ -128,8 +128,8 @@ mod tests {
 
         let args: Args = hashmap!{
             "the_one" => ex("World"),
-            "one" => ex(1isize),
-            "two" => ex(2isize),
+            "one" => ex(1_i64),
+            "two" => ex(2_i64),
         };
         let context = Context::new(None, &args);
         let incrust = Incrust::new();

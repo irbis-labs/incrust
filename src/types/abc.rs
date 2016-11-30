@@ -30,45 +30,45 @@ pub fn ex<'a, A>(v: A) -> BType<'a> where A: Into<BType<'a>> { v.into() }
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
 
 pub trait AsString {
-    fn as_string(&self) -> Option<Cow<str>>;
+    fn try_as_string(&self) -> Option<Cow<str>>;
 }
 
 pub trait AsReal {
-    fn as_real(&self) -> Option<f64>;
+    fn try_as_real(&self) -> Option<f64>;
 }
 
 pub trait AsInt {
-    fn as_int(&self) -> Option<isize>;
+    fn try_as_int(&self) -> Option<i64>;
 }
 
 pub trait AsInvocable {
-    fn as_invocable(&self) -> Option<&IInvocable>;
+    fn try_as_invocable(&self) -> Option<&IInvocable>;
 }
 
 pub trait AsIterable {
-    fn as_iterable(&self) -> Option<&IIterable>;
+    fn try_as_iterable(&self) -> Option<&IIterable>;
 }
 
 pub trait AsComposable {
-    fn as_composable(&self) -> Option<&IComposable>;
+    fn try_as_composable(&self) -> Option<&IComposable>;
 }
 
 pub trait AsIndexable {
-    fn as_indexable(&self) -> Option<&IIndexable>;
+    fn try_as_indexable(&self) -> Option<&IIndexable>;
 }
 
 pub trait AsPartialEq<T> {
-    fn as_partial_eq<'a>(&self) -> Option<&IPartialEq<'a, T>>;
+    fn try_as_partial_eq<'a>(&self) -> Option<&IPartialEq<'a, T>>;
 }
 
 
 // --- [ impl interfaces ] --------------------------------------------------------------------------------------------
 
 pub trait IArithm {
-    fn iadd<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
-    fn isub<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
-    fn imul<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
-    fn idiv<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
+    fn try_add<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
+    fn try_sub<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
+    fn try_mul<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
+    fn try_div<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
 }
 
 pub trait IInvocable<'a>: Send + Sync {
@@ -77,7 +77,6 @@ pub trait IInvocable<'a>: Send + Sync {
 
 pub trait IIterable<'a>: Send + Sync {
     fn is_empty(&self) -> bool;
-//    fn len(&self) -> usize;
     fn ivalues(&self) -> VIterator;
 }
 
@@ -85,6 +84,7 @@ pub trait IIndexable<'a>: Send + Sync {
     fn has_index(&self, index: usize) -> bool;
     fn get_index(&self, index: usize) -> Option<BType>;
 //    fn as_slice(&self, range: Range) -> &[BType];
+//    fn len(&self) -> usize;
 }
 
 pub trait IComposable<'a>: Send + Sync {

@@ -1,28 +1,30 @@
 use super::abc::*;
 
 
-impl Type for isize {
+impl Type for i64 {
     fn iclone<'a>(&self) -> BType<'a> { Box::new(*self) }
     fn to_bool(&self) -> bool { *self != 0 }
 }
 
-impl AsReal for isize {
-    fn as_real(&self) -> Option<f64> { Some(*self as f64) }
+impl AsReal for i64 {
+    fn try_as_real(&self) -> Option<f64> { Some(*self as f64) }
 }
 
-impl AsInt for isize {
-    fn as_int(&self) -> Option<isize> { Some(*self) }
+impl AsInt for i64 {
+    fn try_as_int(&self) -> Option<i64> { Some(*self) }
 }
 
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
-impl IArithm for isize {
-    fn iadd<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.as_int().map(|s| -> BType { ex(*self + s) }) }
-    fn isub<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.as_int().map(|s| -> BType { ex(*self - s) }) }
-    fn imul<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.as_int().map(|s| -> BType { ex(*self * s) }) }
-    fn idiv<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.as_int().map(|s| -> BType { ex(*self / s) }) }
+impl IArithm for i64 {
+    fn try_add<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.try_as_int().map(|s| -> BType { ex(*self + s) }) }
+    fn try_sub<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.try_as_int().map(|s| -> BType { ex(*self - s) }) }
+    fn try_mul<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.try_as_int().map(|s| -> BType { ex(*self * s) }) }
+    fn try_div<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> { other.try_as_int().map(|s| -> BType { ex(*self / s) }) }
 }
 
 
 
-impl <'a> Into<BType<'a>> for isize { fn into(self) -> BType<'a> { Box::new(self) } }
+impl <'a> Into<BType<'a>> for i64 {
+    fn into(self) -> BType<'a> { Box::new(self) }
+}

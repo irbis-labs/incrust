@@ -6,8 +6,13 @@ impl <'z> Type for Vec<BType<'z>> {
     fn to_bool(&self) -> bool { !self.is_empty() }
 }
 
-impl <'b> AsIterable for Vec<BType<'b>> { fn as_iterable(&self) -> Option<&IIterable> { Some(self) } }
-impl <'b> AsComposable for Vec<BType<'b>> { fn as_composable(&self) -> Option<&IComposable> { Some(self) } }
+impl <'b> AsIterable for Vec<BType<'b>> {
+    fn try_as_iterable(&self) -> Option<&IIterable> { Some(self) }
+}
+
+impl <'b> AsComposable for Vec<BType<'b>> {
+    fn try_as_composable(&self) -> Option<&IComposable> { Some(self) }
+}
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -29,7 +34,7 @@ impl <'a, 'b: 'a> IIterable<'a> for Vec<BType<'b>> {
 impl <'a, 'b: 'a> IComposable<'a> for Vec<BType<'b>> {
     fn get_attr(&self, id: &str) -> Option<BType> {
         match id {
-            "length" => Some(ex(self.len() as isize)),
+            "length" => Some(ex(self.len() as i64)),
             _ => None
         }
     }

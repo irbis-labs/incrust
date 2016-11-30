@@ -7,12 +7,14 @@ impl Type for bool {
 }
 
 impl AsReal for bool {
-    fn as_real(&self) -> Option<f64> { Some(if *self { 1f64 } else { 0f64 }) }
+    fn try_as_real(&self) -> Option<f64> { Some(if *self { 1_f64 } else { 0_f64 }) }
 }
 
 impl AsInt for bool {
-    fn as_int(&self) -> Option<isize> { Some(if *self { 1isize } else { 0isize }) }
+    fn try_as_int(&self) -> Option<i64> { Some(if *self { 1_i64 } else { 0_i64 }) }
 }
 
 
-impl <'a> Into<BType<'a>> for bool { fn into(self) -> BType<'a> { Box::new(self) } }
+impl <'a> Into<BType<'a>> for bool {
+    fn into(self) -> BType<'a> { Box::new(self) }
+}

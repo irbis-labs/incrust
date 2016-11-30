@@ -156,15 +156,15 @@ mod tests {
         };
         assert_eq!(r#"Say: "Hello, World!""#, incrust.render_text(r#"Say: "{{ what + ", " + who }}!""#, args).unwrap());
         let args = hashmap!{
-            "alpha" => ex(6isize),
-            "omega" => ex(7f64)
+            "alpha" => ex(6_i64),
+            "omega" => ex(7_f64)
         };
         assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
 
-        let args = hashmap!{ "amount" => ex(6isize) };
+        let args = hashmap!{ "amount" => ex(6_i64) };
         assert_eq!("Amount: 6 pcs", incrust.render_text(r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#, args).unwrap());
 
-        let args = hashmap!{ "amount" => ex(0isize) };
+        let args = hashmap!{ "amount" => ex(0_i64) };
         assert_eq!("Amount: -", incrust.render_text(r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#, args).unwrap());
     }
 

@@ -148,7 +148,7 @@ pub struct Invocation {
 pub enum Literal {
     Char(char),
     Str(String),
-    Int(isize),
+    Int(i64),
     Real(f64),
 }
 

@@ -38,7 +38,7 @@ impl <'a> Into<BType<'a>> for Function {
 }
 
 impl <'b> AsInvocable for Function {
-    fn as_invocable(&self) -> Option<&IInvocable> { Some(self) }
+    fn try_as_invocable(&self) -> Option<&IInvocable> { Some(self) }
 }
 
 impl <'a, 'b: 'a> IInvocable<'a> for Function {

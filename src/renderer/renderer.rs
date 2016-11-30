@@ -33,7 +33,7 @@ pub fn mustache(mus: &Mustache, context: &Context, env: &Incrust) -> RenderResul
 //pub fn full_expression(buffer: &mut[u8], mustache: &Mustache, context: &Context, env: &Incrust) -> RenderResult {
 pub fn expression(expr: &FullExpression, context: &Context, env: &Incrust) -> RenderResult {
     Ok(expr.filters.iter().fold(
-        Ok(eval_expr(&expr.expr, context, env)?.and_then(|val| val.as_string().map(|s| s.into_owned()))),
+        Ok(eval_expr(&expr.expr, context, env)?.and_then(|val| val.try_as_string().map(|s| s.into_owned()))),
         |result: FilterResult, filter: &FilterItem| -> FilterResult {
             match result {
                 Err(err)    => Err(err),
@@ -56,15 +56,15 @@ pub fn for_(stmt: &ForStatement, context: &Context, env: &Incrust) -> RenderResu
             let value = eval_expr(&expr.expr, context, env)?;
             match value {
                 None => "".into(),
-                Some(value) => match value.as_iterable() {
+                Some(value) => match value.try_as_iterable() {
                     None => "".into(),
                     Some(iterable) => {
                         let mut buf: Vec<String> = Vec::new();
                         for (index, v) in iterable.ivalues().enumerate() {
                             let local_scope: Args = hashmap!{
                                 stmt.value_var.as_str() => v,
-                                "index0" => ex(index as isize),
-                                "index" => ex(index as isize + 1),
+                                "index0" => ex(index as i64),
+                                "index" => ex(index as i64 + 1),
                                 "first" => ex(index == 0),
                                 "last" => ex(false), // TODO the "last" marker in a loop
                             };

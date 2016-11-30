@@ -82,8 +82,8 @@ pub fn eval_sum<'a>(expr: &'a Expr, context: &'a Context, env: &'a Incrust) -> E
                     Some(acc) => match eval_prod(term, context, env)? {
                         None => None,
                         Some(term) => match *op {
-                            SumOp::Add => acc.iadd(term),
-                            SumOp::Sub => acc.isub(term),
+                            SumOp::Add => acc.try_add(term),
+                            SumOp::Sub => acc.try_sub(term),
                         } } } )
             } ) } } }
 
@@ -99,8 +99,8 @@ pub fn eval_prod<'a>(term: &'a Term, context: &'a Context, env: &'a Incrust) -> 
                     Some(acc) => match eval_factor(factor, context, env)? {
                         None => return Ok(None),
                         Some(factor) => match *op {
-                            MulOp::Mul => acc.imul(factor),
-                            MulOp::Div => acc.idiv(factor),
+                            MulOp::Mul => acc.try_mul(factor),
+                            MulOp::Div => acc.try_div(factor),
                         } } } }
             Ok(acc)
         } } }
@@ -118,7 +118,7 @@ pub fn eval_factor<'a>(fctr: &'a Factor, context: &'a Context, env: &'a Incrust)
 pub fn eval_attribute<'a>(attr: &'a Attribute, context: &'a Context, env: &'a Incrust) -> EvalResult {
     match eval_factor(&attr.on, context, env)? {
         None => Err(EvalError::NotComposable),
-        Some(value) => match value.as_composable() {
+        Some(value) => match value.try_as_composable() {
             None => Err(EvalError::NotComposable),
             Some(composable) => match composable.get_attr(&attr.id).map(|v| v.iclone()) {
                 None => Err(EvalError::AttributeNotExists(attr.id.clone())),
@@ -128,7 +128,7 @@ pub fn eval_attribute<'a>(attr: &'a Attribute, context: &'a Context, env: &'a In
 pub fn eval_invocation<'a>(inv: &'a Invocation, context: &'a Context, env: &'a Incrust) -> EvalResult {
     match eval_factor(&inv.on, context, env)? {
         None => Err(EvalError::NotInvocable),
-        Some(value) => match value.as_invocable() {
+        Some(value) => match value.try_as_invocable() {
             None => Err(EvalError::NotInvocable),
             Some(invocable) => {
                 let mut args: Vec<BType> = Vec::with_capacity(inv.args.len());
@@ -179,7 +179,7 @@ mod tests {
         let incrust = Incrust::new();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult| r.unwrap().unwrap().as_string().map(|c| c.into_owned()).unwrap();
+        let x = |r: EvalResult| r.unwrap().unwrap().try_as_string().map(|c| c.into_owned()).unwrap();
 
         assert_eq!("1"   , x(super::eval_expr(&parse(br#""a".length"#), &context, &incrust)));
         assert_eq!("2"   , x(super::eval_expr(&parse(br#"("a" + "b").length"#), &context, &incrust)));
@@ -193,7 +193,7 @@ mod tests {
         use ::incrust::{Incrust, Context, Args, ex};
         use ::parser::expressions::expression as parse_expr;
 
-        let int_one: Factor = Literal::Int(1isize).into();
+        let int_one: Factor = Literal::Int(1_i64).into();
         let the_one = Factor::Variable("the_one".into());
 
         let args: Args = hashmap!{ "the_one" => ex("World") };
@@ -201,7 +201,7 @@ mod tests {
         let incrust = Incrust::new();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult| r.unwrap().unwrap().as_string().map(|c| c.into_owned()).unwrap();
+        let x = |r: EvalResult| r.unwrap().unwrap().try_as_string().map(|c| c.into_owned()).unwrap();
 
         assert!("1"      == x(super::eval_factor(&int_one, &context, &incrust)));
         assert!("World"  == x(super::eval_factor(&the_one, &context, &incrust)));
@@ -229,7 +229,7 @@ mod tests {
         let incrust = Incrust::new();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult| r.unwrap().unwrap().as_string().map(|c| c.into_owned()).unwrap();
+        let x = |r: EvalResult| r.unwrap().unwrap().try_as_string().map(|c| c.into_owned()).unwrap();
 
         assert_eq!("1"      , x(super::eval_expr(&parse(b"0 or 1"), &context, &incrust)));
         assert_eq!("0"      , x(super::eval_expr(&parse(b"0 and 1"), &context, &incrust)));
