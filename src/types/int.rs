@@ -2,16 +2,31 @@ use super::abc::*;
 
 
 impl Type for i64 {
-    fn iclone<'a>(&self) -> BType<'a> { Box::new(*self) }
-    fn to_bool(&self) -> bool { *self != 0 }
+    fn iclone<'a>(&self) -> BType<'a> {
+        box *self
+    }
+}
+
+impl AsBool for i64 {
+    fn to_bool(&self) -> bool {
+        *self != 0
+    }
 }
 
 impl AsReal for i64 {
-    fn try_as_real(&self) -> Option<f64> { Some(*self as f64) }
+    fn try_as_real(&self) -> Option<f64> {
+        Some(*self as f64)
+    }
 }
 
 impl AsInt for i64 {
-    fn try_as_int(&self) -> Option<i64> { Some(*self) }
+    fn try_as_int(&self) -> Option<i64> {
+        Some(*self)
+    }
+
+    fn is_int(&self) -> bool {
+        true
+    }
 }
 
 
@@ -24,7 +39,8 @@ impl IArithm for i64 {
 }
 
 
-
 impl <'a> Into<BType<'a>> for i64 {
-    fn into(self) -> BType<'a> { Box::new(self) }
+    fn into(self) -> BType<'a> {
+        box self
+    }
 }

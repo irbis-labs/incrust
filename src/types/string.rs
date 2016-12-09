@@ -4,12 +4,25 @@ use super::abc::*;
 
 
 impl Type for String {
-    fn iclone<'a>(&self) -> BType<'a> { Box::new(self.to_string()) }
-    fn to_bool(&self) -> bool { !self.is_empty() }
+    fn iclone<'a>(&self) -> BType<'a> {
+        box self.to_string()
+    }
+}
+
+impl AsBool for String {
+    fn to_bool(&self) -> bool {
+        !self.is_empty()
+    }
 }
 
 impl AsString for String {
-    fn try_as_string(&self) -> Option<Cow<str>> { Some( Cow::Borrowed(self)) }
+    fn is_string(&self) -> bool {
+        true
+    }
+
+    fn try_as_string(&self) -> Option<Cow<str>> {
+        Some(Cow::Borrowed(self))
+    }
 }
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]

@@ -8,7 +8,7 @@ pub struct Escape;
 
 impl Filter for Escape {
     #[allow(unused_variables)]
-    fn filter(&self, value: Option<String>, context: &Context, env: &Incrust) -> FilterResult {
+    fn filter(&self, value: Option<String>, context: &Context) -> FilterResult {
         use marksman_escape::Escape as F;
         match value {
             Some(string) => {
@@ -27,7 +27,7 @@ pub struct Unescape;
 
 impl Filter for Unescape {
     #[allow(unused_variables)]
-    fn filter(&self, value: Option<String>, context: &Context, env: &Incrust) -> FilterResult {
+    fn filter(&self, value: Option<String>, context: &Context) -> FilterResult {
         use marksman_escape::Unescape as F;
         match value {
             Some(string) => {

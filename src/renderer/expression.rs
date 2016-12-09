@@ -1,46 +1,51 @@
-use ::abc::RenderResult;
-use ::incrust::{Incrust, Context};
-use ::template::{
+use std::fmt;
+
+use abc::RenderResult;
+use incrust::{Incrust, Context};
+use template::{
     DisjExpr, ConjExpr, CmpExpr, Expr, Term,
-    DisjOp, ConjOp, CmpOp, SumOp, MulOp,
+    /*DisjOp, ConjOp, */CmpOp, SumOp, MulOp,
     DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
     Factor, Literal,
 };
 
-pub fn render_expr<'a, 'b>(expr: &'a DisjExpr, context: &'b Context, env: &'b Incrust) -> RenderResult {
+
+pub fn render_expr<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, expr: &'a DisjExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
         Some(&DisjItem(ref _op, ref conj)) => {
-            let start = render_conj(conj, context, env);
-            itr.fold(start, |acc: RenderResult, &DisjItem(ref op, ref conj)| -> RenderResult {
-                Ok( format!("{} {} {}", acc?, match *op {
-                    DisjOp::Or => "or",
-                }, render_conj(conj, context, env)? ) )
-            } ) } } }
+            render_conj(writer, context, conj)?;
+            for &DisjItem(ref _op, ref conj) in itr {
+                write!(writer, " or ")?;
+                render_conj(writer, context, conj)?;
+            }
+            Ok(())
+        } } }
 
 
-pub fn render_conj<'a, 'b>(expr: &'a ConjExpr, context: &'b Context, env: &'b Incrust) -> RenderResult {
+pub fn render_conj<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, expr: &'a ConjExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
         Some(&ConjItem(ref _op, ref cmp)) => {
-            let start = render_cmp(cmp, context, env);
-            itr.fold(start, |acc: RenderResult, &ConjItem(ref op, ref cmp)| -> RenderResult {
-                Ok( format!("{} {} {}", acc?, match *op {
-                    ConjOp::And => "and",
-                }, render_cmp(cmp, context, env)? ) )
-            } ) } } }
+            render_cmp(writer, context, cmp)?;
+            for &ConjItem(ref _op, ref cmp) in itr {
+                write!(writer, " and ")?;
+                render_cmp(writer, context, cmp)?;
+            }
+            Ok(())
+        } } }
 
 
-pub fn render_cmp<'a, 'b>(expr: &'a CmpExpr, context: &'b Context, env: &'b Incrust) -> RenderResult {
+pub fn render_cmp<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, expr: &'a CmpExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
         Some(&CmpItem(ref _op, ref sum)) => {
-            let start = render_sum(sum, context, env);
-            itr.fold(start, |acc: RenderResult, &CmpItem(ref op, ref sum)| -> RenderResult {
-                Ok( format!("{} {} {}", acc?, match *op {
+            render_sum(writer, context, sum)?;
+            for &CmpItem(ref op, ref sum) in itr {
+                let op = match *op {
                     CmpOp::Lt   => "<",
                     CmpOp::Lte  => "<=",
                     CmpOp::Eq   => "==",
@@ -49,67 +54,95 @@ pub fn render_cmp<'a, 'b>(expr: &'a CmpExpr, context: &'b Context, env: &'b Incr
                     CmpOp::Nin  => "not in",
                     CmpOp::Gte  => ">=",
                     CmpOp::Gt   => ">",
-                }, render_sum(sum, context, env)? ) )
-            } ) } } }
+                };
+                write!(writer, " {} ", op)?;
+                render_sum(writer, context, sum)?;
+            }
+            Ok(())
+        } } }
 
 
-pub fn render_sum<'a, 'b>(expr: &'a Expr, context: &'b Context, env: &'b Incrust) -> RenderResult {
+pub fn render_sum<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, expr: &'a Expr) -> RenderResult<()> {
     let mut itr = expr.sum.iter();
     match itr.next() {
         None => unreachable!(),
         Some(&ExprItem(ref _op, ref term)) => {
-            let start = render_prod(term, context, env);
-            itr.fold(start, |acc: RenderResult, &ExprItem(ref op, ref term)| -> RenderResult {
-                Ok( format!("{} {} {}", acc?, match *op {
+            render_prod(writer, context, term)?;
+            for &ExprItem(ref op, ref term) in itr {
+                let op = match *op {
                     SumOp::Add => "+",
                     SumOp::Sub => "-",
-                }, render_prod(term, context, env)? ) )
-            } ) } } }
+                };
+                write!(writer, " {} ", op)?;
+                render_prod(writer, context, term)?;
+            }
+            Ok(())
+        } } }
 
 
-pub fn render_prod<'a, 'b>(term: &'a Term, context: &'b Context, env: &'b Incrust) -> RenderResult {
+pub fn render_prod<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, term: &'a Term) -> RenderResult<()> {
     let mut itr = term.mul.iter();
     match itr.next() {
         None => unreachable!(),
         Some(&TermItem(ref _op, ref factor)) => {
-            let mut acc = render_factor(factor, context, env)?;
+            render_factor(writer, context, factor)?;
             for &TermItem(ref op, ref factor) in itr {
-                acc = format!("{} {} {}", acc, match *op {
+                let op = match *op {
                     MulOp::Mul => "*",
                     MulOp::Div => "/",
-                }, render_factor(factor, context, env)? )
+                };
+                write!(writer, " {} ", op)?;
+                render_factor(writer, context, factor)?;
             }
-            Ok(acc)
+            Ok(())
         } } }
 
 
-pub fn render_factor<'a, 'b>(fctr: &'a Factor, context: &'b Context, env: &'b Incrust) -> RenderResult {
-    Ok(match *fctr {
-        Factor::Literal(ref lit) => render_literal(lit, context, env)?,
-        Factor::Subexpression(ref expr) => format!("({})", render_expr(expr, context, env)? ),
-        Factor::Variable(ref id) => id.clone(),
-        Factor::Attribute(ref attr) => format!("{}.{}", render_factor(&*attr.on, context, env)?, attr.id ),
-        Factor::Invocation(ref inv) => {
-            let mut acc: Vec<String> = Vec::with_capacity(inv.args.len());
-            for expr in &inv.args { acc.push(render_expr(expr, context, env)?) }
-            format!("{}({})", render_factor(&*inv.on, context, env)?, acc.join(", "))
+pub fn render_factor<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, fctr: &'a Factor) -> RenderResult<()> {
+    match *fctr {
+        Factor::Literal(ref lit) => {
+            render_literal(writer, lit)?;
         },
-    })
+        Factor::Variable(ref id) => {
+            write!(writer, "{}", id)?;
+        },
+        Factor::Subexpression(ref expr) => {
+            write!(writer, "(")?;
+            render_expr(writer, context, expr)?;
+            write!(writer, ")")?;
+        },
+        Factor::Attribute(ref attr) => {
+            render_factor(writer, context, &*attr.on)?;
+            write!(writer, ".{}", attr.id)?;
+        },
+        Factor::Invocation(ref inv) => {
+            render_factor(writer, context, &*inv.on)?;
+            write!(writer, "(")?;
+            for (i, expr) in inv.args.iter().enumerate() {
+                if i != 0 { write!(writer, ", ")?; }
+                render_expr(writer, context, expr)?;
+            }
+            write!(writer, ")")?;
+        },
+    };
+    Ok(())
 }
 
-pub fn render_literal<'a, 'b>(l: &'a Literal, _context: &'b Context, _env: &'b Incrust) -> RenderResult {
-    Ok(match *l {
-        Literal::Str(ref string) => format!("{:?}", string),
-        Literal::Char(ref chr) => format!("{:?}", chr),
-        Literal::Int(ref int) => format!("{}", int),
-        Literal::Real(ref real) => format!("{}", real),
-    })
+
+pub fn render_literal<'a, 'b, W: fmt::Write>(writer: &mut W, l: &'a Literal) -> RenderResult<()> {
+    match *l {
+        Literal::Str(ref string) => write!(writer, "{:?}", string)?,
+        Literal::Char(ref chr)   => write!(writer, "{:?}", chr)?,
+        Literal::Int(ref int)    => write!(writer, "{}", int)?,
+        Literal::Real(ref real)  => write!(writer, "{}", real)?,
+    }
+    Ok(())
 }
+
 
 #[cfg(test)]
 mod tests {
     #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
-    //    use ::parser::expressions::;
     use nom::IResult;
     use std::fmt::Debug;
 
@@ -123,34 +156,37 @@ mod tests {
 
     #[test]
     fn eval_expr() {
-        use ::incrust::{Incrust, Context, Args, ex};
-        use ::parser::expressions::expression as parse_expr;
+        use incrust::{Incrust, Args, ex};
+        use parser::expressions::expression as parse_expr;
+        use super::render_expr;
 
         let args: Args = hashmap!{
-            "the_one" => ex("World"),
-            "one" => ex(1_i64),
-            "two" => ex(2_i64),
+            "the_one".into() => ex("World"),
+            "one".into() => ex(1_i64),
+            "two".into() => ex(2_i64),
         };
-        let context = Context::new(None, &args);
-        let incrust = Incrust::new();
+        let incrust = Incrust::default();
+        let context = incrust.context(&args);
 
         let parse = |s| unwrap_iresult(parse_expr(s));
+        let test = |s, b| {
+            let mut buf = String::new();
+            render_expr(&mut buf, &context, &parse(b)).unwrap();
+            assert_eq!(s, buf)
+        };
 
-        assert_eq!("1"                  , super::render_expr(&parse(b"1"), &context, &incrust).unwrap());
-        assert_eq!("1 + 1"              , super::render_expr(&parse(b"1+1"), &context, &incrust).unwrap());
-        assert_eq!("1 + 1"              , super::render_expr(&parse(b"1 + 1"), &context, &incrust).unwrap());
-        assert_eq!("1 - 1"              , super::render_expr(&parse(b"1 \n -\t1"), &context, &incrust).unwrap());
-        assert_eq!("(1 / 1)"            , super::render_expr(&parse(b"(1 / 1)"), &context, &incrust).unwrap());
+        test("1",                   b"1");
+        test("1 + 1",               b"1+1");
+        test("1 + 1",               b"1 + 1");
+        test("1 - 1",               b"1 \n -\t1");
 
-        assert_eq!("1 * 1"              , super::render_expr(&parse(b"1 * 1"), &context, &incrust).unwrap());
-        assert_eq!("1 + 1 * 1"          , super::render_expr(&parse(b"1 + 1 * 1"), &context, &incrust).unwrap());
-        assert_eq!("(1 + 1) * 1"        , super::render_expr(&parse(b"(1 + 1) * 1"), &context, &incrust).unwrap());
-        assert_eq!("(1 + (1 / 1)) * 1"  , super::render_expr(&parse(b"(1+(1/1))*1"), &context, &incrust).unwrap());
+        test("(1 / 1)",             b"(1 / 1)");
+        test("1 * 1",               b"1 * 1");
+        test("1 + 1 * 1",           b"1 + 1 * 1");
+        test("(1 + 1) * 1",         b"(1 + 1) * 1");
+        test("(1 + (1 / 1)) * 1",   b"(1+(1/1))*1");
 
-        assert_eq!("True and False"     , super::render_expr(&parse(b"True and False"), &context, &incrust).unwrap());
-        assert_eq!("0 or 1 and 2"       , super::render_expr(&parse(b"0 or 1 and 2"), &context, &incrust).unwrap());
-
-//        assert!("World" == x(super::eval_factor(&the_one, &context, &incrust)));
-//        assert!("Space" != x(super::eval_factor(&the_one, &context, &incrust)));
+        test("True and False",      b"True and False");
+        test("0 or 1 and 2",        b"0 or 1 and 2");
     }
 }

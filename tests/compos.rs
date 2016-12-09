@@ -1,4 +1,4 @@
-#![allow(unstable_features)]
+#![feature(box_syntax)]
 #![feature(specialization)]
 
 #[macro_use]
@@ -21,8 +21,7 @@ impl Fruit {
 }
 
 impl Type for Fruit {
-    fn iclone<'a>(&self) -> BType<'a> { Box::new(self.clone()) }
-    fn to_bool(&self) -> bool { true }
+    fn iclone<'a>(&self) -> BType<'a> { box self.clone() }
 }
 
 
@@ -53,8 +52,8 @@ fn attributes() {
 
     let sample_a = sample_loader.load("2a.html").unwrap();
     let args = || hashmap!{
-        "title" => ex("fruits"),
-        "fruits" => ex(vec![
+        "title".into() => ex("fruits"),
+        "fruits".into() => ex(vec![
             ex(Fruit::new("Orange", 4.0)),
             ex(Fruit::new("Apple", 2.5)),
             ex(Fruit::new("Banana", 2.25)),
@@ -71,14 +70,14 @@ fn invocables() {
     incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
-    fn title(_: &[BType], _: &Context, _: &Incrust) -> EvalResult {
+    fn title(_: &[BType], _: &Context) -> EvalResult {
         Ok(Some(ex("fruits")))
     }
 
     let sample_a = sample_loader.load("2a.html").unwrap();
     let args = || hashmap!{
-        "title" => Function::new(title),
-        "fruits" => ex(vec![
+        "title".into() => Function::new(title),
+        "fruits".into() => ex(vec![
             ex(Fruit::new("Orange", 4.0)),
             ex(Fruit::new("Apple", 2.5)),
             ex(Fruit::new("Banana", 2.25)),

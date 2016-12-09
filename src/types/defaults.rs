@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use std::fmt::{Display};
+use std::fmt::Display;
 
 use super::abc::*;
 
@@ -7,19 +7,51 @@ use super::abc::*;
 // --- [ default implementations ] ------------------------------------------------------------------------------------
 
 impl <T> AsString for T where T: Type {
-    default fn try_as_string(&self) -> Option<Cow<str>> { None }
+    default fn is_string(&self) -> bool {
+        false
+    }
+
+    default fn try_as_string(&self) -> Option<Cow<str>> {
+        None
+    }
 }
 
 impl <T> AsString for T where T: Type + Display {
-    default fn try_as_string(&self) -> Option<Cow<str>> { Some( Cow::Owned(ToString::to_string(self))) }
+    default fn is_string(&self) -> bool {
+        true
+    }
+
+    default fn try_as_string(&self) -> Option<Cow<str>> {
+        Some(Cow::Owned(ToString::to_string(self)))
+    }
+}
+
+impl <T> AsBool for T where T: Type {
+    default fn is_bool(&self) -> bool {
+        false
+    }
+    default fn to_bool(&self) -> bool {
+        true
+    }
 }
 
 impl <T> AsReal for T where T: Type {
-    default fn try_as_real(&self) -> Option<f64> { None }
+    default fn is_real(&self) -> bool {
+        false
+    }
+    default fn try_as_real(&self) -> Option<f64> {
+        None
+    }
 }
 
 impl <T> AsInt for T where T: Type {
-    default fn try_as_int(&self) -> Option<i64> { None }
+    default fn is_int(&self) -> bool {
+        false
+    }
+
+    default fn try_as_int(&self) -> Option<i64> {
+        None
+    }
 }
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
@@ -32,11 +64,23 @@ impl <S> IArithm for S where S: Type {
 
 
 impl <T> AsIterable for T where T: Type {
-    default fn try_as_iterable(&self) -> Option<&IIterable> { None }
+    default fn is_iterable(&self) -> bool {
+        self.try_as_iterable().is_some()
+    }
+
+    default fn try_as_iterable(&self) -> Option<&IIterable> {
+        None
+    }
 }
 
 impl <T> AsComposable for T where T: Type {
-    default fn try_as_composable(&self) -> Option<&IComposable> { None }
+    default fn is_composable(&self) -> bool {
+        self.try_as_composable().is_some()
+    }
+
+    default fn try_as_composable(&self) -> Option<&IComposable> {
+        None
+    }
 }
 
 //impl <'a, T> AsComposable for T where T: Type + IComposable<'a> {
@@ -44,6 +88,11 @@ impl <T> AsComposable for T where T: Type {
 //}
 
 impl <T> AsInvocable for T where T: Type {
-    default fn try_as_invocable(&self) -> Option<&IInvocable> { None }
-}
+    default fn is_invocable(&self) -> bool {
+        self.try_as_invocable().is_some()
+    }
 
+    default fn try_as_invocable(&self) -> Option<&IInvocable> {
+        None
+    }
+}

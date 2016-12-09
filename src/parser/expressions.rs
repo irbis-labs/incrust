@@ -54,7 +54,7 @@ fn identifier(input: &[u8]) -> IResult<&[u8], String> {
             }
         )
     );
-    println!("::: identifier {:?}", id);
+    trace!("::: identifier {:?}", id);
     IResult::Done(i, id)
 }
 
@@ -110,7 +110,7 @@ fn factor(input: &[u8]) -> IResult<&[u8], Factor> {
         a: simple_factor ~
         b: many0!(chain!(many0!(multispace) ~ char!('.') ~ many0!(multispace) ~ id: variable, || id)),
         || b.into_iter().fold(a, |acc, arg| {
-            println!("::: acc, arg: {:?}, {:?}", acc, arg);
+            trace!("::: acc, arg: {:?}, {:?}", acc, arg);
             match arg {
                 Factor::Variable(id) => Factor::Attribute(Attribute{ id: id, on: Box::new(acc) }),
                 Factor::Invocation(inv) => Factor::Invocation(inv),
@@ -118,7 +118,7 @@ fn factor(input: &[u8]) -> IResult<&[u8], Factor> {
             }
         })
     ) );
-    println!("::: factor: {:?}", res);
+    trace!("::: factor: {:?}", res);
     IResult::Done(i, res)
 }
 
@@ -147,7 +147,7 @@ fn variable(input: &[u8]) -> IResult<&[u8], Factor> {
         Some((_, _, _, args, _, _)) => Invocation { on: Box::new(var), args: args } .into(),
         None => var
     };
-    println!("::: v: {:?}", v);
+    trace!("::: v: {:?}", v);
     IResult::Done(i, v)
 }
 
@@ -162,7 +162,7 @@ fn expr_list(input: &[u8]) -> IResult<&[u8], Vec<DisjExpr> > {
             lst
         }
     )));
-    println!("::: expr_list: {:?}", lst);
+    trace!("::: expr_list: {:?}", lst);
     IResult::Done(i, lst.unwrap_or_else(Vec::new))
 }
 
@@ -177,7 +177,7 @@ fn expr_sep(input: &[u8]) -> IResult<&[u8], ()> {
 fn op_disj_bin(input: &[u8]) -> IResult<&[u8], DisjOp> {
     let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("or")), many0!(multispace)) );
 
-    println!(":::: or");
+    trace!(":::: or");
     IResult::Done(i, match o {
         b"or"      => DisjOp::Or,
         _ => unreachable!()
@@ -187,7 +187,7 @@ fn op_disj_bin(input: &[u8]) -> IResult<&[u8], DisjOp> {
 fn op_conj_bin(input: &[u8]) -> IResult<&[u8], ConjOp> {
     let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("and")), many0!(multispace)) );
 
-    println!(":::: and");
+    trace!(":::: and");
     IResult::Done(i, match o {
         b"and"      => ConjOp::And,
         _ => unreachable!()

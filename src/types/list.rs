@@ -1,17 +1,30 @@
 use super::abc::*;
 
 
-impl <'z> Type for Vec<BType<'z>> {
-    fn iclone<'a>(&self) -> BType<'a> { Box::new(self.into_iter().map(|v| v.iclone()).collect::<Vec<BType>>()) }
-    fn to_bool(&self) -> bool { !self.is_empty() }
+impl <'b> Type for Vec<BType<'b>> {
+    fn iclone<'c>(&self) -> BType<'c> {
+        box self.into_iter()
+            .map(|v| v.iclone())
+            .collect::<Vec<BType>>()
+    }
+}
+
+impl <'b> AsBool for Vec<BType<'b>> {
+    fn to_bool(&self) -> bool {
+        !self.is_empty()
+    }
 }
 
 impl <'b> AsIterable for Vec<BType<'b>> {
-    fn try_as_iterable(&self) -> Option<&IIterable> { Some(self) }
+    fn try_as_iterable(&self) -> Option<&IIterable> {
+        Some(self)
+    }
 }
 
 impl <'b> AsComposable for Vec<BType<'b>> {
-    fn try_as_composable(&self) -> Option<&IComposable> { Some(self) }
+    fn try_as_composable(&self) -> Option<&IComposable> {
+        Some(self)
+    }
 }
 
 
@@ -41,7 +54,11 @@ impl <'a, 'b: 'a> IComposable<'a> for Vec<BType<'b>> {
 }
 
 
-impl <'a> Into<BType<'a>> for Vec<BType<'a>> { fn into(self) -> BType<'a> { Box::new(self) } }
+impl <'a> Into<BType<'a>> for Vec<BType<'a>> {
+    fn into(self) -> BType<'a> {
+        box Vec::from(self)
+    }
+}
 
 
 

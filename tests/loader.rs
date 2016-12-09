@@ -19,8 +19,8 @@ fn dict() {
 
     let sample_a = sample_loader.load("1-a.html").unwrap();
     let args = || hashmap!{
-        "title" => ex("fruits"),
-        "fruits" => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")])
+        "title".into() => ex("fruits"),
+        "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")])
     };
 
     assert_eq!(sample_a, incrust.render("1", args()).unwrap());
@@ -34,8 +34,8 @@ fn filesystem() {
 
     let sample_a = sample_loader.load("1-a.html").unwrap();
     let args = || hashmap!{
-        "title" => ex("fruits"),
-        "fruits" => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")])
+        "title".into() => ex("fruits"),
+        "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")])
     };
 
     assert_eq!(sample_a, incrust.render("1", args()).unwrap());
@@ -50,8 +50,8 @@ fn namespace() {
 
     let sample_a = sample_loader.load("1-a.html").unwrap();
     let args = || hashmap!{
-        "title" => ex("fruits"),
-        "fruits" => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")])
+        "title".into() => ex("fruits"),
+        "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")])
     };
 
     assert_eq!(sample_a, incrust.render("simple:1", args()).unwrap());

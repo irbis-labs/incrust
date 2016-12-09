@@ -44,7 +44,7 @@ fn lit_char(input: &[u8]) -> IResult<&[u8], Literal> {
             char!('\'')
         )
     );
-    println!("lit_char {:?}", s);
+    trace!("lit_char {:?}", s);
     match parse_char(s.as_str()) {
         Ok(chr) => IResult::Done(i, Literal::Char(chr)),
         Err(err) => IResult::Error(NomErr::Code(ErrorKind::Custom(err))),

@@ -10,16 +10,20 @@ use ::incrust::{Context, Incrust};
 
 // --------------------------------------------------------------------------------------------------------------------
 
-pub type Args<'a> = HashMap<EntityId<'a>, BType<'a>>;
-
 // TODO EntityId: String vs &'static str
 //pub type EntityId = String;
 pub type EntityId<'a> = &'a str;
 
+pub type Args<'a> = HashMap<Cow<'a, str>, BType<'a>>;
+
+// --------------------------------------------------------------------------------------------------------------------
+
 pub type BType<'a> = Box<Type + 'a>;
-pub trait Type: AsString + IArithm + AsReal + AsInt + AsIterable + AsComposable + AsInvocable + Send + Sync + Debug {
+pub trait Type:
+    AsString + AsBool + AsReal + AsInt + AsIterable + AsComposable + AsInvocable +
+    IArithm + Send + Sync + Debug
+{
     fn iclone<'a>(&self) -> BType<'a>;
-    fn to_bool(&self) -> bool;
 }
 
 
@@ -30,34 +34,47 @@ pub fn ex<'a, A>(v: A) -> BType<'a> where A: Into<BType<'a>> { v.into() }
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
 
 pub trait AsString {
+    fn is_string(&self) -> bool;
     fn try_as_string(&self) -> Option<Cow<str>>;
 }
 
+pub trait AsBool {
+    fn is_bool(&self) -> bool;
+    fn to_bool(&self) -> bool;
+}
+
 pub trait AsReal {
+    fn is_real(&self) -> bool;
     fn try_as_real(&self) -> Option<f64>;
 }
 
 pub trait AsInt {
+    fn is_int(&self) -> bool;
     fn try_as_int(&self) -> Option<i64>;
 }
 
 pub trait AsInvocable {
+    fn is_invocable(&self) -> bool;
     fn try_as_invocable(&self) -> Option<&IInvocable>;
 }
 
 pub trait AsIterable {
+    fn is_iterable(&self) -> bool;
     fn try_as_iterable(&self) -> Option<&IIterable>;
 }
 
 pub trait AsComposable {
+    fn is_composable(&self) -> bool;
     fn try_as_composable(&self) -> Option<&IComposable>;
 }
 
 pub trait AsIndexable {
+    fn is_indexable(&self) -> bool;
     fn try_as_indexable(&self) -> Option<&IIndexable>;
 }
 
 pub trait AsPartialEq<T> {
+    fn is_partial_eq(&self) -> bool;
     fn try_as_partial_eq<'a>(&self) -> Option<&IPartialEq<'a, T>>;
 }
 
@@ -72,7 +89,7 @@ pub trait IArithm {
 }
 
 pub trait IInvocable<'a>: Send + Sync {
-    fn invoke(&self, args: &[BType], context: &Context, env: &Incrust) -> EvalResult;
+    fn invoke(&self, args: &[BType], context: &Context) -> EvalResult;
 }
 
 pub trait IIterable<'a>: Send + Sync {

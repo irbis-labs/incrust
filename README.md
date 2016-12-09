@@ -22,7 +22,7 @@ Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be
 
 ```
 [dependencies]
-incrust = "0.1"
+incrust = "0.2"
 ```
 
 For ease of use hashmaps you may use the [maplit](https://crates.io/crates/maplit)
@@ -36,17 +36,17 @@ extern crate incrust;
 
 use incrust::ex;
 
-fn create_env() -> Incrust {
+fn create_env<'a>() -> Incrust<'a> {
     use incrust::{Incrust, FilesystemLoader};
 
-    let mut instance = Incrust::new();
-    instance.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl")));
+    let mut instance = Incrust::default();
+    instance.loaders.push(FilesystemLoader::new("./assets/tpl"));
     instance
 }
 
 fn main() {
     let incrust = create_env();
-    let args = hashmap!{ "name" => ex("World") };
+    let args = hashmap!{ "name".into() => ex("World") };
     incrust.render("hello", args).unwrap();
 }
 ```
@@ -54,10 +54,10 @@ fn main() {
 Though Incrust has smart loaders, it may be used just as advanced formatter to render directly from string template
 
 ```rust
-incrust.render_text("Hello, {{ name | e }}!", hashmap!{ "name" => ex("World") }).unwrap();
+incrust.render_text("Hello, {{ name | e }}!", hashmap!{ "name".into() => ex("World") }).unwrap();
 // or with prepared template
 let hello = incrust.parse("Hello, {{ name | e }}!");
-let args = hashmap!{ "name" => ex("World") };
+let args = hashmap!{ "name".into() => ex("World") };
 incrust.render_parsed(&hello, args).unwrap();
 ```
 
@@ -67,7 +67,7 @@ incrust.render_parsed(&hello, args).unwrap();
 ### Filters
 
 ```rust
-let args = hashmap!{ "title" => ex("<Cats & Dogs>") };
+let args = hashmap!{ "title".into() => ex("<Cats & Dogs>") };
 ```
 ```twig
 <h1>{{ title | escape }}</h1>
@@ -91,8 +91,8 @@ Pi: 3.1415926
 
 ```rust
 let args = hashmap!{
-    "what" => ex("Hello"),
-    "who" => ex("World")
+    "what".into() => ex("Hello"),
+    "who".into() => ex("World")
 };
 ```
 ```twig
@@ -104,8 +104,8 @@ Say: "Hello, World!"
 
 ```rust
 let args = hashmap!{
-    "alpha" => ex(6isize),
-    "omega" => ex(7f64)
+    "alpha".into() => ex(6isize),
+    "omega".into() => ex(7f64)
 };
 ```
 ```twig
@@ -121,8 +121,8 @@ The answer is 42
 Amount: {{ amount and ("" + amount + " pcs") or "-" }}
 ```
 ```rust
-assert_eq!("Amount: 6 pcs", incrust.render("tpl", hashmap!{ "amount" => ex(6isize) }).unwrap());
-assert_eq!("Amount: -", incrust.render("tpl", hashmap!{ "amount" => ex(0isize) }).unwrap());
+assert_eq!("Amount: 6 pcs", incrust.render("tpl", hashmap!{ "amount".into() => ex(6isize) }).unwrap());
+assert_eq!("Amount: -", incrust.render("tpl", hashmap!{ "amount".into() => ex(0isize) }).unwrap());
 ```
 
 ### Conditional statements
@@ -139,7 +139,7 @@ It's true
 ### For-Loop statements
 
 ```rust
-let args = hashmap!{ "fruits" => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")]) };
+let args = hashmap!{ "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")]) };
 ```
 ```twig
 <ul>{% for fruit in fruits %}<li>{{ index }}. {{ fruit | e }}</li>{% endfor %}</ul>

@@ -1,6 +1,8 @@
-use ::abc::{RenderResult, FilterResult};
-use ::incrust::{Incrust, Context, Args, ex};
-use ::template::{
+use std::fmt;
+
+use abc::{RenderResult, FilterResult};
+use incrust::{Incrust, Context, Args, ex};
+use template::{
     Parsed, Mustache,
     FullExpression, FilterItem,
     IfStatement, ForStatement,
@@ -9,86 +11,88 @@ use ::template::{
 use super::evaluator::eval_expr;
 
 
-//pub fn text<'a>(buffer: &mut[u8], tpl: &'a[Parsed], context: &'a Context, env: &'a Incrust) -> RenderResult {
-pub fn text<'a>(tpl: &'a[Parsed], context: &'a Context, env: &'a Incrust) -> RenderResult {
-    let mut res: Vec<String> = Vec::new();
+pub fn text<'a>(context: &'a Context, tpl: &'a[Parsed]) -> RenderResult<String> {
+    let mut buffer: String = Default::default();
+    render_text(&mut buffer, context, tpl)?;
+    Ok(buffer)
+}
+
+
+pub fn render_text<'a, W: fmt::Write>(writer: &mut W, context: &'a Context, tpl: &'a[Parsed]) -> RenderResult<()> {
     for x in tpl {
-        res.push(match *x {
-            Parsed::Text(ref txt) => txt.to_owned(),
-            Parsed::Comment(_) => "".to_owned(),
-            Parsed::Mustache(ref mus) => mustache(mus, context, env)?,
-            Parsed::For(ref stmt) => for_(stmt, context, env)?,
-            Parsed::If(ref stmt) => if_(stmt, context, env)?,
-        })
+        match *x {
+            Parsed::Text(ref txt) => write!(writer, "{}", txt)?,
+            Parsed::Comment(_) => (),
+            Parsed::Mustache(ref mus) => render_mustache(writer, context, mus)?,
+            Parsed::For(ref stmt) => render_for(writer, context, stmt)?,
+            Parsed::If(ref stmt) => render_if(writer, context, stmt)?,
+        }
     }
-    Ok(res.join(""))
-}
-
-//pub fn mustache(buffer: &mut[u8], mustache: &Mustache, context: &Context, env: &Incrust) -> RenderResult {
-pub fn mustache(mus: &Mustache, context: &Context, env: &Incrust) -> RenderResult {
-    expression(&mus.expr, context, env)
+    Ok(())
 }
 
 
-//pub fn full_expression(buffer: &mut[u8], mustache: &Mustache, context: &Context, env: &Incrust) -> RenderResult {
-pub fn expression(expr: &FullExpression, context: &Context, env: &Incrust) -> RenderResult {
-    Ok(expr.filters.iter().fold(
-        Ok(eval_expr(&expr.expr, context, env)?.and_then(|val| val.try_as_string().map(|s| s.into_owned()))),
+pub fn render_mustache<W: fmt::Write>(writer: &mut W, context: &Context, mus: &Mustache) -> RenderResult<()> {
+    render_expression(writer, context, &mus.expr)
+}
+
+
+pub fn render_expression<W: fmt::Write>(writer: &mut W, context: &Context, expr: &FullExpression) -> RenderResult<()> {
+    if let Some(x) = expr.filters.iter().fold(
+        Ok(eval_expr(context, &expr.expr)?.and_then(|val| val.try_as_string().map(|s| s.into_owned()))),
         |result: FilterResult, filter: &FilterItem| -> FilterResult {
             match result {
                 Err(err)    => Err(err),
                 Ok(value)   => Ok(match *filter {
-                    FilterItem::Simple(ref id) => env.filter(id, value, context)?,
+                    FilterItem::Simple(ref id) => context.env().filter(id, value, context)?,
                 }),
             }
         }
-    )?.unwrap_or("".into()))
+    )? {
+        write!(writer, "{}", x)?;
+    }
+    Ok(())
 }
 
 
-pub fn for_(stmt: &ForStatement, context: &Context, env: &Incrust) -> RenderResult {
+pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForStatement) -> RenderResult<()> {
     #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
 
-    // FIXME implement instead: expression(&stmt.begin.expression, context, env)
-    Ok(match stmt.begin.expression {
-        None => "".into(),
-        Some(ref expr) => {
-            let value = eval_expr(&expr.expr, context, env)?;
-            match value {
-                None => "".into(),
-                Some(value) => match value.try_as_iterable() {
-                    None => "".into(),
-                    Some(iterable) => {
-                        let mut buf: Vec<String> = Vec::new();
-                        for (index, v) in iterable.ivalues().enumerate() {
-                            let local_scope: Args = hashmap!{
-                                stmt.value_var.as_str() => v,
-                                "index0" => ex(index as i64),
-                                "index" => ex(index as i64 + 1),
-                                "first" => ex(index == 0),
-                                "last" => ex(false), // TODO the "last" marker in a loop
-                            };
-                            let local_context = Context::new(Some(context), &local_scope);
-                            buf.push(text(&stmt.block.parsed, &local_context, env)?);
-                        }
-                        buf.join("")
-                    }
+    // FIXME implement instead: expression(&stmt.begin.expression, context)
+    if let Some(ref expr) = stmt.begin.expression {
+        if let Some(value) = eval_expr(context, &expr.expr)? {
+            if let Some(iterable) = value.try_as_iterable() {
+                for (index, v) in iterable.ivalues().enumerate() {
+                    let local_scope: Args = hashmap! {
+                        stmt.value_var.as_str().into() => v,
+                        "index0".into() => ex(index as i64),
+                        "index".into() => ex(index as i64 + 1),
+                        "first".into() => ex(index == 0),
+                        "last".into() => ex(false), // TODO the "last" marker in a loop
+                    };
+                    render_text(writer, &context.nest(&local_scope), &stmt.block.parsed)?;
                 }
             }
         }
-    })
+    };
+    Ok(())
 }
 
 
-pub fn if_(stmt: &IfStatement, context: &Context, env: &Incrust) -> RenderResult {
+pub fn render_if<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &IfStatement) -> RenderResult<()> {
     for branch in &stmt.if_branches {
-        // FIXME implement instead: expression(&branch.begin.expression, context, env)
+        // FIXME implement instead: expression(&branch.begin.expression, context)
         if let Some(ref expr) = branch.begin.expression {
-            if let Some(res) = eval_expr(&expr.expr, context, env)? {
-                if res.to_bool() { return text(&branch.block.parsed, context, env) }
+            if let Some(res) = eval_expr(context, &expr.expr)? {
+                if res.to_bool() {
+                    render_text(writer, context, &branch.block.parsed)?;
+                    return Ok(());
+                }
             }
         }
     }
-    if let Some(ref branch) = stmt.else_branch{ return text(&branch.block.parsed, context, env) }
-    Ok("".into())
+    if let Some(ref branch) = stmt.else_branch {
+        render_text(writer, context, &branch.block.parsed)?;
+    }
+    Ok(())
 }

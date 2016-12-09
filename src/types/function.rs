@@ -7,12 +7,12 @@ use super::abc::*;
 
 
 pub struct Function {
-    pub f: fn(&[BType], &Context, &Incrust) -> EvalResult,
+    pub f: fn(&[BType], &Context) -> EvalResult,
 }
 
 impl Function {
-    pub fn new<'a>(f: fn(&[BType], &Context, &Incrust) -> EvalResult) -> BType<'a> {
-        Box::new(Function { f: f })
+    pub fn new<'a>(f: fn(&[BType], &Context) -> EvalResult) -> BType<'a> {
+        box Function { f: f }
     }
 }
 
@@ -29,21 +29,30 @@ impl Debug for Function {
 }
 
 impl Type for Function {
-    fn iclone<'a>(&self) -> BType<'a> { Box::new(self.clone()) }
-    fn to_bool(&self) -> bool { true }
+    fn iclone<'a>(&self) -> BType<'a> {
+        box self.clone()
+    }
 }
 
 impl <'a> Into<BType<'a>> for Function {
-    fn into(self) -> BType<'a> { Box::new(self) }
+    fn into(self) -> BType<'a> {
+        box self
+    }
 }
 
 impl <'b> AsInvocable for Function {
-    fn try_as_invocable(&self) -> Option<&IInvocable> { Some(self) }
+    fn try_as_invocable(&self) -> Option<&IInvocable> {
+        Some(self)
+    }
+
+    fn is_invocable(&self) -> bool {
+        true
+    }
 }
 
 impl <'a, 'b: 'a> IInvocable<'a> for Function {
-    fn invoke(&self, args: &[BType], context: &Context, env: &Incrust) -> EvalResult {
-        (self.f)(args, context, env)
+    fn invoke(&self, args: &[BType], context: &Context) -> EvalResult {
+        (self.f)(args, context)
     }
 }
 
@@ -52,13 +61,13 @@ impl <'a, 'b: 'a> IInvocable<'a> for Function {
 // --------------------------------------------------------------------------------------------------------------------
 
 
-//impl Type for (fn(&[BType], &Context, &Incrust) -> EvalResult) {
+//impl Type for (fn(&[BType], &Context) -> EvalResult) {
 //    fn iclone<'a>(&self) -> BType<'a> { Box::new(self.clone()) }
 //    fn to_bool(&self) -> bool { true }
 //}
 //
-//impl <'a, 'b: 'a> IInvocable<'a> for (fn(&[BType], &Context, &Incrust) -> EvalResult) {
-//    fn invoke(&self, args: &[BType], context: &Context, env: &Incrust) -> EvalResult {
+//impl <'a, 'b: 'a> IInvocable<'a> for (fn(&[BType], &Context) -> EvalResult) {
+//    fn invoke(&self, args: &[BType], context: &Context) -> EvalResult {
 //        self(args, context, env)
 //    }
 //}

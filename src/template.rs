@@ -12,7 +12,7 @@ pub struct Template {
 impl Template {
     pub fn parse(templ: &str) -> abc::ParseResult {
         let parsed = ::parser::text(templ.as_bytes());
-//        println!(" == parsed == {:?}", &parsed);
+//        trace!(" == parsed == {:?}", &parsed);
         match parsed {
             IResult::Done(_, parsed) => Ok(Template { parsed: parsed }),
             IResult::Error(err) => Err(abc::ParseError::Syntax(format!("{:?}", err))),

@@ -6,16 +6,15 @@
 // option. All files in the project carrying such notice may not be copied,
 // modified, or distributed except according to those terms.
 
-#![allow(unstable_features)]
-#![feature(question_mark)]
-#![feature(specialization)]
 #![feature(associated_type_defaults)]
-
-#![cfg_attr(feature = "quiet", allow(warnings))]
+#![feature(box_syntax)]
+#![feature(specialization)]
 
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![cfg_attr(feature = "clippy", allow(items_after_statements, match_bool))]
+
+#![cfg_attr(feature = "quiet", allow(warnings))]
 
 
 extern crate marksman_escape;
