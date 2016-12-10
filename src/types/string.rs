@@ -6,7 +6,7 @@ use super::abc::*;
 
 impl Type for String {
     fn iclone(&self) -> BType {
-        box self.to_string()
+        BType(box self.clone())
     }
 }
 
@@ -28,29 +28,34 @@ impl AsString for String {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for String {
-    fn try_add(&self, other: BType) -> Option<BType> {
-        other.try_as_string().map(move |s| -> BType { ex(self.to_string() + s.as_ref()) })
+    fn try_add<'a> (&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> {
+        if self == "" {
+            match other.is_string() {
+                true => Some(other),
+                false => other.try_as_string()
+                    .map(|s| Cow::Owned(ex(s.into_owned()))),
+            }
+        } else {
+            other.try_as_string()
+                .map(move |s| Cow::Owned(ex(self.to_string() + s.as_ref())))
+        }
     }
 }
 
-
-impl Into<BType> for String {
-    fn into(self) -> BType {
-        box self
-    }
-}
 
 impl <'a> Into<BType> for &'a str {
     fn into(self) -> BType {
-        box self.to_owned()
+        self.to_owned().into()
     }
 }
+
 
 impl AsComposable for String {
     fn try_as_composable(&self) -> Option<&IComposable> {
         Some(self)
     }
 }
+
 
 impl IComposable for String {
     fn get_attr(&self, id: &str) -> Option<BType> {

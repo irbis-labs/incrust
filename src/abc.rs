@@ -1,6 +1,5 @@
 use std::fmt;
 
-use types::abc::Type;
 use types::context::Context;
 use template::Template;
 
@@ -20,7 +19,7 @@ pub trait Loader: fmt::Debug + Send + Sync {
 }
 
 
-pub type EvalResult = Result<Option<Box<Type>>, EvalError>;
+pub type EvalResult<T> = Result<Option<T>, EvalError>;
 
 #[derive(Debug)]
 pub enum EvalError {

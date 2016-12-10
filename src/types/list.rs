@@ -3,9 +3,11 @@ use super::abc::*;
 
 impl Type for Vec<BType> {
     fn iclone(&self) -> BType {
-        box self.into_iter()
-            .map(|v| v.iclone())
-            .collect::<Vec<BType>>()
+        BType(
+            box self.into_iter()
+                .map(|v| v.0.iclone())
+                .collect::<Vec<BType>>()
+        )
     }
 }
 
@@ -52,14 +54,6 @@ impl IComposable for Vec<BType> {
         }
     }
 }
-
-
-impl Into<BType> for Vec<BType> {
-    fn into(self) -> BType {
-        box Vec::from(self)
-    }
-}
-
 
 
 //impl <'a> IIterable for Vec<BType<'a>> {

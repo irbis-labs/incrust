@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use abc::{EvalResult, EvalError};
 use incrust::{Context, BType};
 use template::{
@@ -8,11 +10,11 @@ use template::{
 };
 
 
-pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResult {
+pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResult<Cow<'a, BType>> {
     let mut itr = disj_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
-        Some(&DisjItem(ref _op, ref conj)) => {
+        Some(&DisjItem(_, ref conj)) => {
             let mut acc = eval_conj(context, conj)?;
             for &DisjItem(ref op, ref conj) in itr {
                 acc = match acc {
@@ -28,11 +30,11 @@ pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResul
         } } }
 
 
-pub fn eval_conj<'a>(context: &'a Context, conj_expr: &'a ConjExpr) -> EvalResult {
+pub fn eval_conj<'a>(context: &'a Context, conj_expr: &'a ConjExpr) -> EvalResult<Cow<'a, BType>> {
     let mut itr = conj_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
-        Some(&ConjItem(ref _op, ref cmp)) => {
+        Some(&ConjItem(_, ref cmp)) => {
             let mut acc = eval_cmp(context, cmp)?;
             for &ConjItem(ref op, ref cmp) in itr {
                 acc = match acc {
@@ -49,11 +51,11 @@ pub fn eval_conj<'a>(context: &'a Context, conj_expr: &'a ConjExpr) -> EvalResul
 
 
 #[allow(unused_variables)]
-pub fn eval_cmp<'a>(context: &'a Context, cmp_expr: &'a CmpExpr) -> EvalResult {
+pub fn eval_cmp<'a>(context: &'a Context, cmp_expr: &'a CmpExpr) -> EvalResult<Cow<'a, BType>> {
     let mut itr = cmp_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
-        Some(&CmpItem(ref _op, ref expr)) => {
+        Some(&CmpItem(_, ref expr)) => {
             let acc = eval_sum(context, expr)?;
             for &CmpItem(ref op, ref expr) in itr {
                 acc = match acc {
@@ -74,29 +76,30 @@ pub fn eval_cmp<'a>(context: &'a Context, cmp_expr: &'a CmpExpr) -> EvalResult {
         } } }
 
 
-pub fn eval_sum<'a>(context: &'a Context, expr: &'a Expr) -> EvalResult {
+pub fn eval_sum<'a>(context: &'a Context, expr: &'a Expr) -> EvalResult<Cow<'a, BType>> {
     let mut itr = expr.sum.iter();
     match itr.next() {
         None => unreachable!(),
-        Some(&ExprItem(ref _op, ref term)) => {
-            let start = eval_prod(context, term);
-            itr.fold(start, |acc: EvalResult, &ExprItem(ref op, ref term)| -> EvalResult {
-                Ok(match acc? {
-                    None => None,
+        Some(&ExprItem(_, ref term)) => {
+            let mut acc = eval_prod(context, term)?;
+            for &ExprItem(ref op, ref term) in itr {
+                acc = match acc {
+                    None => return Ok(None),
                     Some(acc) => match eval_prod(context, term)? {
-                        None => None,
+                        None => return Ok(None),
                         Some(term) => match *op {
-                            SumOp::Add => acc.try_add(term),
-                            SumOp::Sub => acc.try_sub(term),
-                        } } } )
-            } ) } } }
+                            SumOp::Add => acc.as_ref().try_add(term),
+                            SumOp::Sub => acc.as_ref().try_sub(term),
+                        } } } }
+            Ok(acc)
+        } } }
 
 
-pub fn eval_prod<'a>(context: &'a Context, term: &'a Term) -> EvalResult {
+pub fn eval_prod<'a>(context: &'a Context, term: &'a Term) -> EvalResult<Cow<'a, BType>> {
     let mut itr = term.mul.iter();
     match itr.next() {
         None => unreachable!(),
-        Some(&TermItem(ref _op, ref factor)) => {
+        Some(&TermItem(_, ref factor)) => {
             let mut acc = eval_factor(context, factor)?;
             for &TermItem(ref op, ref factor) in itr {
                 acc = match acc {
@@ -104,17 +107,17 @@ pub fn eval_prod<'a>(context: &'a Context, term: &'a Term) -> EvalResult {
                     Some(acc) => match eval_factor(context, factor)? {
                         None => return Ok(None),
                         Some(factor) => match *op {
-                            MulOp::Mul => acc.try_mul(factor),
-                            MulOp::Div => acc.try_div(factor),
+                            MulOp::Mul => acc.as_ref().try_mul(factor),
+                            MulOp::Div => acc.as_ref().try_div(factor),
                         } } } }
             Ok(acc)
         } } }
 
 
-pub fn eval_factor<'a>(context: &'a Context, fctr: &'a Factor) -> EvalResult {
+pub fn eval_factor<'a>(context: &'a Context, fctr: &'a Factor) -> EvalResult<Cow<'a, BType>> {
     match *fctr {
-        Factor::Variable(ref id)        => Ok(context.get(id).map(|v| v.iclone())),
-        Factor::Literal(ref lit)        => literal(lit),
+        Factor::Variable(ref id)        => Ok(context.get(id).map(Cow::Borrowed)),
+        Factor::Literal(ref lit)        => literal(lit).map(|v| v.map(Cow::Owned)),
         Factor::Subexpression(ref expr) => eval_expr(context, expr),
         Factor::Attribute(ref attr)     => eval_attribute(context, attr),
         Factor::Invocation(ref inv)     => eval_invocation(context, inv),
@@ -122,27 +125,26 @@ pub fn eval_factor<'a>(context: &'a Context, fctr: &'a Factor) -> EvalResult {
 }
 
 
-pub fn eval_attribute<'a>(context: &'a Context, attr: &'a Attribute) -> EvalResult {
+pub fn eval_attribute<'a>(context: &'a Context, attr: &'a Attribute) -> EvalResult<Cow<'a, BType>> {
     match eval_factor(context, &attr.on)? {
         None => Err(EvalError::NotComposable),
         Some(value) => match value.try_as_composable() {
             None => Err(EvalError::NotComposable),
-            Some(composable) => match composable.get_attr(&attr.id).map(|v| v.iclone()) {
+            Some(composable) => match composable.get_attr(&attr.id) {
                 None => Err(EvalError::AttributeNotExists(attr.id.clone())),
-                Some(result) => Ok(Some(result)),
+                Some(result) => Ok(Some(Cow::Owned(result))),
             } } } }
 
 
-pub fn eval_invocation<'a>(context: &'a Context, inv: &'a Invocation) -> EvalResult {
+pub fn eval_invocation<'a>(context: &'a Context, inv: &'a Invocation) -> EvalResult<Cow<'a, BType>> {
     match eval_factor(context, &inv.on)? {
         None => Err(EvalError::NotInvocable),
         Some(value) => match value.try_as_invocable() {
             None => Err(EvalError::NotInvocable),
             Some(invocable) => {
-                let mut args: Vec<BType> = Vec::with_capacity(inv.args.len());
+                let mut args: Vec<Cow<BType>> = Vec::with_capacity(inv.args.len());
                 for expr in &inv.args {
-                    let val = eval_expr(context, expr)?;
-                    match val {
+                    match eval_expr(context, expr)? {
                         None => return Err(EvalError::NoneArg),
                         Some(val) => args.push(val)
                     }
@@ -151,12 +153,12 @@ pub fn eval_invocation<'a>(context: &'a Context, inv: &'a Invocation) -> EvalRes
             } } } }
 
 
-pub fn literal<'a>(l: &'a Literal) -> EvalResult { // context: &'a Context
+pub fn literal<'a>(l: &'a Literal) -> EvalResult<BType> {
     Ok( Some( match *l {
-        Literal::Str(ref string) => box string.clone(),
-        Literal::Char(ref chr)   => box *chr,
-        Literal::Int(ref int)    => box *int,
-        Literal::Real(ref real)  => box *real,
+        Literal::Str(ref string) => BType(box string.clone()),
+        Literal::Char(ref chr)   => BType(box *chr),
+        Literal::Int(ref int)    => BType(box *int),
+        Literal::Real(ref real)  => BType(box *real),
     } ) )
 }
 
@@ -164,6 +166,7 @@ pub fn literal<'a>(l: &'a Literal) -> EvalResult { // context: &'a Context
 #[cfg(test)]
 mod tests {
     #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
+    use std::borrow::Cow;
     use nom::IResult;
     use std::fmt::Debug;
 
@@ -177,9 +180,9 @@ mod tests {
 
     #[test]
     fn eval_attr() {
-        use ::abc::EvalResult;
-        use ::incrust::{Incrust, Args, ex};
-        use ::parser::expressions::expression as parse_expr;
+        use abc::EvalResult;
+        use incrust::{Incrust, BType, Args, ex};
+        use parser::expressions::expression as parse_expr;
         use super::eval_expr;
 
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
@@ -187,7 +190,12 @@ mod tests {
         let context = incrust.context(&args);
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult| r.unwrap().unwrap().try_as_string().map(|c| c.into_owned()).unwrap();
+        let x = |r: EvalResult<Cow<BType>>| {
+            r.unwrap().unwrap().as_ref()
+                .try_as_string()
+                .map(|c| c.into_owned())
+                .unwrap()
+        };
 
         assert_eq!("1"   , x(eval_expr(&context, &parse(br#""a".length"#))));
         assert_eq!("2"   , x(eval_expr(&context, &parse(br#"("a" + "b").length"#))));
@@ -198,7 +206,7 @@ mod tests {
     fn eval_factor() {
         use abc::EvalResult;
         use template::{Factor, Literal};
-        use incrust::{Incrust, Args, ex};
+        use incrust::{Incrust, BType, Args, ex};
         use parser::expressions::expression as parse_expr;
         use super::eval_factor;
         use super::eval_expr;
@@ -211,7 +219,12 @@ mod tests {
         let context = incrust.context(&args);
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult| r.unwrap().unwrap().try_as_string().map(|c| c.into_owned()).unwrap();
+        let x = |r: EvalResult<Cow<BType>>| {
+            r.unwrap().unwrap().as_ref()
+                .try_as_string()
+                .map(|c| c.into_owned())
+                .unwrap()
+        };
 
         assert!("1"      == x(eval_factor(&context, &int_one)));
         assert!("World"  == x(eval_factor(&context, &the_one)));
@@ -230,9 +243,9 @@ mod tests {
 
     #[test]
     fn eval_bool() {
-        use ::abc::EvalResult;
-        use ::incrust::{Incrust, Args, ex};
-        use ::parser::expressions::expression as parse_expr;
+        use abc::EvalResult;
+        use incrust::{Incrust, BType, Args, ex};
+        use parser::expressions::expression as parse_expr;
         use super::eval_expr;
 
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
@@ -240,7 +253,12 @@ mod tests {
         let context = incrust.context(&args);
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult| r.unwrap().unwrap().try_as_string().map(|c| c.into_owned()).unwrap();
+        let x = |r: EvalResult<Cow<BType>>| {
+            r.unwrap().unwrap().as_ref()
+                .try_as_string()
+                .map(|c| c.into_owned())
+                .unwrap()
+        };
 
         assert_eq!("1",     x(eval_expr(&context, &parse(b"0 or 1"))));
         assert_eq!("0",     x(eval_expr(&context, &parse(b"0 and 1"))));

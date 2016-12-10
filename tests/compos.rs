@@ -5,7 +5,9 @@
 extern crate maplit;
 extern crate incrust;
 
+use std::borrow::Cow;
 use std::path::Path;
+
 use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, BType, Function, Context};
 use incrust::types::abc::{AsComposable, IComposable};
 use incrust::abc::{EvalResult};
@@ -21,17 +23,16 @@ impl Fruit {
 }
 
 impl Type for Fruit {
-    fn iclone(&self) -> BType { box self.clone() }
+    fn iclone(&self) -> BType {
+        BType(box self.clone())
+    }
 }
 
-
-impl Into<BType> for Fruit {
-    fn into(self) -> BType { Box::new(self) }
-}
 
 impl AsComposable for Fruit {
     fn try_as_composable(&self) -> Option<&IComposable> { Some(self) }
 }
+
 
 impl IComposable for Fruit {
     fn get_attr(&self, id: &str) -> Option<BType> {
@@ -70,7 +71,7 @@ fn invocables() {
     incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
-    fn title(_: &[BType], _: &Context) -> EvalResult {
+    fn title(_: &[Cow<BType>], _: &Context) -> EvalResult<BType> {
         Ok(Some(ex("fruits")))
     }
 

@@ -11,7 +11,7 @@ use ::loader::GroupLoader;
 pub struct Incrust {
     pub loaders: GroupLoader,
     filters: HashMap<String, Box<abc::Filter>>,
-    top_context: HashMap<String, Box<Type>>,
+    top_context: HashMap<String, BType>,
 }
 
 
@@ -163,6 +163,9 @@ mod tests {
             "omega".into() => ex(7_f64)
         };
         assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
+
+        let args = hashmap!{ "amount".into() => ex(6_i64) };
+        assert_eq!("1 + 1 = 2", incrust.render_text(r#"1 + 1 = {{ 1 + 1 }}"#, args).unwrap());
 
         let args = hashmap!{ "amount".into() => ex(6_i64) };
         assert_eq!("Amount: 6 pcs", incrust.render_text(r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#, args).unwrap());

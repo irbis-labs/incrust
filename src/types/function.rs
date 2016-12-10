@@ -1,18 +1,19 @@
+use std::borrow::Cow;
 use std::fmt::{Debug, Formatter, Error};
 
-use ::abc::EvalResult;
-use ::incrust::Context;
+use abc::EvalResult;
+use incrust::Context;
 
 use super::abc::*;
 
 
 pub struct Function {
-    pub f: fn(&[BType], &Context) -> EvalResult,
+    pub f: fn(&[Cow<BType>], &Context) -> EvalResult<BType>,
 }
 
 impl Function {
-    pub fn new(f: fn(&[BType], &Context) -> EvalResult) -> BType {
-        box Function { f: f }
+    pub fn new(f: fn(&[Cow<BType>], &Context) -> EvalResult<BType>) -> BType {
+        BType(box Function { f: f })
     }
 }
 
@@ -30,13 +31,7 @@ impl Debug for Function {
 
 impl Type for Function {
     fn iclone(&self) -> BType {
-        box self.clone()
-    }
-}
-
-impl Into<BType> for Function {
-    fn into(self) -> BType {
-        box self
+        BType(box self.clone())
     }
 }
 
@@ -51,8 +46,9 @@ impl AsInvocable for Function {
 }
 
 impl IInvocable for Function {
-    fn invoke(&self, args: &[BType], context: &Context) -> EvalResult {
-        (self.f)(args, context)
+    fn invoke<'a: 'b, 'b>(&self, args: &'b [Cow<'a, BType>], context: &'a Context) -> EvalResult<Cow<'a, BType>> {
+        // todo Cow for self.f
+        (self.f)(args, context).map(|v| v.map(Cow::Owned))
     }
 }
 

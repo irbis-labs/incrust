@@ -3,7 +3,7 @@ use super::abc::*;
 
 impl Type for bool {
     fn iclone(&self) -> BType {
-        box *self
+        BType(box *self)
     }
 }
 
@@ -29,8 +29,3 @@ impl AsInt for bool {
     }
 }
 
-impl Into<BType> for bool {
-    fn into(self) -> BType {
-        box self
-    }
-}

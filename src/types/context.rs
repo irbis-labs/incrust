@@ -36,12 +36,6 @@ pub struct Context<'a> {
 }
 
 
-//impl <'a> Into<Context<'a>> for &'a Args<'a> {
-//    fn into(self) -> Context<'a> {
-//        Context::new(None, self)
-//    }
-//}
-
 impl <'a> Context<'a> {
     pub fn new<PS: Into<ParentScope<'a>>>(parent_scope: PS, local_scope: &'a Args<'a>) -> Self {
         Context { parent_scope: parent_scope.into(), local_scope: local_scope }
@@ -60,4 +54,3 @@ impl <'a> Context<'a> {
             .or_else(|| self.parent_scope.get(id))
     }
 }
-

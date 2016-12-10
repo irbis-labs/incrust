@@ -1,9 +1,11 @@
+use std::borrow::Cow;
+
 use super::abc::*;
 
 
 impl Type for i64 {
     fn iclone(&self) -> BType {
-        box *self
+        BType(box *self)
     }
 }
 
@@ -32,15 +34,9 @@ impl AsInt for i64 {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for i64 {
-    fn try_add(&self, other: BType) -> Option<BType> { other.try_as_int().map(|s| -> BType { ex(*self + s) }) }
-    fn try_sub(&self, other: BType) -> Option<BType> { other.try_as_int().map(|s| -> BType { ex(*self - s) }) }
-    fn try_mul(&self, other: BType) -> Option<BType> { other.try_as_int().map(|s| -> BType { ex(*self * s) }) }
-    fn try_div(&self, other: BType) -> Option<BType> { other.try_as_int().map(|s| -> BType { ex(*self / s) }) }
-}
-
-
-impl Into<BType> for i64 {
-    fn into(self) -> BType {
-        box self
-    }
+    // todo Cow::Borrowed for Zero and One cases
+    fn try_add<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self + s)) }) }
+    fn try_sub<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self - s)) }) }
+    fn try_mul<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self * s)) }) }
+    fn try_div<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self / s)) }) }
 }

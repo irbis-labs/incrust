@@ -17,10 +17,6 @@ impl <T> AsString for T where T: Type {
 }
 
 impl <T> AsString for T where T: Type + Display {
-    default fn is_string(&self) -> bool {
-        true
-    }
-
     default fn try_as_string(&self) -> Option<Cow<str>> {
         Some(Cow::Owned(ToString::to_string(self)))
     }
@@ -115,10 +111,8 @@ impl <T> AsInvocable for T where T: Type {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl <S> IArithm for S where S: Type {
-    default fn try_add(&self, _other: BType) -> Option<BType> { None }
-    default fn try_sub(&self, _other: BType) -> Option<BType> { None }
-    default fn try_mul(&self, _other: BType) -> Option<BType> { None }
-    default fn try_div(&self, _other: BType) -> Option<BType> { None }
+    default fn try_add<'a>(&self, _other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { None }
+    default fn try_sub<'a>(&self, _other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { None }
+    default fn try_mul<'a>(&self, _other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { None }
+    default fn try_div<'a>(&self, _other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { None }
 }
-
-

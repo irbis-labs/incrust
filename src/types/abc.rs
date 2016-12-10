@@ -17,7 +17,9 @@ pub fn ex<V>(v: V) -> BType where V: Into<BType> { v.into() }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-pub type BType = Box<Type>;
+//pub type BType = Box<Type>;
+pub use super::btype::BType;
+
 pub trait Type:
     AsString + AsBool + AsReal + AsInt + AsIterable + AsComposable + AsInvocable +
     IArithm + Send + Sync + Debug
@@ -77,14 +79,14 @@ pub trait AsPartialEq<T> {
 // --- [ impl interfaces ] --------------------------------------------------------------------------------------------
 
 pub trait IArithm {
-    fn try_add(&self, other: BType) -> Option<BType>;
-    fn try_sub(&self, other: BType) -> Option<BType>;
-    fn try_mul(&self, other: BType) -> Option<BType>;
-    fn try_div(&self, other: BType) -> Option<BType>;
+    fn try_add<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>>;
+    fn try_sub<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>>;
+    fn try_mul<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>>;
+    fn try_div<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>>;
 }
 
 pub trait IInvocable: Send + Sync {
-    fn invoke(&self, args: &[BType], context: &Context) -> EvalResult;
+    fn invoke<'a: 'b, 'b>(&self, args: &'b [Cow<'a, BType>], context: &'a Context) -> EvalResult<Cow<'a, BType>>;
 }
 
 pub trait IIterable: Send + Sync {
