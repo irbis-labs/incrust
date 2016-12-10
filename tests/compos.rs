@@ -21,12 +21,12 @@ impl Fruit {
 }
 
 impl Type for Fruit {
-    fn iclone<'a>(&self) -> BType<'a> { box self.clone() }
+    fn iclone(&self) -> BType { box self.clone() }
 }
 
 
-impl <'a> Into<BType<'a>> for Fruit {
-    fn into(self) -> BType<'a> { Box::new(self) }
+impl Into<BType> for Fruit {
+    fn into(self) -> BType { Box::new(self) }
 }
 
 impl AsComposable for Fruit {

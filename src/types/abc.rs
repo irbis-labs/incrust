@@ -11,18 +11,18 @@ use incrust::Context;
 // --------------------------------------------------------------------------------------------------------------------
 
 pub type EntityId<'a> = Cow<'a, str>;
-pub type Args<'a> = HashMap<EntityId<'a>, BType<'a>>;
+pub type Args<'a> = HashMap<EntityId<'a>, BType>;
 
-pub fn ex<'a, A>(v: A) -> BType<'a> where A: Into<BType<'a>> { v.into() }
+pub fn ex<V>(v: V) -> BType where V: Into<BType> { v.into() }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-pub type BType<'a> = Box<Type + 'a>;
+pub type BType = Box<Type>;
 pub trait Type:
     AsString + AsBool + AsReal + AsInt + AsIterable + AsComposable + AsInvocable +
     IArithm + Send + Sync + Debug
 {
-    fn iclone<'a>(&self) -> BType<'a>;
+    fn iclone(&self) -> BType;
 }
 
 
@@ -77,10 +77,10 @@ pub trait AsPartialEq<T> {
 // --- [ impl interfaces ] --------------------------------------------------------------------------------------------
 
 pub trait IArithm {
-    fn try_add<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
-    fn try_sub<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
-    fn try_mul<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
-    fn try_div<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
+    fn try_add(&self, other: BType) -> Option<BType>;
+    fn try_sub(&self, other: BType) -> Option<BType>;
+    fn try_mul(&self, other: BType) -> Option<BType>;
+    fn try_div(&self, other: BType) -> Option<BType>;
 }
 
 pub trait IInvocable: Send + Sync {
@@ -113,13 +113,13 @@ pub trait IPartialEq<T>: Send + Sync {
 // --- [ feature interfaces ] -----------------------------------------------------------------------------------------
 
 pub struct VIterator<'a> {
-    pub me: Iter<'a, BType<'a>>,
+    pub me: Iter<'a, BType>,
 }
 
 impl <'a> Iterator for VIterator<'a> {
-    type Item = BType<'a>;
+    type Item = BType;
 
-    fn next(&mut self) -> Option<BType<'a>> {
+    fn next(&mut self) -> Option<BType> {
         self.me.next().map(|next| next.iclone())
     }
 }

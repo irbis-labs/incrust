@@ -2,13 +2,13 @@ use super::abc::*;
 
 
 impl Type for char {
-    fn iclone<'a>(&self) -> BType<'a> {
+    fn iclone(&self) -> BType {
         box *self
     }
 }
 
-impl <'a> Into<BType<'a>> for char {
-    fn into(self) -> BType<'a> {
+impl Into<BType> for char {
+    fn into(self) -> BType {
         box self.to_owned()
     }
 }

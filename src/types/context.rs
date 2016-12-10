@@ -3,7 +3,7 @@ use ::incrust::Incrust;
 
 
 pub enum ParentScope<'a> {
-    Env(&'a Incrust<'a>),
+    Env(&'a Incrust),
     Context(&'a Context<'a>),
 }
 
@@ -15,7 +15,7 @@ impl <'a> ParentScope<'a> {
         }
     }
 
-    pub fn env(&self) -> &'a Incrust<'a> {
+    pub fn env(&self) -> &'a Incrust {
         match *self {
             ParentScope::Env(ref env) => env,
             ParentScope::Context(ref context) => context.env()
@@ -23,8 +23,8 @@ impl <'a> ParentScope<'a> {
     }
 }
 
-impl <'a> From<&'a Incrust<'a>> for ParentScope<'a> {
-    fn from(x: &'a Incrust<'a>) -> Self {
+impl <'a> From<&'a Incrust> for ParentScope<'a> {
+    fn from(x: &'a Incrust) -> Self {
         ParentScope::Env(x)
     }
 }
@@ -51,7 +51,7 @@ impl <'a> Context<'a> {
         Context { parent_scope: ParentScope::Context(self), local_scope: local_scope }
     }
 
-    pub fn env(&self) -> &'a Incrust<'a> {
+    pub fn env(&self) -> &'a Incrust {
         self.parent_scope.env()
     }
 

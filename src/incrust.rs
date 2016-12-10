@@ -8,14 +8,14 @@ pub use ::template::Template;
 use ::loader::GroupLoader;
 
 #[derive(Debug)]
-pub struct Incrust<'a> {
+pub struct Incrust {
     pub loaders: GroupLoader,
     filters: HashMap<String, Box<abc::Filter>>,
-    top_context: HashMap<String, Box<Type + 'a>>,
+    top_context: HashMap<String, Box<Type>>,
 }
 
 
-impl <'a> Default for Incrust<'a> {
+impl Default for Incrust {
     fn default() -> Self {
         #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
         use ::renderer::filter::{Escape, Unescape};
@@ -41,7 +41,7 @@ impl <'a> Default for Incrust<'a> {
     }
 }
 
-impl <'aa> Incrust<'aa> {
+impl Incrust {
     pub fn new() -> Self { Incrust::default() }
 
     pub fn no_default() -> Self {

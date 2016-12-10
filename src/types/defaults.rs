@@ -115,10 +115,10 @@ impl <T> AsInvocable for T where T: Type {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl <S> IArithm for S where S: Type {
-    default fn try_add<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
-    default fn try_sub<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
-    default fn try_mul<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
-    default fn try_div<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
+    default fn try_add(&self, _other: BType) -> Option<BType> { None }
+    default fn try_sub(&self, _other: BType) -> Option<BType> { None }
+    default fn try_mul(&self, _other: BType) -> Option<BType> { None }
+    default fn try_div(&self, _other: BType) -> Option<BType> { None }
 }
 
 

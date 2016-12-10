@@ -5,7 +5,7 @@ use super::abc::*;
 
 
 impl Type for String {
-    fn iclone<'a>(&self) -> BType<'a> {
+    fn iclone(&self) -> BType {
         box self.to_string()
     }
 }
@@ -28,20 +28,20 @@ impl AsString for String {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for String {
-    fn try_add<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>> {
+    fn try_add(&self, other: BType) -> Option<BType> {
         other.try_as_string().map(move |s| -> BType { ex(self.to_string() + s.as_ref()) })
     }
 }
 
 
-impl <'a> Into<BType<'a>> for String {
-    fn into(self) -> BType<'a> {
+impl Into<BType> for String {
+    fn into(self) -> BType {
         box self
     }
 }
 
-impl <'a> Into<BType<'a>> for &'a str {
-    fn into(self) -> BType<'a> {
+impl <'a> Into<BType> for &'a str {
+    fn into(self) -> BType {
         box self.to_owned()
     }
 }

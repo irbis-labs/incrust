@@ -11,7 +11,7 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn new<'a>(f: fn(&[BType], &Context) -> EvalResult) -> BType<'a> {
+    pub fn new(f: fn(&[BType], &Context) -> EvalResult) -> BType {
         box Function { f: f }
     }
 }
@@ -29,13 +29,13 @@ impl Debug for Function {
 }
 
 impl Type for Function {
-    fn iclone<'a>(&self) -> BType<'a> {
+    fn iclone(&self) -> BType {
         box self.clone()
     }
 }
 
-impl <'a> Into<BType<'a>> for Function {
-    fn into(self) -> BType<'a> {
+impl Into<BType> for Function {
+    fn into(self) -> BType {
         box self
     }
 }

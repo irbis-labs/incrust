@@ -1,27 +1,27 @@
 use super::abc::*;
 
 
-impl <'b> Type for Vec<BType<'b>> {
-    fn iclone<'c>(&self) -> BType<'c> {
+impl Type for Vec<BType> {
+    fn iclone(&self) -> BType {
         box self.into_iter()
             .map(|v| v.iclone())
             .collect::<Vec<BType>>()
     }
 }
 
-impl <'b> AsBool for Vec<BType<'b>> {
+impl AsBool for Vec<BType> {
     fn to_bool(&self) -> bool {
         !self.is_empty()
     }
 }
 
-impl <'b> AsIterable for Vec<BType<'b>> {
+impl AsIterable for Vec<BType> {
     fn try_as_iterable(&self) -> Option<&IIterable> {
         Some(self)
     }
 }
 
-impl <'b> AsComposable for Vec<BType<'b>> {
+impl AsComposable for Vec<BType> {
     fn try_as_composable(&self) -> Option<&IComposable> {
         Some(self)
     }
@@ -31,7 +31,7 @@ impl <'b> AsComposable for Vec<BType<'b>> {
 // --------------------------------------------------------------------------------------------------------------------
 
 
-impl <'b> IIterable for Vec<BType<'b>> {
+impl IIterable for Vec<BType> {
     fn is_empty(&self) -> bool {
         Vec::is_empty(self)
     }
@@ -44,7 +44,7 @@ impl <'b> IIterable for Vec<BType<'b>> {
 }
 
 
-impl <'b> IComposable for Vec<BType<'b>> {
+impl IComposable for Vec<BType> {
     fn get_attr(&self, id: &str) -> Option<BType> {
         match id {
             "length" => Some(ex(self.len() as i64)),
@@ -54,8 +54,8 @@ impl <'b> IComposable for Vec<BType<'b>> {
 }
 
 
-impl <'a> Into<BType<'a>> for Vec<BType<'a>> {
-    fn into(self) -> BType<'a> {
+impl Into<BType> for Vec<BType> {
+    fn into(self) -> BType {
         box Vec::from(self)
     }
 }

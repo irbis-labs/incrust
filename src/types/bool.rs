@@ -2,7 +2,7 @@ use super::abc::*;
 
 
 impl Type for bool {
-    fn iclone<'a>(&self) -> BType<'a> {
+    fn iclone(&self) -> BType {
         box *self
     }
 }
@@ -29,8 +29,8 @@ impl AsInt for bool {
     }
 }
 
-impl <'a> Into<BType<'a>> for bool {
-    fn into(self) -> BType<'a> {
+impl Into<BType> for bool {
+    fn into(self) -> BType {
         box self
     }
 }
