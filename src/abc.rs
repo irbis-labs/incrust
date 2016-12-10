@@ -1,9 +1,8 @@
 use std::fmt;
 
-use ::types::abc::{Type};
-use ::types::context::{Context};
-use ::incrust::Incrust;
-use ::template::Template;
+use types::abc::Type;
+use types::context::Context;
+use template::Template;
 
 
 pub type LoadResult = Result<String, LoadError>;

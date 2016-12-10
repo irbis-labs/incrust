@@ -1,7 +1,7 @@
 use std::fmt;
 
 use abc::{RenderResult, FilterResult};
-use incrust::{Incrust, Context, Args, ex};
+use incrust::{Context, Args, ex};
 use template::{
     Parsed, Mustache,
     FullExpression, FilterItem,

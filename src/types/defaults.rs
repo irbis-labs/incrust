@@ -54,15 +54,6 @@ impl <T> AsInt for T where T: Type {
     }
 }
 
-#[cfg_attr(feature = "clippy", allow(boxed_local))]
-impl <S> IArithm for S where S: Type {
-    default fn try_add<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
-    default fn try_sub<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
-    default fn try_mul<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
-    default fn try_div<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
-}
-
-
 impl <T> AsIterable for T where T: Type {
     default fn is_iterable(&self) -> bool {
         self.try_as_iterable().is_some()
@@ -96,3 +87,38 @@ impl <T> AsInvocable for T where T: Type {
         None
     }
 }
+
+
+//impl <T> AsPartialEq for T where T: Type {
+//    fn is_partial_eq(&self) -> bool {
+//        false
+//    }
+//
+//    fn try_as_partial_eq<'a>(&self) -> Option<&IPartialEq<'a, T>> {
+//        None
+//    }
+//}
+//
+//impl <T> AsPartialEq for T where T: Type + PartialEq {
+//    fn is_partial_eq(&self) -> bool {
+//        true
+//    }
+//
+//    fn try_as_partial_eq<'a>(&self) -> Option<&IPartialEq<'a, T>> {
+//        Some(&self)
+//    }
+//}
+
+
+// -------------------------------------------------------------------------------------------------
+
+
+#[cfg_attr(feature = "clippy", allow(boxed_local))]
+impl <S> IArithm for S where S: Type {
+    default fn try_add<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
+    default fn try_sub<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
+    default fn try_mul<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
+    default fn try_div<'a, 'b>(&'a self, _other: BType<'a>) -> Option<BType<'b>> { None }
+}
+
+

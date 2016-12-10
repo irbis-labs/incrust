@@ -1,20 +1,19 @@
-use std::collections::hash_map::{HashMap};
+use std::collections::hash_map::HashMap;
 use std::borrow::Cow;
-use std::fmt::{Debug};
+use std::fmt::Debug;
 use std::iter::Iterator;
 use std::slice::Iter;
 
-use ::abc::{EvalResult};
-use ::incrust::{Context, Incrust};
+use abc::EvalResult;
+use incrust::Context;
 
 
 // --------------------------------------------------------------------------------------------------------------------
 
-// TODO EntityId: String vs &'static str
-//pub type EntityId = String;
-pub type EntityId<'a> = &'a str;
+pub type EntityId<'a> = Cow<'a, str>;
+pub type Args<'a> = HashMap<EntityId<'a>, BType<'a>>;
 
-pub type Args<'a> = HashMap<Cow<'a, str>, BType<'a>>;
+pub fn ex<'a, A>(v: A) -> BType<'a> where A: Into<BType<'a>> { v.into() }
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -25,10 +24,6 @@ pub trait Type:
 {
     fn iclone<'a>(&self) -> BType<'a>;
 }
-
-
-#[inline]
-pub fn ex<'a, A>(v: A) -> BType<'a> where A: Into<BType<'a>> { v.into() }
 
 
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
@@ -75,7 +70,7 @@ pub trait AsIndexable {
 
 pub trait AsPartialEq<T> {
     fn is_partial_eq(&self) -> bool;
-    fn try_as_partial_eq<'a>(&self) -> Option<&IPartialEq<'a, T>>;
+    fn try_as_partial_eq(&self) -> Option<&IPartialEq<T>>;
 }
 
 
@@ -88,28 +83,28 @@ pub trait IArithm {
     fn try_div<'a, 'b>(&'a self, other: BType<'a>) -> Option<BType<'b>>;
 }
 
-pub trait IInvocable<'a>: Send + Sync {
+pub trait IInvocable: Send + Sync {
     fn invoke(&self, args: &[BType], context: &Context) -> EvalResult;
 }
 
-pub trait IIterable<'a>: Send + Sync {
+pub trait IIterable: Send + Sync {
     fn is_empty(&self) -> bool;
     fn ivalues(&self) -> VIterator;
 }
 
-pub trait IIndexable<'a>: Send + Sync {
+pub trait IIndexable: Send + Sync {
     fn has_index(&self, index: usize) -> bool;
     fn get_index(&self, index: usize) -> Option<BType>;
 //    fn as_slice(&self, range: Range) -> &[BType];
 //    fn len(&self) -> usize;
 }
 
-pub trait IComposable<'a>: Send + Sync {
+pub trait IComposable: Send + Sync {
     fn get_attr(&self, id: &str) -> Option<BType>;
 //    fn attrs(&self) -> &[BType];
 }
 
-pub trait IPartialEq<'a, T>: Send + Sync {
+pub trait IPartialEq<T>: Send + Sync {
     fn eq(&self, other: &T) -> bool;
     fn ne(&self, other: &T) -> bool { !self.eq(other) }
 }

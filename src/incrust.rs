@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 
 use ::abc;
-pub use ::types::abc::{Args, EntityId, Type, BType, ex};
+pub use ::types::abc::{Args, Type, BType, ex};
 pub use ::types::context::{Context};
 pub use ::template::Template;
 use ::loader::GroupLoader;

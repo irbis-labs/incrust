@@ -1,5 +1,5 @@
 use abc::{EvalResult, EvalError};
-use incrust::{Incrust, Context, BType};
+use incrust::{Context, BType};
 use template::{
     DisjExpr, ConjExpr, CmpExpr, Expr, Term,
     DisjOp, ConjOp, CmpOp, SumOp, MulOp,
@@ -178,7 +178,7 @@ mod tests {
     #[test]
     fn eval_attr() {
         use ::abc::EvalResult;
-        use ::incrust::{Incrust, Context, Args, ex};
+        use ::incrust::{Incrust, Args, ex};
         use ::parser::expressions::expression as parse_expr;
         use super::eval_expr;
 
@@ -198,7 +198,7 @@ mod tests {
     fn eval_factor() {
         use abc::EvalResult;
         use template::{Factor, Literal};
-        use incrust::{Incrust, Context, Args, ex};
+        use incrust::{Incrust, Args, ex};
         use parser::expressions::expression as parse_expr;
         use super::eval_factor;
         use super::eval_expr;
@@ -231,7 +231,7 @@ mod tests {
     #[test]
     fn eval_bool() {
         use ::abc::EvalResult;
-        use ::incrust::{Incrust, Context, Args, ex};
+        use ::incrust::{Incrust, Args, ex};
         use ::parser::expressions::expression as parse_expr;
         use super::eval_expr;
 

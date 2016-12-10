@@ -1,6 +1,6 @@
 
 use ::abc::{Filter, FilterResult, FilterError};
-use ::incrust::{Incrust, Context};
+use ::incrust::Context;
 
 
 #[derive(Debug)]

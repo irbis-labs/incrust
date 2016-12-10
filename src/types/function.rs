@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Formatter, Error};
 
-use ::abc::{EvalResult};
-use ::incrust::{Context, Incrust};
+use ::abc::EvalResult;
+use ::incrust::Context;
 
 use super::abc::*;
 
@@ -40,7 +40,7 @@ impl <'a> Into<BType<'a>> for Function {
     }
 }
 
-impl <'b> AsInvocable for Function {
+impl AsInvocable for Function {
     fn try_as_invocable(&self) -> Option<&IInvocable> {
         Some(self)
     }
@@ -50,7 +50,7 @@ impl <'b> AsInvocable for Function {
     }
 }
 
-impl <'a, 'b: 'a> IInvocable<'a> for Function {
+impl IInvocable for Function {
     fn invoke(&self, args: &[BType], context: &Context) -> EvalResult {
         (self.f)(args, context)
     }

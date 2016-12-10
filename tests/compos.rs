@@ -33,7 +33,7 @@ impl AsComposable for Fruit {
     fn try_as_composable(&self) -> Option<&IComposable> { Some(self) }
 }
 
-impl <'a> IComposable<'a> for Fruit {
+impl IComposable for Fruit {
     fn get_attr(&self, id: &str) -> Option<BType> {
         match id {
             "title" => Some(ex(self.title.as_str())),

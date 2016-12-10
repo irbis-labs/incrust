@@ -1,7 +1,7 @@
 use std::fmt;
 
 use abc::RenderResult;
-use incrust::{Incrust, Context};
+use incrust::Context;
 use template::{
     DisjExpr, ConjExpr, CmpExpr, Expr, Term,
     /*DisjOp, ConjOp, */CmpOp, SumOp, MulOp,

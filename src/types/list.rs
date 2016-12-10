@@ -31,7 +31,7 @@ impl <'b> AsComposable for Vec<BType<'b>> {
 // --------------------------------------------------------------------------------------------------------------------
 
 
-impl <'a, 'b: 'a> IIterable<'a> for Vec<BType<'b>> {
+impl <'b> IIterable for Vec<BType<'b>> {
     fn is_empty(&self) -> bool {
         Vec::is_empty(self)
     }
@@ -44,7 +44,7 @@ impl <'a, 'b: 'a> IIterable<'a> for Vec<BType<'b>> {
 }
 
 
-impl <'a, 'b: 'a> IComposable<'a> for Vec<BType<'b>> {
+impl <'b> IComposable for Vec<BType<'b>> {
     fn get_attr(&self, id: &str) -> Option<BType> {
         match id {
             "length" => Some(ex(self.len() as i64)),
