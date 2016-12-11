@@ -11,6 +11,14 @@ impl Type for Vec<BType> {
     }
 }
 
+// todo resolve specialization conflict
+//impl IRender for Vec<BType> {
+//    default fn render<'w>(&self, writer: &mut Writer<'w>) -> fmt::Result {
+//        debug!("Default render for List {:?}", self);
+//        write!(writer, "#List")
+//    }
+//}
+
 impl AsBool for Vec<BType> {
     fn to_bool(&self) -> bool {
         !self.is_empty()

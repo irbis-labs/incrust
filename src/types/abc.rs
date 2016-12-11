@@ -1,6 +1,6 @@
 use std::collections::hash_map::HashMap;
 use std::borrow::Cow;
-use std::fmt::Debug;
+use std::fmt;
 use std::iter::Iterator;
 use std::slice::Iter;
 
@@ -22,13 +22,26 @@ pub use super::btype::BType;
 
 pub trait Type:
     AsString + AsBool + AsReal + AsInt + AsIterable + AsComposable + AsInvocable +
-    IArithm + Send + Sync + Debug
+    IArithm + IRender + Send + Sync + fmt::Debug
 {
     fn iclone(&self) -> BType;
 }
 
-
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
+
+pub struct Writer<'w> (
+    pub &'w mut fmt::Write
+);
+
+impl <'w> fmt::Write for Writer<'w> {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.0.write_str(s)
+    }
+}
+
+pub trait IRender {
+    fn render<'w>(&self, writer: &mut Writer<'w>) -> fmt::Result;
+}
 
 pub trait AsString {
     fn is_string(&self) -> bool;

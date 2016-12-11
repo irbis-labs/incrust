@@ -1,10 +1,25 @@
 use std::borrow::Cow;
+use std::fmt;
 use std::fmt::Display;
+use std::fmt::Write;
 
 use super::abc::*;
 
 
 // --- [ default implementations ] ------------------------------------------------------------------------------------
+
+impl <T> IRender for T where T: Type {
+    default fn render<'w>(&self, writer: &mut Writer<'w>) -> fmt::Result {
+        debug!("Default render for Type {:?}", self);
+        write!(writer, "#Type")
+    }
+}
+
+impl <T> IRender for T where T: Type + Display {
+    default fn render<'w>(&self, writer: &mut Writer<'w>) -> fmt::Result {
+        write!(writer, "{}", self)
+    }
+}
 
 impl <T> AsString for T where T: Type {
     default fn is_string(&self) -> bool {

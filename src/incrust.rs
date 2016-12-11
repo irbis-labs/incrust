@@ -1,16 +1,16 @@
-
+use std::borrow::Cow;
 use std::collections::HashMap;
 
-use ::abc;
-pub use ::types::abc::{Args, Type, BType, ex};
-pub use ::types::context::{Context};
-pub use ::template::Template;
-use ::loader::GroupLoader;
+use abc::*;
+pub use types::abc::{Args, Type, BType, ex};
+pub use types::context::{Context};
+pub use template::Template;
+use loader::GroupLoader;
 
 #[derive(Debug)]
 pub struct Incrust {
     pub loaders: GroupLoader,
-    filters: HashMap<String, Box<abc::Filter>>,
+    filters: HashMap<String, Box<Filter>>,
     top_context: HashMap<String, BType>,
 }
 
@@ -20,7 +20,7 @@ impl Default for Incrust {
         #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
         use ::renderer::filter::{Escape, Unescape};
 
-        let mut filters: HashMap<String, Box<abc::Filter>> = HashMap::new();
+        let mut filters: HashMap<String, Box<Filter>> = HashMap::new();
 
         filters.insert("e".into(), box Escape);
         filters.insert("escape".into(), box Escape);
@@ -60,41 +60,43 @@ impl Incrust {
         &self.top_context
     }
 
-    pub fn load(&self, name: &str) -> abc::LoadResult {
+    pub fn load(&self, name: &str) -> LoadResult {
         for loader in &self.loaders {
-            if let Ok(template) = loader.load(name) { return Ok(template) }
+            if let Ok(template) = loader.load(name) {
+                return Ok(template)
+            }
         }
-        Err(abc::LoadError::NotFound)
+        Err(LoadError::NotFound)
     }
 
-    pub fn filter(&self, id: &str, value: Option<String>, context: &Context) -> abc::FilterResult {
+    pub fn filter<'a, 's: 'a>(&'s self, id: &str, context: &'a Context, value: Option<Cow<'a, BType>>) -> FilterResult<Cow<'a, BType>> {
         match self.filters.get(id) {
-            Some(ref filter) => filter.filter(value, context),
-            None => Err(abc::FilterError::UnknownFormatter(id.into()))
+            Some(ref filter) => filter.filter(context, value),
+            None => Err(FilterError::UnknownFormatter(id.into()))
         }
     }
 
     #[cfg_attr(feature = "clippy", allow(let_and_return))]
-    pub fn parse(&self, template: &str) -> abc::ParseResult {
+    pub fn parse(&self, template: &str) -> ParseResult {
         let template = Template::parse(template)?;
         Ok(template)
     }
 
-    pub fn render<'a, C:Into<Args<'a>>>(&'a self, name: &str, args: C) -> abc::RenderResult<String> {
+    pub fn render<'a, C:Into<Args<'a>>>(&'a self, name: &str, args: C) -> RenderResult<String> {
         let template = self.load(name)?;
         self.render_text(&template, args)
     }
 
-    pub fn render_text<'a, C:Into<Args<'a>>>(&'a self, text: &str, args: C) -> abc::RenderResult<String> {
+    pub fn render_text<'a, C:Into<Args<'a>>>(&'a self, text: &str, args: C) -> RenderResult<String> {
         let template = self.parse(text)?;
         self.render_parsed(&template, args)
     }
 
-    pub fn render_parsed<'a, C:Into<Args<'a>>>(&'a self, template: &Template, args: C) -> abc::RenderResult<String> {
+    pub fn render_parsed<'a, C:Into<Args<'a>>>(&'a self, template: &Template, args: C) -> RenderResult<String> {
         self.render_prepared(template, &self.context(&args.into()))
     }
 
-    pub fn render_prepared(&self, template: &Template, context: &Context) -> abc::RenderResult<String> {
+    pub fn render_prepared(&self, template: &Template, context: &Context) -> RenderResult<String> {
         ::renderer::text(context, template.parsed.as_slice())
     }
 }

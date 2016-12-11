@@ -36,7 +36,7 @@ extern crate incrust;
 
 use incrust::ex;
 
-fn create_env<'a>() -> Incrust<'a> {
+fn create_env() -> Incrust {
     use incrust::{Incrust, FilesystemLoader};
 
     let mut instance = Incrust::default();

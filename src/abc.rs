@@ -1,5 +1,7 @@
+use std::borrow::Cow;
 use std::fmt;
 
+use types::abc::BType;
 use types::context::Context;
 use template::Template;
 
@@ -32,18 +34,21 @@ pub enum EvalError {
 }
 
 
-pub type FilterResult = Result<Option<String>, FilterError>;
+pub type FilterResult<T> = Result<Option<T>, FilterError>;
 
 #[derive(Debug)]
 pub enum FilterError {
     UnknownFormatter(String),
     Input(String),
     Process(String),
+    Format(fmt::Error),
 }
+
+impl From<fmt::Error>  for FilterError { fn from(err: fmt::Error)  -> Self { FilterError::Format(err) } }
 
 
 pub trait Filter: fmt::Debug + Send + Sync {
-    fn filter(&self, value: Option<String>, context: &Context) -> FilterResult;
+    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Cow<'a, BType>>) -> FilterResult<Cow<'a, BType>>;
 }
 
 

@@ -1,7 +1,8 @@
 use std::fmt;
 
-use abc::{RenderResult, FilterResult};
+use abc::RenderResult;
 use incrust::{Context, Args, ex};
+use types::abc::Writer;
 use template::{
     Parsed, Mustache,
     FullExpression, FilterItem,
@@ -38,18 +39,15 @@ pub fn render_mustache<W: fmt::Write>(writer: &mut W, context: &Context, mus: &M
 
 
 pub fn render_expression<W: fmt::Write>(writer: &mut W, context: &Context, expr: &FullExpression) -> RenderResult<()> {
-    if let Some(x) = expr.filters.iter().fold(
-        Ok(eval_expr(context, &expr.expr)?.and_then(|val| val.try_as_string().map(|s| s.into_owned()))),
-        |result: FilterResult, filter: &FilterItem| -> FilterResult {
-            match result {
-                Err(err)    => Err(err),
-                Ok(value)   => Ok(match *filter {
-                    FilterItem::Simple(ref id) => context.env().filter(id, value, context)?,
-                }),
-            }
-        }
-    )? {
-        write!(writer, "{}", x)?;
+    let mut acc = eval_expr(context, &expr.expr)?;
+    for filter in expr.filters.iter() {
+        acc = match *filter {
+            FilterItem::Simple(ref id) => context.env().filter(id, context, acc)?,
+        };
+    }
+    match acc {
+        None => write!(writer, "#None")?,
+        Some(acc) => acc.as_ref().render(&mut Writer(writer))?,
     }
     Ok(())
 }
