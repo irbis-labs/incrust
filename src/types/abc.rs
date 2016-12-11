@@ -1,5 +1,7 @@
-use std::collections::hash_map::HashMap;
+use std::any::Any;
 use std::borrow::Cow;
+use std::cmp::Ordering;
+use std::collections::hash_map::HashMap;
 use std::fmt;
 use std::iter::Iterator;
 use std::slice::Iter;
@@ -22,7 +24,8 @@ pub use super::btype::BType;
 
 pub trait Type:
     AsString + AsBool + AsReal + AsInt + AsIterable + AsComposable + AsInvocable +
-    IArithm + IRender + Send + Sync + fmt::Debug
+    AsPartialEq + AsPartialOrd +
+    IArithm + IRender + fmt::Debug + Send + Sync
 {
     fn iclone(&self) -> BType;
 }
@@ -41,6 +44,10 @@ impl <'w> fmt::Write for Writer<'w> {
 
 pub trait IRender {
     fn render<'w>(&self, writer: &mut Writer<'w>) -> fmt::Result;
+}
+
+pub trait AsAny {
+    fn try_as_any(&self) -> Option<&Any>;
 }
 
 pub trait AsString {
@@ -83,9 +90,14 @@ pub trait AsIndexable {
     fn try_as_indexable(&self) -> Option<&IIndexable>;
 }
 
-pub trait AsPartialEq<T> {
+pub trait AsPartialEq {
     fn is_partial_eq(&self) -> bool;
-    fn try_as_partial_eq(&self) -> Option<&IPartialEq<T>>;
+    fn try_as_partial_eq(&self) -> Option<&IPartialEq>;
+}
+
+pub trait AsPartialOrd {
+    fn is_partial_ord(&self) -> bool;
+    fn try_as_partial_ord(&self) -> Option<&IPartialOrd>;
 }
 
 
@@ -119,9 +131,25 @@ pub trait IComposable: Send + Sync {
 //    fn attrs(&self) -> &[BType];
 }
 
-pub trait IPartialEq<T>: Send + Sync {
-    fn eq(&self, other: &T) -> bool;
-    fn ne(&self, other: &T) -> bool { !self.eq(other) }
+pub trait IPartialEq: Send + Sync {
+    fn eq(&self, other: &BType) -> bool;
+    fn ne(&self, other: &BType) -> bool { !self.eq(other) }
+}
+
+pub trait IPartialOrd: Send + Sync {
+    fn partial_cmp(&self, other: &BType) -> Option<Ordering>;
+    fn lt(&self, other: &BType) -> Option<bool> {
+        self.partial_cmp(other).map(|res| res == Ordering::Less)
+    }
+    fn le(&self, other: &BType) -> Option<bool> {
+        self.partial_cmp(other).map(|res| res != Ordering::Greater)
+    }
+    fn gt(&self, other: &BType) -> Option<bool> {
+        self.partial_cmp(other).map(|res| res == Ordering::Greater)
+    }
+    fn ge(&self, other: &BType) -> Option<bool> {
+        self.partial_cmp(other).map(|res| res != Ordering::Less)
+    }
 }
 
 

@@ -197,7 +197,7 @@ fn op_conj_bin(input: &[u8]) -> IResult<&[u8], ConjOp> {
 fn op_cmp_bin(input: &[u8]) -> IResult<&[u8], CmpOp> {
     let (i, (_, o, _)) = try_parse!(input, tuple!(
         many0!(multispace),
-        alt!(tag!("<") | tag!("<=") | tag!("==") | tag!("!=") | tag!("in") | tag!("not in") | tag!(">=") | tag!(">")),
+        alt!(tag!("<=") | tag!("<") | tag!("==") | tag!("!=") | tag!("in") | tag!("not in") | tag!(">=") | tag!(">")),
         many0!(multispace)
     ));
     IResult::Done(i, match o {

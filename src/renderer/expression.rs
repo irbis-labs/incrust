@@ -188,5 +188,12 @@ mod tests {
 
         test("True and False",      b"True and False");
         test("0 or 1 and 2",        b"0 or 1 and 2");
+
+        test("1 == 1",              b"1 == 1");
+        test("1 != 1",              b"1 != 1");
+        test("1 <= 1",              b"1 <= 1");
+        test("1 >= 1",              b"1 >= 1");
+        test("1 < 1",               b"1 < 1");
+        test("1 > 1",               b"1 > 1");
     }
 }

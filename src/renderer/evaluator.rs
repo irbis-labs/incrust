@@ -1,7 +1,8 @@
 use std::borrow::Cow;
 
 use abc::{EvalResult, EvalError};
-use incrust::{Context, BType};
+use types::context::Context;
+use types::abc::*;
 use template::{
     DisjExpr, ConjExpr, CmpExpr, Expr, Term,
     DisjOp, ConjOp, CmpOp, SumOp, MulOp,
@@ -56,22 +57,25 @@ pub fn eval_cmp<'a>(context: &'a Context, cmp_expr: &'a CmpExpr) -> EvalResult<C
     match itr.next() {
         None => unreachable!(),
         Some(&CmpItem(_, ref expr)) => {
-            let acc = eval_sum(context, expr)?;
+            let mut acc = eval_sum(context, expr)?;
             for &CmpItem(ref op, ref expr) in itr {
                 acc = match acc {
                     None => return Ok(None),
                     Some(acc) => match eval_sum(context, expr)? {
                         None => return Ok(None),
                         Some(expr) => match *op {
-                            CmpOp::Lt   => unimplemented!(),
-                            CmpOp::Lte  => unimplemented!(),
-                            CmpOp::Eq   => unimplemented!(),
-                            CmpOp::Neq  => unimplemented!(),
+                            // todo error if is not partial_eq ?
+                            CmpOp::Eq   => acc.as_ref().try_as_partial_eq().map(|acc| acc.eq(expr.as_ref())),
+                            CmpOp::Neq  => acc.as_ref().try_as_partial_eq().map(|acc| acc.ne(expr.as_ref())),
+                            CmpOp::Lt   => acc.as_ref().try_as_partial_ord().and_then(|acc| acc.lt(expr.as_ref())),
+                            CmpOp::Gt   => acc.as_ref().try_as_partial_ord().and_then(|acc| acc.gt(expr.as_ref())),
+                            CmpOp::Lte  => acc.as_ref().try_as_partial_ord().and_then(|acc| acc.le(expr.as_ref())),
+                            CmpOp::Gte  => acc.as_ref().try_as_partial_ord().and_then(|acc| acc.ge(expr.as_ref())),
                             CmpOp::In   => unimplemented!(),
                             CmpOp::Nin  => unimplemented!(),
-                            CmpOp::Gte  => unimplemented!(),
-                            CmpOp::Gt   => unimplemented!(),
-                        } } } }
+                        }
+                            .map(|res| Cow::Owned(ex(res)) )
+                    } } }
             Ok(acc)
         } } }
 
@@ -268,6 +272,54 @@ mod tests {
         assert_eq!("2",     x(eval_expr(&context, &parse(br#"0 or 1 and 2"#))));
         assert_eq!("1",     x(eval_expr(&context, &parse(br#"0 or 1 or 2"#))));
         assert_eq!("1",     x(eval_expr(&context, &parse(br#"1 or 0 and 2"#))));
+    }
+
+    #[test]
+    fn compare() {
+        use incrust::{Incrust, Args, ex};
+        use parser::expressions::expression as parse_expr;
+        use super::eval_expr;
+
+        let args: Args = hashmap!{ "the_one".into() => ex("World") };
+        let incrust = Incrust::default();
+        let context = incrust.context(&args);
+
+        let parse = |s| unwrap_iresult(parse_expr(s));
+        let test = |s, b| {
+            let res = eval_expr(&context, &parse(b))
+                .unwrap().unwrap().as_ref()
+                .try_as_string()
+                .unwrap().into_owned();
+            assert_eq!(s, res);
+        };
+
+        test("true",  b"1 == 1");
+        test("true",  b"1 != 2");
+        test("false", b"1 == 2");
+
+        test("true",  br#""1" == "1""#);
+        test("true",  br#""1" != "2""#);
+        test("false", br#""1" == "2""#);
+
+        test("false", br#""1" == 1"#);
+        test("true",  br#""1" != 1"#);
+
+        test("false", br#"1 == "1""#);
+        test("true",  br#"1 != "1""#);
+
+        test("true",  b"1 <= 1");
+        test("false", b"1 < 1");
+        test("true",  b"1 <= 2");
+        test("true",  b"1 < 2");
+        test("false", b"1 >= 2");
+        test("false", b"1 > 2");
+
+        test("true",  b"1 >= 1");
+        test("false", b"1 > 1");
+        test("true",  b"1 >= 1");
+        test("true",  b"2 > 1");
+        test("false", b"2 <= 1");
+        test("false", b"2 < 1");
     }
 
 //    #[test]

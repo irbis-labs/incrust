@@ -77,7 +77,7 @@ impl <T> AsIterable for T where T: Type {
 
 impl <T> AsComposable for T where T: Type {
     default fn is_composable(&self) -> bool {
-        self.try_as_composable().is_some()
+        false
     }
 
     default fn try_as_composable(&self) -> Option<&IComposable> {
@@ -85,9 +85,15 @@ impl <T> AsComposable for T where T: Type {
     }
 }
 
-//impl <'a, T> AsComposable for T where T: Type + IComposable<'a> {
-//    default fn try_as_composable(&self) -> Option<&IComposable> { Some(self) }
-//}
+impl <T> AsComposable for T where T: Type + IComposable {
+    fn is_composable(&self) -> bool {
+        true
+    }
+
+    default fn try_as_composable(&self) -> Option<&IComposable> {
+        Some(self)
+    }
+}
 
 impl <T> AsInvocable for T where T: Type {
     default fn is_invocable(&self) -> bool {
@@ -100,25 +106,45 @@ impl <T> AsInvocable for T where T: Type {
 }
 
 
-//impl <T> AsPartialEq for T where T: Type {
-//    fn is_partial_eq(&self) -> bool {
-//        false
-//    }
-//
-//    fn try_as_partial_eq<'a>(&self) -> Option<&IPartialEq<'a, T>> {
-//        None
-//    }
-//}
-//
-//impl <T> AsPartialEq for T where T: Type + PartialEq {
-//    fn is_partial_eq(&self) -> bool {
-//        true
-//    }
-//
-//    fn try_as_partial_eq<'a>(&self) -> Option<&IPartialEq<'a, T>> {
-//        Some(&self)
-//    }
-//}
+impl <T> AsPartialEq for T where T: Type {
+    default fn is_partial_eq(&self) -> bool {
+        false
+    }
+
+    default fn try_as_partial_eq(&self) -> Option<&IPartialEq> {
+        None
+    }
+}
+
+impl <T> AsPartialEq for T where T: Type + IPartialEq {
+    default fn is_partial_eq(&self) -> bool {
+        true
+    }
+
+    default fn try_as_partial_eq(&self) -> Option<&IPartialEq> {
+        Some(self)
+    }
+}
+
+impl <T> AsPartialOrd for T where T: Type {
+    default fn is_partial_ord(&self) -> bool {
+        false
+    }
+
+    default fn try_as_partial_ord(&self) -> Option<&IPartialOrd> {
+        None
+    }
+}
+
+impl <T> AsPartialOrd for T where T: Type + IPartialOrd {
+    default fn is_partial_ord(&self) -> bool {
+        true
+    }
+
+    default fn try_as_partial_ord(&self) -> Option<&IPartialOrd> {
+        Some(self)
+    }
+}
 
 
 // -------------------------------------------------------------------------------------------------

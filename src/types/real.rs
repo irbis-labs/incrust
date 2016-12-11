@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::cmp::Ordering;
 
 use super::abc::*;
 
@@ -9,11 +10,13 @@ impl Type for f64 {
     }
 }
 
+
 impl AsBool for f64 {
     fn to_bool(&self) -> bool {
         *self != 0.0
     }
 }
+
 
 impl AsReal for f64 {
     fn try_as_real(&self) -> Option<f64> {
@@ -25,11 +28,31 @@ impl AsReal for f64 {
     }
 }
 
+
 impl AsInt for f64 {
     fn try_as_int(&self) -> Option<i64> {
         Some(*self as i64)
     }
 }
+
+
+impl IPartialEq for f64 {
+    fn eq(&self, other: &BType) -> bool {
+        other.try_as_real().map(|s| s == *self).unwrap_or(false)
+    }
+}
+
+
+impl IPartialOrd for f64 {
+    fn partial_cmp(&self, other: &BType) -> Option<Ordering> {
+        if other.is_real() || other.is_int() {
+            other.try_as_real().and_then(|s| (self as &PartialOrd<f64>).partial_cmp(&s))
+        } else {
+            None
+        }
+    }
+}
+
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for f64 {

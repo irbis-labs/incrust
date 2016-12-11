@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::cmp::Ordering;
 
 use super::abc::*;
 //use super::function::Function;
@@ -10,11 +11,13 @@ impl Type for String {
     }
 }
 
+
 impl AsBool for String {
     fn to_bool(&self) -> bool {
         !self.is_empty()
     }
 }
+
 
 impl AsString for String {
     fn is_string(&self) -> bool {
@@ -25,6 +28,25 @@ impl AsString for String {
         Some(Cow::Borrowed(self))
     }
 }
+
+
+impl IPartialEq for String {
+    fn eq(&self, other: &BType) -> bool {
+        other.is_string() && other.try_as_string().map(|s| s.as_ref() == self).unwrap_or(false)
+    }
+}
+
+
+impl IPartialOrd for String {
+    fn partial_cmp(&self, other: &BType) -> Option<Ordering> {
+        if other.is_string() {
+            other.try_as_string().and_then(|s| self.as_str().partial_cmp(s.as_ref()))
+        } else {
+            None
+        }
+    }
+}
+
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for String {
