@@ -1,3 +1,4 @@
+use std::convert::AsRef;
 use std::borrow::Cow;
 use std::collections::HashMap;
 
@@ -14,6 +15,12 @@ pub struct Template {
     pub root: Nodes,
     pub blocks: HashMap<String, Nodes>,
     pub extends: Option<FullExpression>,
+}
+
+impl AsRef<Template> for Template {
+    fn as_ref(&self) -> &Template {
+        self
+    }
 }
 
 impl Template {

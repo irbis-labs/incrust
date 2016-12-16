@@ -20,9 +20,9 @@ __Note that Incrust currently requires the nightly version of the Rust compiler.
 
 Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be included in your Cargo enabled project like this:
 
-```
+```toml
 [dependencies]
-incrust = "0.2"
+incrust = "=0.2.8"
 ```
 
 For ease of use hashmaps you may use the [maplit](https://crates.io/crates/maplit)
@@ -64,16 +64,22 @@ incrust.render_parsed(&hello, args).unwrap();
 
 ## Syntax examples
 
-### Filters
+### Comments
 
-```rust
-let args = hashmap!{ "title".into() => ex("<Cats & Dogs>") };
-```
 ```twig
-<h1>{{ title | escape }}</h1>
+<p>Visible {# partially #} paragraph</p>
 ```
 ```html
-<h1>&lt;Cats &amp; Dogs&gt;</h1>
+<p>Visible  paragraph</p>
+```
+
+### Escaping
+
+```twig
+Example: {% raw %}{{ mustaches }}{% endraw %}
+```
+```html
+Example: {{ mustaches }}
 ```
 
 ### Literals
@@ -85,6 +91,18 @@ Pi: {{ 3.1415926 }}
 ```html
 Braces: {{
 Pi: 3.1415926
+```
+
+### Filters
+
+```rust
+let args = hashmap!{ "title".into() => ex("<Cats & Dogs>") };
+```
+```twig
+<h1>{{ title | escape }}</h1>
+```
+```html
+<h1>&lt;Cats &amp; Dogs&gt;</h1>
 ```
 
 ### Expressions
@@ -156,22 +174,36 @@ let args = hashmap!{ "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("B
     </ul>
 ```
 
-### Comments
+### Template inheritance
 
+```rust
+let args = hashmap!{ "parent_layout".into() => ex("default") };
+incrust.render("template", args).unwrap()
+```
+default.tpl
 ```twig
-<p>Visible {# partially #} paragraph</p>
+<body>
+    <h1>{% block title %}Default title{% endblock %}</h1>
+    <main>
+    {%- block body %}
+        <p>Default body<p>
+    {%- endblock %}
+    </main>
+</body>
 ```
+template.tpl
 ```html
-<p>Visible  paragraph</p>
+{% extends parent_layout %}
+{% block title %}New title{% endblock %}
 ```
-
-### Escaping
-
-```twig
-Example: {% raw %}{{ mustaches }}{% endraw %}
-```
+Output
 ```html
-Example: {{ mustaches }}
+<body>
+    <h1>New title</h1>
+    <main>
+        <p>Default body<p>
+    </main>
+</body>
 ```
 
 
@@ -179,7 +211,7 @@ Example: {{ mustaches }}
 
 If you are looking for a template engine for your project, you may also look at these projects.
 
-### With a similar to Incrust syntax
+### With a similar syntax
 
  * [cobalt-org/liquid-rust](https://github.com/cobalt-org/liquid-rust)   Liquid templating for Rust
  * [colin-kiegel/twig-rust](https://github.com/colin-kiegel/twig-rust)   Rust port of the twig-php template library

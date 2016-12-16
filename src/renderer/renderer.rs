@@ -64,7 +64,7 @@ pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForSt
                     "first".into() => ex(index == 0),
                     "last".into() => ex(false), // TODO the "last" marker in a loop
                 };
-                render_text(writer, &context.nest(&local_scope), &stmt.block)?;
+                render_text(writer, &context.nested_scope(&local_scope), &stmt.block)?;
             }
         }
     };
@@ -90,9 +90,14 @@ pub fn render_if<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &IfStat
 
 
 pub fn render_block<W: fmt::Write>(writer: &mut W, context: &Context, name: &str) -> RenderResult<()> {
-    match context.template().blocks.get(name) {
-        Some(block) => render_text(writer, context, &block)?,
-        None => unreachable!(),
-    };
+    for template in context.global().stack() {
+        match template.blocks.get(name) {
+            Some(block) => {
+                render_text(writer, context, &block)?;
+                break;
+            },
+            None => {},
+        };
+    }
     Ok(())
 }

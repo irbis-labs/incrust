@@ -52,10 +52,6 @@ impl Incrust {
         }
     }
 
-    pub fn context<'a>(&'a self, template: &'a Template) -> GlobalContext<'a> {
-        GlobalContext::new(template, self)
-    }
-
     pub fn top_context(&self) -> &HashMap<String, BType> {
         &self.top_context
     }
@@ -89,11 +85,15 @@ impl Incrust {
     }
 
     pub fn render_parsed<'a, C:Into<Args<'a>>>(&'a self, template: &Template, args: C) -> RenderResult<String> {
-        self.render_prepared(&self.context(template).nest(&args.into()))
+        self.render_prepared(&self.create_global_context(template, &args.into())?.top_scope())
     }
 
     pub fn render_prepared(&self, context: &Context) -> RenderResult<String> {
         ::renderer::text(context)
+    }
+
+    pub fn create_global_context<'a>(&'a self, template: &'a Template, args: &'a Args<'a>) -> RenderResult<GlobalContext<'a>> {
+        GlobalContext::new(self, template, args)
     }
 }
 
@@ -200,5 +200,58 @@ mod tests {
     </ul>
 "#;
         assert_eq!(expected, incrust.render_text(tpl, args).unwrap());
+    }
+
+    #[test]
+    fn block_statement() {
+        let incrust = Incrust::new();
+        let args = hashmap!{ "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")]) };
+        let tpl = r#"
+<body>
+    <h1>{% block title %}Default title{% endblock %}</h1>
+</body>
+"#;
+        let expected = r#"
+<body>
+    <h1>Default title</h1>
+</body>
+"#;
+        assert_eq!(expected, incrust.render_text(tpl, args).unwrap());
+    }
+
+    #[test]
+    fn inheritance() {
+        let base = r#"
+<body>
+    <h1>{% block title %}Default title{% endblock %}</h1>
+    <main>
+    {%- block body %}
+        <p>Default body<p>
+    {%- endblock %}
+    </main>
+</body>
+"#;
+        let tpl = r#"
+{% extends parent_layout %}
+{% block title %}New title{% endblock %}
+"#;
+
+        let expected = r#"
+<body>
+    <h1>New title</h1>
+    <main>
+        <p>Default body<p>
+    </main>
+</body>
+"#;
+
+        let mut incrust = Incrust::new();
+        incrust.loaders.push(box hashmap!{
+            "base".into() => base.into(),
+            "tpl".into() => tpl.into(),
+        });
+
+        let args = hashmap!{ "parent_layout".into() => ex("base") };
+        assert_eq!(expected, incrust.render("tpl", args).unwrap());
     }
 }

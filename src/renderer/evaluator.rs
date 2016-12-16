@@ -185,8 +185,8 @@ mod tests {
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
         let incrust = Incrust::default();
         let template = Template::default();
-        let context = incrust.context(&template);
-        let context = context.nest(&args);
+        let context = incrust.create_global_context(&template, &args).unwrap();
+        let context = context.top_scope();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
         let x = |r: EvalResult<Cow<BType>>| {
@@ -212,8 +212,8 @@ mod tests {
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
         let incrust = Incrust::default();
         let template = Template::default();
-        let context = incrust.context(&template);
-        let context = context.nest(&args);
+        let context = incrust.create_global_context(&template, &args).unwrap();
+        let context = context.top_scope();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
         let x = |r: EvalResult<Cow<BType>>| {
@@ -243,8 +243,8 @@ mod tests {
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
         let incrust = Incrust::default();
         let template = Template::default();
-        let context = incrust.context(&template);
-        let context = context.nest(&args);
+        let context = incrust.create_global_context(&template, &args).unwrap();
+        let context = context.top_scope();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
         let x = |r: EvalResult<Cow<BType>>| {
@@ -269,8 +269,8 @@ mod tests {
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
         let incrust = Incrust::default();
         let template = Template::default();
-        let context = incrust.context(&template);
-        let context = context.nest(&args);
+        let context = incrust.create_global_context(&template, &args).unwrap();
+        let context = context.top_scope();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
         let test = |s, b| {
