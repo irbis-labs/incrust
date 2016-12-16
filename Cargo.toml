@@ -1,12 +1,12 @@
 [package]
 name = "incrust"
-version = "0.2.5"
+version = "0.2.7"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Template engine inspired by Jinja2"
 repository = "https://github.com/alexander-irbis/incrust"
 readme = "README.md"
-#documentation = ""
+documentation = "https://docs.rs/incrust/"
 keywords = ["template", "jinja2", "django", "twig", "swig"]
 exclude = [
     ".gitignore",
@@ -22,7 +22,7 @@ clippy          = { version = "0.0", optional = true }
 marksman_escape = "0.1.2"
 log             = "0.3"
 maplit          = "0.1"
-nom             = {version = "^2.0", features = ["verbose-errors"] }
+nom             = { version = "^2.0", features = ["verbose-errors"] }
 
 [features]
 default         = []

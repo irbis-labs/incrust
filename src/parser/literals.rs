@@ -4,9 +4,8 @@ use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
 
-use ::template::{Factor, Literal};
-
-
+use container::expression::Factor;
+use container::expression::Literal;
 
 
 pub fn literal(input: &[u8]) -> IResult<&[u8], Factor> {
@@ -133,7 +132,7 @@ mod tests {
 
     #[test]
     fn literal_str() {
-        use ::template::Literal::Str;
+        use container::expression::Literal::Str;
         assert_eq!(Done(&b""[..], Str(r#" {{ "#.into()).into()),        super::lit_str(br#"" {{ ""#));
         assert_eq!(Done(&b""[..], Str(r#" {{ "#.into()).into()),        super::literal(br#"" {{ ""#));
         assert_eq!(Done(&b""[..], Str(r#"{{"#.into()).into()),          super::literal(br#""{{""#));
@@ -143,7 +142,7 @@ mod tests {
 
     #[test]
     fn literal_char() {
-        use ::template::Literal::Char;
+        use container::expression::Literal::Char;
         assert_eq!("\\\\",                                  r#"\\"#);
 
         assert_eq!(Done(&b""[..], r#"\"#),                  super::char_escaped(br#"\\"#));
@@ -166,7 +165,7 @@ mod tests {
 
     #[test]
     fn literal_int() {
-        use ::template::Literal::Int;
+        use container::expression::Literal::Int;
         assert_eq!(Ok(Int(42)),                             super::parse_int("42"));
         assert_eq!(Done(&b""[..], Int(42).into()),          super::lit_num(b"42"));
         assert_eq!(Done(&b""[..], Int(42).into()),          super::literal(b"42"));
@@ -175,7 +174,7 @@ mod tests {
     #[test]
     fn literal_real() {
         #![cfg_attr(feature = "clippy", allow(approx_constant))]
-        use ::template::Literal::Real;
+        use container::expression::Literal::Real;
         assert_eq!(Ok(Real(3.1415926)),                     super::parse_float("3.1415926"));
         assert_eq!(Ok(Real(0.1)),                           super::parse_float(".1"));
         assert_eq!(Ok(Real(1.0)),                           super::parse_float("1."));

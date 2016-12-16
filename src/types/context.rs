@@ -1,56 +1,102 @@
 use super::abc::*;
-use ::incrust::Incrust;
+use incrust::Incrust;
+use container::Template;
 
 
-pub enum ParentScope<'a> {
-    Env(&'a Incrust),
-    Context(&'a Context<'a>),
-}
+pub type TemplateStack<'a> = Vec<&'a Template>;
 
-impl <'a> ParentScope<'a> {
-    pub fn get(&self, id: &str) -> Option<&BType> {
-        match *self {
-            ParentScope::Env(ref env) => env.top_context().get(id),
-            ParentScope::Context(ref context) => context.get(id)
-        }
-    }
 
-    pub fn env(&self) -> &'a Incrust {
-        match *self {
-            ParentScope::Env(ref env) => env,
-            ParentScope::Context(ref context) => context.env()
-        }
-    }
-}
-
-impl <'a> From<&'a Incrust> for ParentScope<'a> {
-    fn from(x: &'a Incrust) -> Self {
-        ParentScope::Env(x)
-    }
+pub struct GlobalContext<'a> {
+    env: &'a Incrust,
+    template: &'a Template,
 }
 
 
 pub struct Context<'a> {
-    parent_scope: ParentScope<'a>,
-    local_scope: &'a Args<'a>,
+    global: &'a GlobalContext<'a>,
+    parent: Option<&'a Context<'a>>,
+    args: &'a Args<'a>,
+}
+
+
+pub enum ParentScope<'a> {
+    Global(&'a GlobalContext<'a>),
+    Local(&'a Context<'a>),
+}
+
+impl <'a> From<&'a GlobalContext<'a>> for ParentScope<'a> {
+    fn from(x: &'a GlobalContext<'a>) -> Self {
+        ParentScope::Global(x)
+    }
+}
+
+impl <'a> From<&'a Context<'a>> for ParentScope<'a> {
+    fn from(x: &'a Context<'a>) -> Self {
+        ParentScope::Local(x)
+    }
+}
+
+
+impl <'a> GlobalContext<'a> {
+    pub fn new(template: &'a Template, env: &'a Incrust) -> Self {
+        GlobalContext {
+            env: env,
+            template: template,
+        }
+    }
+
+    pub fn nest(&'a self, args: &'a Args<'a>) -> Context<'a> {
+        Context::new(self, args)
+    }
+
+    pub fn template(&self) -> &'a Template {
+        self.template
+    }
+
+    pub fn env(&self) -> &'a Incrust {
+        self.env
+    }
 }
 
 
 impl <'a> Context<'a> {
-    pub fn new<PS: Into<ParentScope<'a>>>(parent_scope: PS, local_scope: &'a Args<'a>) -> Self {
-        Context { parent_scope: parent_scope.into(), local_scope: local_scope }
+    pub fn new<PS: Into<ParentScope<'a>>>(parent_scope: PS, args: &'a Args<'a>) -> Self {
+        let (global, parent) = match parent_scope.into() {
+            ParentScope::Global(global) => (global, None),
+            ParentScope::Local(local) => (local.global(), Some(local)),
+        };
+        Context {
+            global: global,
+            parent: parent,
+            args: args
+        }
     }
 
-    pub fn nest(&'a self, local_scope: &'a Args<'a>) -> Self {
-        Context { parent_scope: ParentScope::Context(self), local_scope: local_scope }
+    pub fn nest(&'a self, args: &'a Args<'a>) -> Self {
+        Context {
+            global: self.global,
+            parent: Some(self),
+            args: args
+        }
+    }
+
+    pub fn template(&self) -> &'a Template {
+        self.global.template()
+    }
+
+    pub fn global(&self) -> &'a GlobalContext<'a> {
+        self.global
     }
 
     pub fn env(&self) -> &'a Incrust {
-        self.parent_scope.env()
+        self.global.env()
     }
 
     pub fn get(&self, id: &str) -> Option<&BType> {
-        self.local_scope.get(id)
-            .or_else(|| self.parent_scope.get(id))
+        self.args.get(id)
+            .or_else(|| self.parent
+                .and_then(|p| p.get(id))
+                .or_else(|| self.global.env().top_context().get(id))
+            )
     }
 }

@@ -3,30 +3,27 @@ use std::fmt;
 use abc::RenderResult;
 use incrust::{Context, Args, ex};
 use types::abc::Writer;
-use template::{
-    Parsed, Mustache,
-    FullExpression, FilterItem,
-    IfStatement, ForStatement,
-};
+use container::expression::*;
+use container::template::*;
 
 use super::evaluator::eval_expr;
 
 
-pub fn text<'a>(context: &'a Context, tpl: &'a[Parsed]) -> RenderResult<String> {
+pub fn text<'a>(context: &'a Context) -> RenderResult<String> {
     let mut buffer: String = Default::default();
-    render_text(&mut buffer, context, tpl)?;
+    render_text(&mut buffer, context, context.template().root.as_slice())?;
     Ok(buffer)
 }
 
 
-pub fn render_text<'a, W: fmt::Write>(writer: &mut W, context: &'a Context, tpl: &'a[Parsed]) -> RenderResult<()> {
-    for x in tpl {
+pub fn render_text<'a, W: fmt::Write>(writer: &mut W, context: &'a Context, nodes: &'a[Node]) -> RenderResult<()> {
+    for x in nodes {
         match *x {
-            Parsed::Text(ref txt) => write!(writer, "{}", txt)?,
-            Parsed::Comment(_) => (),
-            Parsed::Mustache(ref mus) => render_mustache(writer, context, mus)?,
-            Parsed::For(ref stmt) => render_for(writer, context, stmt)?,
-            Parsed::If(ref stmt) => render_if(writer, context, stmt)?,
+            Node::Text(ref txt) => write!(writer, "{}", txt)?,
+            Node::Mustache(ref mus) => render_mustache(writer, context, mus)?,
+            Node::For(ref stmt) => render_for(writer, context, stmt)?,
+            Node::If(ref stmt) => render_if(writer, context, stmt)?,
+            Node::Block(ref stmt) => render_block(writer, context, stmt)?,
         }
     }
     Ok(())
@@ -57,19 +54,17 @@ pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForSt
     #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
 
     // FIXME implement instead: expression(&stmt.begin.expression, context)
-    if let Some(ref expr) = stmt.begin.expression {
-        if let Some(value) = eval_expr(context, &expr.expr)? {
-            if let Some(iterable) = value.try_as_iterable() {
-                for (index, v) in iterable.ivalues().enumerate() {
-                    let local_scope: Args = hashmap! {
-                        stmt.value_var.as_str().into() => v,
-                        "index0".into() => ex(index as i64),
-                        "index".into() => ex(index as i64 + 1),
-                        "first".into() => ex(index == 0),
-                        "last".into() => ex(false), // TODO the "last" marker in a loop
-                    };
-                    render_text(writer, &context.nest(&local_scope), &stmt.block.parsed)?;
-                }
+    if let Some(value) = eval_expr(context, &stmt.expression.expr)? {
+        if let Some(iterable) = value.try_as_iterable() {
+            for (index, v) in iterable.ivalues().enumerate() {
+                let local_scope: Args = hashmap! {
+                    stmt.value_var.as_str().into() => v,
+                    "index0".into() => ex(index as i64),
+                    "index".into() => ex(index as i64 + 1),
+                    "first".into() => ex(index == 0),
+                    "last".into() => ex(false), // TODO the "last" marker in a loop
+                };
+                render_text(writer, &context.nest(&local_scope), &stmt.block)?;
             }
         }
     };
@@ -80,17 +75,24 @@ pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForSt
 pub fn render_if<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &IfStatement) -> RenderResult<()> {
     for branch in &stmt.if_branches {
         // FIXME implement instead: expression(&branch.begin.expression, context)
-        if let Some(ref expr) = branch.begin.expression {
-            if let Some(res) = eval_expr(context, &expr.expr)? {
-                if res.to_bool() {
-                    render_text(writer, context, &branch.block.parsed)?;
-                    return Ok(());
-                }
+        if let Some(res) = eval_expr(context, &branch.expr.expr)? {
+            if res.to_bool() {
+                render_text(writer, context, &branch.block)?;
+                return Ok(());
             }
         }
     }
     if let Some(ref branch) = stmt.else_branch {
-        render_text(writer, context, &branch.block.parsed)?;
+        render_text(writer, context, &branch)?;
     }
+    Ok(())
+}
+
+
+pub fn render_block<W: fmt::Write>(writer: &mut W, context: &Context, name: &str) -> RenderResult<()> {
+    match context.template().blocks.get(name) {
+        Some(block) => render_text(writer, context, &block)?,
+        None => unreachable!(),
+    };
     Ok(())
 }

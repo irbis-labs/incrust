@@ -3,29 +3,22 @@ use std::borrow::Cow;
 use abc::{EvalResult, EvalError};
 use types::context::Context;
 use types::abc::*;
-use template::{
-    DisjExpr, ConjExpr, CmpExpr, Expr, Term,
-    DisjOp, ConjOp, CmpOp, SumOp, MulOp,
-    DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
-    Factor, Literal, Attribute, Invocation,
-};
+use container::expression::*;
 
 
 pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResult<Cow<'a, BType>> {
     let mut itr = disj_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
-        Some(&DisjItem(_, ref conj)) => {
+        Some(conj) => {
             let mut acc = eval_conj(context, conj)?;
-            for &DisjItem(ref op, ref conj) in itr {
+            for conj in itr {
                 acc = match acc {
                     // FIXME eval None as False?
                     None => return Ok(None),
-                    Some(acc) => match *op {
-                        DisjOp::Or => match acc.to_bool() {
-                            true => return Ok(Some(acc)),
-                            false => eval_conj(context, conj)?,
-                        },
+                    Some(acc) => match acc.to_bool() {
+                        true => return Ok(Some(acc)),
+                        false => eval_conj(context, conj)?,
                     } } }
             Ok(acc)
         } } }
@@ -35,17 +28,15 @@ pub fn eval_conj<'a>(context: &'a Context, conj_expr: &'a ConjExpr) -> EvalResul
     let mut itr = conj_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
-        Some(&ConjItem(_, ref cmp)) => {
+        Some(cmp) => {
             let mut acc = eval_cmp(context, cmp)?;
-            for &ConjItem(ref op, ref cmp) in itr {
+            for cmp in itr {
                 acc = match acc {
                     // FIXME eval None as False?
                     None => return Ok(None),
-                    Some(acc) => match *op {
-                        ConjOp::And => match acc.to_bool() {
-                            true => eval_cmp(context, cmp)?,
-                            false => return Ok(Some(acc))
-                        },
+                    Some(acc) => match acc.to_bool() {
+                        true => eval_cmp(context, cmp)?,
+                        false => return Ok(Some(acc))
                     } } }
             Ok(acc)
         } } }
@@ -174,6 +165,13 @@ mod tests {
     use nom::IResult;
     use std::fmt::Debug;
 
+    use abc::*;
+    use container::Template;
+    use incrust::{Incrust, BType, Args, ex};
+    use parser::expressions::expression as parse_expr;
+    use super::eval_expr;
+
+
     fn unwrap_iresult<B: Debug, T>(result: IResult<B, T>) -> T {
         match result {
             IResult::Done(_, v) => v,
@@ -184,14 +182,11 @@ mod tests {
 
     #[test]
     fn eval_attr() {
-        use abc::EvalResult;
-        use incrust::{Incrust, BType, Args, ex};
-        use parser::expressions::expression as parse_expr;
-        use super::eval_expr;
-
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
         let incrust = Incrust::default();
-        let context = incrust.context(&args);
+        let template = Template::default();
+        let context = incrust.context(&template);
+        let context = context.nest(&args);
 
         let parse = |s| unwrap_iresult(parse_expr(s));
         let x = |r: EvalResult<Cow<BType>>| {
@@ -208,19 +203,17 @@ mod tests {
 
     #[test]
     fn eval_factor() {
-        use abc::EvalResult;
-        use template::{Factor, Literal};
-        use incrust::{Incrust, BType, Args, ex};
-        use parser::expressions::expression as parse_expr;
+        use container::expression::{Factor, Literal};
         use super::eval_factor;
-        use super::eval_expr;
 
         let int_one: Factor = Literal::Int(1_i64).into();
         let the_one = Factor::Variable("the_one".into());
 
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
         let incrust = Incrust::default();
-        let context = incrust.context(&args);
+        let template = Template::default();
+        let context = incrust.context(&template);
+        let context = context.nest(&args);
 
         let parse = |s| unwrap_iresult(parse_expr(s));
         let x = |r: EvalResult<Cow<BType>>| {
@@ -247,14 +240,11 @@ mod tests {
 
     #[test]
     fn eval_bool() {
-        use abc::EvalResult;
-        use incrust::{Incrust, BType, Args, ex};
-        use parser::expressions::expression as parse_expr;
-        use super::eval_expr;
-
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
         let incrust = Incrust::default();
-        let context = incrust.context(&args);
+        let template = Template::default();
+        let context = incrust.context(&template);
+        let context = context.nest(&args);
 
         let parse = |s| unwrap_iresult(parse_expr(s));
         let x = |r: EvalResult<Cow<BType>>| {
@@ -276,13 +266,11 @@ mod tests {
 
     #[test]
     fn compare() {
-        use incrust::{Incrust, Args, ex};
-        use parser::expressions::expression as parse_expr;
-        use super::eval_expr;
-
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
         let incrust = Incrust::default();
-        let context = incrust.context(&args);
+        let template = Template::default();
+        let context = incrust.context(&template);
+        let context = context.nest(&args);
 
         let parse = |s| unwrap_iresult(parse_expr(s));
         let test = |s, b| {
@@ -324,10 +312,6 @@ mod tests {
 
 //    #[test]
 //    fn eval_expr() {
-//        use ::abc::EvalResult;
-//        use ::template::{Expr, ExprItem, Factor, Literal};
-//        use ::incrust::{Incrust, Context, Args, ex, Type, BType};
-//
 //        let int_one: Factor = Literal::Int(1isize).into();
 //
 //        let args: Args = hashmap!{ "two" => ex(2isize) };

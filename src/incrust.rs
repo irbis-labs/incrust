@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 use abc::*;
 pub use types::abc::{Args, Type, BType, ex};
-pub use types::context::{Context};
-pub use template::Template;
+pub use types::context::{GlobalContext, Context};
+pub use container::Template;
 use loader::GroupLoader;
 
 #[derive(Debug)]
@@ -52,8 +52,8 @@ impl Incrust {
         }
     }
 
-    pub fn context<'a>(&'a self, args: &'a Args<'a>) -> Context<'a> {
-        Context::new(self, args)
+    pub fn context<'a>(&'a self, template: &'a Template) -> GlobalContext<'a> {
+        GlobalContext::new(template, self)
     }
 
     pub fn top_context(&self) -> &HashMap<String, BType> {
@@ -76,28 +76,24 @@ impl Incrust {
         }
     }
 
-    #[cfg_attr(feature = "clippy", allow(let_and_return))]
-    pub fn parse(&self, template: &str) -> ParseResult {
-        let template = Template::parse(template)?;
-        Ok(template)
+    pub fn parse(&self, template: &str) -> ParseResult<Template> {
+        Template::parse(template)
     }
 
     pub fn render<'a, C:Into<Args<'a>>>(&'a self, name: &str, args: C) -> RenderResult<String> {
-        let template = self.load(name)?;
-        self.render_text(&template, args)
+        self.render_text(&self.load(name)?, args)
     }
 
     pub fn render_text<'a, C:Into<Args<'a>>>(&'a self, text: &str, args: C) -> RenderResult<String> {
-        let template = self.parse(text)?;
-        self.render_parsed(&template, args)
+        self.render_parsed(&self.parse(text)?, args)
     }
 
     pub fn render_parsed<'a, C:Into<Args<'a>>>(&'a self, template: &Template, args: C) -> RenderResult<String> {
-        self.render_prepared(template, &self.context(&args.into()))
+        self.render_prepared(&self.context(template).nest(&args.into()))
     }
 
-    pub fn render_prepared(&self, template: &Template, context: &Context) -> RenderResult<String> {
-        ::renderer::text(context, template.parsed.as_slice())
+    pub fn render_prepared(&self, context: &Context) -> RenderResult<String> {
+        ::renderer::text(context)
     }
 }
 
@@ -189,8 +185,20 @@ mod tests {
     fn for_statement() {
         let incrust = Incrust::new();
         let args = hashmap!{ "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")]) };
-        let tpl = r#"<ul>{% for fruit in fruits %}<li>{{ index }}. {{ fruit | e }}</li>{% endfor %}</ul>"#;
-        let expected = r#"<ul><li>1. Orange</li><li>2. Apple</li><li>3. Banana</li></ul>"#;
+        let tpl = r#"
+    <ul>
+    {%- for fruit in fruits %}
+        <li>{{ index }}. {{ fruit | e }}</li>
+    {%- endfor %}
+    </ul>
+"#;
+        let expected = r#"
+    <ul>
+        <li>1. Orange</li>
+        <li>2. Apple</li>
+        <li>3. Banana</li>
+    </ul>
+"#;
         assert_eq!(expected, incrust.render_text(tpl, args).unwrap());
     }
 }

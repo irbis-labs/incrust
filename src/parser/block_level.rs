@@ -2,23 +2,25 @@ use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
 
-use ::template::{Parsed, Mustache};
+use container::expression::Mustache;
+use container::parsed::ParsedNode;
 
-use super::statements::{statement, stmt_edge};
-use super::expressions::{full_expression};
+use parser::statements::statement;
+use parser::statements::stmt_edge;
+use parser::expressions::full_expression;
 
 
-named!(pub text<&[u8], Vec<Parsed> >, terminated!( inner, eof!() ) );
+named!(pub text<&[u8], Vec<ParsedNode> >, terminated!( nodes, eof!() ) );
 
 
-pub fn inner(input: &[u8]) -> IResult<&[u8], Vec<Parsed> > {
-    let (i, list) = try_parse!(input, many0!(parsed) );
+pub fn nodes(input: &[u8]) -> IResult<&[u8], Vec<ParsedNode> > {
+    let (i, list) = try_parse!(input, many0!(node) );
     IResult::Done(i, list)
 }
 
 
 
-named!(parsed<&[u8], Parsed>,
+named!(node<&[u8], ParsedNode>,
     alt!(
         plain_text          |
         comment             |
@@ -28,7 +30,7 @@ named!(parsed<&[u8], Parsed>,
 );
 
 
-fn comment(input: &[u8]) -> IResult<&[u8], Parsed> {
+fn comment(input: &[u8]) -> IResult<&[u8], ParsedNode> {
     let (i, (_, comment, _)) = try_parse!(input,
         tuple!(
             tag!("{#"),
@@ -39,11 +41,11 @@ fn comment(input: &[u8]) -> IResult<&[u8], Parsed> {
             tag!("#}")
         )
     );
-    IResult::Done(i, Parsed::Comment(comment.to_owned()))
+    IResult::Done(i, ParsedNode::Comment(comment.to_owned()))
 }
 
 
-fn mustache(input: &[u8]) -> IResult<&[u8], Parsed> {
+fn mustache(input: &[u8]) -> IResult<&[u8], ParsedNode> {
     let (i, (_, _, fe, _, _)) = try_parse!(input,
         tuple!(
             tag!("{{"),
@@ -57,7 +59,7 @@ fn mustache(input: &[u8]) -> IResult<&[u8], Parsed> {
 }
 
 
-fn plain_text(input: &[u8]) -> IResult<&[u8], Parsed> {
+fn plain_text(input: &[u8]) -> IResult<&[u8], ParsedNode> {
     #[cfg_attr(feature = "clippy", allow(needless_lifetimes))]
     fn try_brace<'a>(input: &'a [u8]) -> IResult<&[u8], &str> {
         let b = || -> IResult<&'a [u8], ()> {
@@ -75,7 +77,7 @@ fn plain_text(input: &[u8]) -> IResult<&[u8], Parsed> {
             alt!( map_res!( is_not!("{"), str::from_utf8 ) | try_brace )
         ), || v.join("") )
     );
-    IResult::Done(i, Parsed::Text(text))
+    IResult::Done(i, ParsedNode::Text(text))
 }
 
 

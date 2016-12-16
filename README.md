@@ -142,10 +142,18 @@ It's true
 let args = hashmap!{ "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("Banana")]) };
 ```
 ```twig
-<ul>{% for fruit in fruits %}<li>{{ index }}. {{ fruit | e }}</li>{% endfor %}</ul>
+    <ul>
+    {%- for fruit in fruits %}
+        <li>{{ index }}. {{ fruit | e }}</li>
+    {%- endfor %}
+    </ul>
 ```
 ```html
-<ul><li>1. Orange</li><li>2. Apple</li><li>3. Banana</li></ul>
+    <ul>
+        <li>1. Orange</li>
+        <li>2. Apple</li>
+        <li>3. Banana</li>
+    </ul>
 ```
 
 ### Comments

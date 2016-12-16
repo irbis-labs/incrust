@@ -2,21 +2,16 @@ use std::fmt;
 
 use abc::RenderResult;
 use incrust::Context;
-use template::{
-    DisjExpr, ConjExpr, CmpExpr, Expr, Term,
-    /*DisjOp, ConjOp, */CmpOp, SumOp, MulOp,
-    DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
-    Factor, Literal,
-};
+use container::expression::*;
 
 
 pub fn render_expr<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, expr: &'a DisjExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
-        Some(&DisjItem(ref _op, ref conj)) => {
+        Some(conj) => {
             render_conj(writer, context, conj)?;
-            for &DisjItem(ref _op, ref conj) in itr {
+            for conj in itr {
                 write!(writer, " or ")?;
                 render_conj(writer, context, conj)?;
             }
@@ -28,9 +23,9 @@ pub fn render_conj<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, 
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
-        Some(&ConjItem(ref _op, ref cmp)) => {
+        Some(cmp) => {
             render_cmp(writer, context, cmp)?;
-            for &ConjItem(ref _op, ref cmp) in itr {
+            for cmp in itr {
                 write!(writer, " and ")?;
                 render_cmp(writer, context, cmp)?;
             }
@@ -143,8 +138,13 @@ pub fn render_literal<'a, 'b, W: fmt::Write>(writer: &mut W, l: &'a Literal) -> 
 #[cfg(test)]
 mod tests {
     #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
-    use nom::IResult;
     use std::fmt::Debug;
+
+    use nom::IResult;
+
+    use container::Template;
+    use incrust::{Incrust, Args, ex};
+    use parser::expressions::expression as parse_expr;
 
     fn unwrap_iresult<B: Debug, T>(result: IResult<B, T>) -> T {
         match result {
@@ -156,8 +156,6 @@ mod tests {
 
     #[test]
     fn eval_expr() {
-        use incrust::{Incrust, Args, ex};
-        use parser::expressions::expression as parse_expr;
         use super::render_expr;
 
         let args: Args = hashmap!{
@@ -166,7 +164,9 @@ mod tests {
             "two".into() => ex(2_i64),
         };
         let incrust = Incrust::default();
-        let context = incrust.context(&args);
+        let template = Template::default();
+        let context = incrust.context(&template);
+        let context = context.nest(&args);
 
         let parse = |s| unwrap_iresult(parse_expr(s));
         let test = |s, b| {

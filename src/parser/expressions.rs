@@ -2,14 +2,9 @@ use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, alpha, alphanumeric, space, multispace};
 
-use ::template::{
-    FullExpression, FilterItem,
-    DisjOp, ConjOp, CmpOp, SumOp, MulOp,
-    DisjExpr, ConjExpr, CmpExpr, Expr, Term, Factor, Attribute, Invocation,
-    DisjItem, ConjItem, CmpItem, ExprItem, TermItem,
-};
+use container::expression::*;
 
-use super::literals::literal;
+use parser::literals::literal;
 
 
 // ---------------------------------------------------------------------------
@@ -28,7 +23,7 @@ named!(pub filter_agg<&[u8], Vec<FilterItem> >,
 );
 
 
-fn filter(input: &[u8]) -> IResult<&[u8], FilterItem> {
+pub fn filter(input: &[u8]) -> IResult<&[u8], FilterItem> {
     let (i, (_, _, id)) = try_parse!(input,
         tuple!(
             tag!("|"),
@@ -41,7 +36,7 @@ fn filter(input: &[u8]) -> IResult<&[u8], FilterItem> {
 
 // ---------------------------------------------------------------------------
 
-fn identifier(input: &[u8]) -> IResult<&[u8], String> {
+pub fn identifier(input: &[u8]) -> IResult<&[u8], String> {
     let (i, id) = try_parse!(input,
         chain!(
             start: map_res!(alpha, str::from_utf8)~
@@ -62,20 +57,20 @@ fn identifier(input: &[u8]) -> IResult<&[u8], String> {
 
 pub fn expression(input: &[u8]) -> IResult<&[u8], DisjExpr> {
     let (i, lst) = try_parse!(input, chain!(
-        a: tuple!(value!(DisjOp::Or), conj) ~
+        a: tuple!(value!(()), conj) ~
         mut b: many0!(tuple!(op_disj_bin, conj)) ,
         || { b.insert(0, a); b }
     ));
-    IResult::Done(i, DisjExpr { list: lst.into_iter().map(|(op, t)| DisjItem(op, t) ).collect() })
+    IResult::Done(i, DisjExpr { list: lst.into_iter().map(|(_, t)| t ).collect() })
 }
 
 pub fn conj(input: &[u8]) -> IResult<&[u8], ConjExpr> {
     let (i, lst) = try_parse!(input, chain!(
-        a: tuple!(value!(ConjOp::And), cmp) ~
+        a: tuple!(value!(()), cmp) ~
         mut b: many0!(tuple!(op_conj_bin, cmp)) ,
         || { b.insert(0, a); b }
     ));
-    IResult::Done(i, ConjExpr { list: lst.into_iter().map(|(op, t)| ConjItem(op, t) ).collect() })
+    IResult::Done(i, ConjExpr { list: lst.into_iter().map(|(_, t)| t ).collect() })
 }
 
 pub fn cmp(input: &[u8]) -> IResult<&[u8], CmpExpr> {
@@ -174,22 +169,22 @@ fn expr_sep(input: &[u8]) -> IResult<&[u8], ()> {
 }
 
 
-fn op_disj_bin(input: &[u8]) -> IResult<&[u8], DisjOp> {
+fn op_disj_bin(input: &[u8]) -> IResult<&[u8], ()> {
     let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("or")), many0!(multispace)) );
 
     trace!(":::: or");
     IResult::Done(i, match o {
-        b"or"      => DisjOp::Or,
+        b"or" => (),
         _ => unreachable!()
     })
 }
 
-fn op_conj_bin(input: &[u8]) -> IResult<&[u8], ConjOp> {
+fn op_conj_bin(input: &[u8]) -> IResult<&[u8], ()> {
     let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("and")), many0!(multispace)) );
 
     trace!(":::: and");
     IResult::Done(i, match o {
-        b"and"      => ConjOp::And,
+        b"and" => (),
         _ => unreachable!()
     })
 }
@@ -200,6 +195,7 @@ fn op_cmp_bin(input: &[u8]) -> IResult<&[u8], CmpOp> {
         alt!(tag!("<=") | tag!("<") | tag!("==") | tag!("!=") | tag!("in") | tag!("not in") | tag!(">=") | tag!(">")),
         many0!(multispace)
     ));
+    trace!(":::: cmp {:?}", o);
     IResult::Done(i, match o {
         b"<"        => CmpOp::Lt,
         b"<="       => CmpOp::Lte,
@@ -249,19 +245,9 @@ mod tests {
         assert!(super::identifier(b"1wrong").is_err());
     }
 
-//    #[test]
-//    fn expression() {
-//        use ::template::{Expr, ExprItem, Factor, Literal};
-//
-//        let int_one: Factor = Literal::Int(1isize).into();
-//
-//
-//        assert_eq!(Done(&b""[..], Expr), super::factor(b"1"));
-//    }
-
     #[test]
     fn format() {
-        use ::template::FilterItem::Simple;
+        use container::expression::FilterItem::Simple;
         assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"|e"));
         assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"| e"));
         assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"|  e"));
