@@ -24,20 +24,20 @@ impl AsRef<Template> for Template {
 }
 
 impl Template {
-    pub fn parse(templ: &str) -> ParseResult<Template> {
+    pub fn parse(templ: &str) -> TemplateParseResult<Template> {
         use nom::IResult::*;
 
         let nodes = ::parser::text(templ.as_bytes());
         // trace!(" == parsed == {:?}", &parsed);
         match nodes {
             Incomplete(_) => unreachable!(),
-            Error(err) => Err(ParseError::Syntax(format!("{:?}", err))),
+            Error(err) => Err(TemplateParseError::Syntax(format!("{:?}", err))),
             Done(_, nodes) => Template::from_parsed(nodes),
         }
     }
 
-    pub fn from_parsed(parsed: ParsedNodes) -> ParseResult<Template> {
-        fn process(templ: &mut Template, parsed: ParsedNodes, need_strip_first: bool, need_strip_last: bool) -> ParseResult<Nodes> {
+    pub fn from_parsed(parsed: ParsedNodes) -> TemplateParseResult<Template> {
+        fn process(templ: &mut Template, parsed: ParsedNodes, need_strip_first: bool, need_strip_last: bool) -> TemplateParseResult<Nodes> {
             let mut nodes: Nodes = Default::default();
 
             struct TextCompleter {
@@ -156,11 +156,16 @@ impl Template {
                     },
                     ParsedNode::Extends(stmt) => {
                         if templ.extends.is_some() {
-                            Err(ParseError::Syntax("Too many `extends` sections".into()))?;
+                            Err(TemplateParseError::Syntax("Too many `extends` sections".into()))?;
                         }
                         completer.complete(&mut nodes, stmt.strip_left);
                         completer.need_strip_left = stmt.strip_right;
                         templ.extends = Some(stmt.expression);
+                    },
+                    ParsedNode::Include(stmt) => {
+                        completer.complete(&mut nodes, stmt.strip_left);
+                        completer.need_strip_left = stmt.strip_right;
+                        nodes.push(Node::Include(stmt.expression));
                     },
                 };
             }
@@ -189,6 +194,7 @@ pub enum Node {
     For(ForStatement),
     If(IfStatement),
     Block(String),
+    Include(FullExpression),
 }
 
 

@@ -14,6 +14,7 @@ pub enum ParsedNode {
     If(ParsedIfStatement),
     Block(ParsedBlockStatement),
     Extends(ExprStatement),
+    Include(ExprStatement),
 }
 
 #[derive(Debug, PartialEq, Clone)]

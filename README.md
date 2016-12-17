@@ -22,7 +22,7 @@ Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be
 
 ```toml
 [dependencies]
-incrust = "=0.2.8"
+incrust = "=0.2.9"
 ```
 
 For ease of use hashmaps you may use the [maplit](https://crates.io/crates/maplit)
@@ -174,6 +174,7 @@ let args = hashmap!{ "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("B
     </ul>
 ```
 
+
 ### Template inheritance
 
 ```rust
@@ -194,7 +195,9 @@ default.tpl
 template.tpl
 ```html
 {% extends parent_layout %}
-{% block title %}New title{% endblock %}
+{% block title -%}
+    New title
+{%- endblock %}
 ```
 Output
 ```html
@@ -204,6 +207,40 @@ Output
         <p>Default body<p>
     </main>
 </body>
+```
+
+
+### Include
+
+```rust
+let args = hashmap!{ "menu".into() => ex("default_menu") };
+assert_eq!(expected, incrust.render("tpl", args).unwrap());
+```
+default_menu.tpl
+```twig
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About Us</a></li>
+    </ul>
+```
+template.tpl
+```html
+<nav>
+    {%- include menu -%}
+</nav>
+
+<h1>Body</h1>
+```
+Output
+```html
+<nav>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About Us</a></li>
+    </ul>
+</nav>
+
+<h1>Body</h1>
 ```
 
 

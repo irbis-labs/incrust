@@ -6,6 +6,14 @@ use std::fmt::Write;
 use super::abc::*;
 
 
+// CHECK whether it is necessary
+impl <'a, T> Type for &'a T where T: Type {
+    fn iclone(&self) -> BType {
+        (*self as &Type).iclone()
+    }
+}
+
+
 // --- [ default implementations ] ------------------------------------------------------------------------------------
 
 impl <T> IRender for T where T: Type {

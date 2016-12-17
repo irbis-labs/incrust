@@ -36,20 +36,12 @@ pub trait Filter: fmt::Debug + Send + Sync {
 }
 
 
-pub type ParseResult<T> = Result<T, ParseError>;
-
-#[derive(Debug)]
-pub enum ParseError {
-    Syntax(String),
-}
-
-
 pub type RenderResult<T> = Result<T, RenderError>;
 
 #[derive(Debug)]
 pub enum RenderError {
     LoadTemplate(LoadError),
-    ParseTemplate(ParseError),
+    ParseTemplate(TemplateParseError),
     VariableNotExists(String),
     EvalExpression(EvalError),
     Filter(FilterError),
@@ -57,11 +49,11 @@ pub enum RenderError {
     Format(fmt::Error),
 }
 
-impl From<LoadError>   for RenderError { fn from(err: LoadError)   -> Self { RenderError::LoadTemplate(err) } }
-impl From<EvalError>   for RenderError { fn from(err: EvalError)   -> Self { RenderError::EvalExpression(err) } }
-impl From<ParseError>  for RenderError { fn from(err: ParseError)  -> Self { RenderError::ParseTemplate(err) } }
-impl From<FilterError> for RenderError { fn from(err: FilterError) -> Self { RenderError::Filter(err) } }
-impl From<fmt::Error>  for RenderError { fn from(err: fmt::Error)  -> Self { RenderError::Format(err) } }
+impl From<LoadError>            for RenderError { fn from(err: LoadError)   -> Self { RenderError::LoadTemplate(err) } }
+impl From<EvalError>            for RenderError { fn from(err: EvalError)   -> Self { RenderError::EvalExpression(err) } }
+impl From<TemplateParseError>   for RenderError { fn from(err: TemplateParseError) -> Self { RenderError::ParseTemplate(err) } }
+impl From<FilterError>          for RenderError { fn from(err: FilterError) -> Self { RenderError::Filter(err) } }
+impl From<fmt::Error>           for RenderError { fn from(err: fmt::Error)  -> Self { RenderError::Format(err) } }
 
 
 //quick_error! {

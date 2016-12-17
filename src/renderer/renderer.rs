@@ -1,7 +1,7 @@
 use std::fmt;
 
-use abc::RenderResult;
-use incrust::{Context, Args, ex};
+use abc::*;
+use incrust::Context;
 use types::abc::Writer;
 use container::expression::*;
 use container::template::*;
@@ -24,6 +24,7 @@ pub fn render_text<'a, W: fmt::Write>(writer: &mut W, context: &'a Context, node
             Node::For(ref stmt) => render_for(writer, context, stmt)?,
             Node::If(ref stmt) => render_if(writer, context, stmt)?,
             Node::Block(ref stmt) => render_block(writer, context, stmt)?,
+            Node::Include(ref expr) => render_include(writer, context, expr)?,
         }
     }
     Ok(())
@@ -100,4 +101,17 @@ pub fn render_block<W: fmt::Write>(writer: &mut W, context: &Context, name: &str
         };
     }
     Ok(())
+}
+
+
+pub fn render_include<W: fmt::Write>(writer: &mut W, context: &Context, expr: &FullExpression) -> RenderResult<()> {
+    let name = eval_expr(context, &expr.expr)?
+        .ok_or(LoadError::BadName("Can't evaluate name (None result)".into()))?;
+    let name = name.try_as_string()
+        .ok_or(LoadError::BadName("Name is not string".into()))?;
+    let args = Args::default();
+    let env = context.global().env();
+    let template = env.parse(&env.load(&name)?)?;
+    let global = env.create_global_context(&template, &args)?;
+    render_text(writer, &global.top_scope(), template.root.as_slice())
 }

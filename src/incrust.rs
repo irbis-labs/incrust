@@ -72,7 +72,7 @@ impl Incrust {
         }
     }
 
-    pub fn parse(&self, template: &str) -> ParseResult<Template> {
+    pub fn parse(&self, template: &str) -> TemplateParseResult<Template> {
         Template::parse(template)
     }
 
@@ -233,7 +233,9 @@ mod tests {
 "#;
         let tpl = r#"
 {% extends parent_layout %}
-{% block title %}New title{% endblock %}
+{% block title -%}
+    New title
+{%- endblock %}
 "#;
 
         let expected = r#"
@@ -252,6 +254,43 @@ mod tests {
         });
 
         let args = hashmap!{ "parent_layout".into() => ex("base") };
+        assert_eq!(expected, incrust.render("tpl", args).unwrap());
+    }
+
+    #[test]
+    fn include() {
+        let default_menu = r#"
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About Us</a></li>
+    </ul>
+"#;
+        let tpl = r#"
+<nav>
+    {%- include menu -%}
+</nav>
+
+<h1>Body</h1>
+"#;
+
+        let expected = r#"
+<nav>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About Us</a></li>
+    </ul>
+</nav>
+
+<h1>Body</h1>
+"#;
+
+        let mut incrust = Incrust::new();
+        incrust.loaders.push(box hashmap!{
+            "default_menu".into() => default_menu.into(),
+            "tpl".into() => tpl.into(),
+        });
+
+        let args = hashmap!{ "menu".into() => ex("default_menu") };
         assert_eq!(expected, incrust.render("tpl", args).unwrap());
     }
 }

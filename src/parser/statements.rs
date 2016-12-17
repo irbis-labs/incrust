@@ -9,7 +9,7 @@ use super::block_level::nodes;
 
 
 named!(pub statement<&[u8], ParsedNode>,
-    alt!( if_block | for_block | raw_block | block_block | extends_block )
+    alt!( if_block | for_block | raw_block | block_block | extends_block | include_block )
 );
 
 pub fn stmt_edge(input: &[u8]) -> IResult<&[u8], ParsedNode> {
@@ -184,6 +184,18 @@ pub fn extends_block(input: &[u8]) -> IResult<&[u8], ParsedNode> {
     let (i, s) = try_parse!(input, stmt_extends);
 
     IResult::Done(i, ParsedNode::Extends(s))
+}
+
+
+// ---------------------------------------------------------------------------
+
+named!(pub stmt_include<&[u8], ExprStatement>, stmt_expr!("include"));
+
+pub fn include_block(input: &[u8]) -> IResult<&[u8], ParsedNode> {
+
+    let (i, s) = try_parse!(input, stmt_include);
+
+    IResult::Done(i, ParsedNode::Include(s))
 }
 
 

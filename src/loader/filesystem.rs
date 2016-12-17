@@ -22,7 +22,7 @@ impl Loader for FilesystemLoader {
         }
         let mut path = self.path.join(name);
         if path.extension().is_none() { path.set_extension("tpl"); }
-        info!("Path: {:?}", path);
+        debug!("Template path: {:?}", path);
         if !path.exists() || !path.is_file() { return Err(LoadError::NotFound); }
 
         let load = || -> ::std::io::Result<String> {
