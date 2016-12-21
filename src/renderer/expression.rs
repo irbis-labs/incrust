@@ -1,7 +1,7 @@
 use std::fmt;
 
 use abc::RenderResult;
-use incrust::Context;
+use Context;
 use container::expression::*;
 
 
@@ -143,7 +143,7 @@ mod tests {
     use nom::IResult;
 
     use container::Template;
-    use incrust::{Incrust, Args, ex};
+    use {Incrust, Args, ex};
     use parser::expressions::expression as parse_expr;
 
     fn unwrap_iresult<B: Debug, T>(result: IResult<B, T>) -> T {

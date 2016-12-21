@@ -1,9 +1,9 @@
 use std::borrow::Cow;
 
 use abc::{EvalResult, EvalError};
-use types::context::Context;
-use types::abc::*;
 use container::expression::*;
+use types::abc::*;
+use {Context, ex};
 
 
 pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResult<Cow<'a, BType>> {
@@ -167,7 +167,7 @@ mod tests {
 
     use abc::*;
     use container::Template;
-    use incrust::{Incrust, BType, Args, ex};
+    use {Incrust, BType, Args, ex};
     use parser::expressions::expression as parse_expr;
     use super::eval_expr;
 

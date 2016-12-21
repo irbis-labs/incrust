@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::fmt;
 
 use abc::*;
-use types::context::Context;
+use Context;
 
 
 pub type EvalResult<T> = Result<Option<T>, EvalError>;

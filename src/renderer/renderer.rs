@@ -1,12 +1,12 @@
 use std::fmt;
 
 use abc::*;
-use incrust::Context;
-use types::abc::Writer;
 use container::expression::*;
 use container::template::*;
+use renderer::Writer;
+use {Args, Context, ex};
 
-use super::evaluator::eval_expr;
+use super::eval_expr;
 
 
 pub fn text<'a>(context: &'a Context) -> RenderResult<String> {

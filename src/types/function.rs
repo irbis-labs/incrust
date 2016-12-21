@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::fmt::{Debug, Formatter, Error};
 
 use abc::EvalResult;
-use incrust::Context;
+use Context;
 
 use super::abc::*;
 

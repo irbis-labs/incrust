@@ -1,21 +1,14 @@
 use std::any::Any;
 use std::borrow::Cow;
 use std::cmp::Ordering;
-use std::collections::hash_map::HashMap;
 use std::fmt;
 use std::iter::Iterator;
 use std::slice::Iter;
 
 use abc::EvalResult;
-use incrust::Context;
+use renderer::Writer;
+use Context;
 
-
-// --------------------------------------------------------------------------------------------------------------------
-
-pub type EntityId<'a> = Cow<'a, str>;
-pub type Args<'a> = HashMap<EntityId<'a>, BType>;
-
-pub fn ex<V>(v: V) -> BType where V: Into<BType> { v.into() }
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -31,16 +24,6 @@ pub trait Type:
 }
 
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
-
-pub struct Writer<'w> (
-    pub &'w mut fmt::Write
-);
-
-impl <'w> fmt::Write for Writer<'w> {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
-        self.0.write_str(s)
-    }
-}
 
 pub trait IRender {
     fn render<'w>(&self, writer: &mut Writer<'w>) -> fmt::Result;

@@ -2,10 +2,10 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 
 use abc::*;
-pub use types::abc::{Args, Type, BType, ex};
-pub use types::context::{GlobalContext, Context};
-pub use container::Template;
+use container::Template;
 use loader::GroupLoader;
+use {Args, BType, ex, GlobalContext, Context};
+
 
 #[derive(Debug)]
 pub struct Incrust {
