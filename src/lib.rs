@@ -31,14 +31,13 @@ pub mod container;
 pub mod loader;
 pub mod parser;
 pub mod renderer;
-pub mod structs;
 pub mod types;
 
 pub use self::abc::Loader;
+pub use self::container::args::{Args, EntityId, ex};
+pub use self::container::context::{GlobalContext, Context};
+pub use self::container::incrust::Incrust;
+pub use self::container::Template;
 pub use self::loader::{DictLoader, FilesystemLoader, GroupLoader, NamespaceLoader};
-pub use self::structs::args::{Args, EntityId, ex};
-pub use self::structs::context::{GlobalContext, Context};
-pub use self::structs::incrust::Incrust;
 pub use self::types::abc::{Type, BType};
 pub use self::types::function::Function;
-pub use self::container::Template;
