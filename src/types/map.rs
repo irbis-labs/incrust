@@ -23,9 +23,7 @@ impl <'a, 'b: 'a> IIterable<'a> for HashMap<EntityId, BType<'a>> {
     fn is_empty(&self) -> bool {
         HashMap::is_empty(self)
     }
-    //    fn len(&self) -> usize {
-    //        HashMap::len(self)
-    //    }
+
     fn ivalues(&self) -> VIterator {
         VIterator { me: self.values() }
     }

@@ -120,10 +120,10 @@ pub trait IIterable: Send + Sync {
 }
 
 pub trait IIndexable: Send + Sync {
-    fn has_index(&self, index: usize) -> bool;
-    fn get_index(&self, index: usize) -> Option<BType>;
+//    fn has_index(&self, index: usize) -> bool;
+    fn get_index(&self, index: usize) -> Option<&BType>;
 //    fn as_slice(&self, range: Range) -> &[BType];
-//    fn len(&self) -> usize;
+    fn len(&self) -> usize;
 }
 
 pub trait IComposable: Send + Sync {
@@ -160,9 +160,9 @@ pub struct VIterator<'a> {
 }
 
 impl <'a> Iterator for VIterator<'a> {
-    type Item = BType;
+    type Item = &'a BType;
 
-    fn next(&mut self) -> Option<BType> {
-        self.me.next().map(|next| next.iclone())
+    fn next(&mut self) -> Option<Self::Item> {
+        self.me.next()
     }
 }

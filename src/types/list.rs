@@ -45,11 +45,20 @@ impl IIterable for Vec<BType> {
     fn is_empty(&self) -> bool {
         Vec::is_empty(self)
     }
-//    fn len(&self) -> usize {
-//        Vec::len(self)
-//    }
+
     fn ivalues(&self) -> VIterator {
         VIterator { me: self.iter() }
+    }
+}
+
+
+impl IIndexable for Vec<BType> {
+    fn get_index(&self, index: usize) -> Option<&BType> {
+        self.get(index)
+    }
+
+    fn len(&self) -> usize {
+        Vec::len(self)
     }
 }
 

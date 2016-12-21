@@ -59,7 +59,8 @@ pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForSt
         if let Some(iterable) = value.try_as_iterable() {
             for (index, v) in iterable.ivalues().enumerate() {
                 let local_scope: Args = hashmap! {
-                    stmt.value_var.as_str().into() => v,
+                    // fixme iclone
+                    stmt.value_var.as_str().into() => v.iclone(),
                     "index0".into() => ex(index as i64),
                     "index".into() => ex(index as i64 + 1),
                     "first".into() => ex(index == 0),
@@ -109,9 +110,10 @@ pub fn render_include<W: fmt::Write>(writer: &mut W, context: &Context, expr: &F
         .ok_or(LoadError::BadName("Can't evaluate name (None result)".into()))?;
     let name = name.try_as_string()
         .ok_or(LoadError::BadName("Name is not string".into()))?;
-    let args = Args::default();
     let env = context.global().env();
     let template = env.parse(&env.load(&name)?)?;
-    let global = env.create_global_context(&template, &args)?;
-    render_text(writer, &global.top_scope(), template.root.as_slice())
+    // FIXME Base context
+    // render_text(writer, &context.global().top_scope(), template.root.as_slice())
+    // Current scope context
+    render_text(writer, context, template.root.as_slice())
 }
