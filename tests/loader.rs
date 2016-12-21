@@ -12,7 +12,15 @@ fn dict() {
     incrust.loaders.push(Box::new(hashmap!{
         "1".into() => r#"<h1>{{ title | e }}</h1>
 
-<menu>{% if fruits %}<ul>{% for fruit in fruits %}<li>{{ index }}. {{ fruit | e }}</li>{% endfor %}</ul>{% endif %}</menu>
+<menu>
+    {%- if fruits %}
+    <ul>
+        {%- for fruit in fruits %}
+        <li>{{ loop.index }}. {{ fruit | e }}</li>
+        {%- endfor %}
+    </ul>
+    {%- endif %}
+</menu>
 "#.into(),
     }));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));

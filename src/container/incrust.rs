@@ -2,9 +2,8 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 
 use abc::*;
-use container::Template;
 use loader::GroupLoader;
-use {Args, BType, ex, GlobalContext, Context};
+use {Args, BType, ex, GlobalContext, Context, Template};
 
 
 #[derive(Debug)]
@@ -188,7 +187,7 @@ mod tests {
         let tpl = r#"
     <ul>
     {%- for fruit in fruits %}
-        <li>{{ index }}. {{ fruit | e }}</li>
+        <li>{{ loop.index }}. {{ fruit | e }}</li>
     {%- endfor %}
     </ul>
 "#;

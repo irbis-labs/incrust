@@ -142,8 +142,7 @@ mod tests {
 
     use nom::IResult;
 
-    use container::Template;
-    use {Incrust, Args, ex};
+    use {Incrust, Args, ex, Template};
     use parser::expressions::expression as parse_expr;
 
     fn unwrap_iresult<B: Debug, T>(result: IResult<B, T>) -> T {

@@ -37,7 +37,7 @@ pub use self::abc::Loader;
 pub use self::container::args::{Args, EntityId, ex};
 pub use self::container::context::{GlobalContext, Context};
 pub use self::container::incrust::Incrust;
-pub use self::container::Template;
+pub use self::container::template::Template;
 pub use self::loader::{DictLoader, FilesystemLoader, GroupLoader, NamespaceLoader};
 pub use self::types::abc::{Type, BType};
 pub use self::types::function::Function;

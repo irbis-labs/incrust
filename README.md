@@ -22,7 +22,7 @@ Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be
 
 ```toml
 [dependencies]
-incrust = "=0.2.9"
+incrust = "=0.2.10"
 ```
 
 For ease of use hashmaps you may use the [maplit](https://crates.io/crates/maplit)
@@ -162,7 +162,7 @@ let args = hashmap!{ "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("B
 ```twig
     <ul>
     {%- for fruit in fruits %}
-        <li>{{ index }}. {{ fruit | e }}</li>
+        <li>{{ loop.index }}. {{ fruit | e }}</li>
     {%- endfor %}
     </ul>
 ```

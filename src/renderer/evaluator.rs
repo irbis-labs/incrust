@@ -166,8 +166,7 @@ mod tests {
     use std::fmt::Debug;
 
     use abc::*;
-    use container::Template;
-    use {Incrust, BType, Args, ex};
+    use {Incrust, BType, Args, ex, Template};
     use parser::expressions::expression as parse_expr;
     use super::eval_expr;
 

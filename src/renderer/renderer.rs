@@ -4,7 +4,7 @@ use abc::*;
 use container::expression::*;
 use container::template::*;
 use renderer::Writer;
-use {Args, Context, ex};
+use {Args, Context};
 
 use super::eval_expr;
 
@@ -57,16 +57,19 @@ pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForSt
     // FIXME implement instead: expression(&stmt.begin.expression, context)
     if let Some(value) = eval_expr(context, &stmt.expression.expr)? {
         if let Some(iterable) = value.try_as_iterable() {
-            for (index, v) in iterable.ivalues().enumerate() {
-                let local_scope: Args = hashmap! {
-                    // fixme iclone
-                    stmt.value_var.as_str().into() => v.iclone(),
-                    "index0".into() => ex(index as i64),
-                    "index".into() => ex(index as i64 + 1),
-                    "first".into() => ex(index == 0),
-                    "last".into() => ex(false), // TODO the "last" marker in a loop
-                };
-                render_text(writer, &context.nested_scope(&local_scope), &stmt.block)?;
+            use container::cycle::LoopState;
+            // TODO the "last" marker in a loop
+            let mut state = LoopState::new(false);
+            for v in iterable.ivalues() {
+                {
+                    let local_scope: Args = hashmap! {
+                        // fixme iclone
+                        stmt.value_var.as_str().into() => v.iclone(),
+                        "loop".into() => state.iclone(),
+                    };
+                    render_text(writer, &context.nested_scope(&local_scope), &stmt.block)?;
+                }
+                state = state.next(false);
             }
         }
     };
