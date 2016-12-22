@@ -1,5 +1,5 @@
 use types::abc::*;
-use ex;
+use {BType, ex};
 
 
 impl Type for Vec<BType> {

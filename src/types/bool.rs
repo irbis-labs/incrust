@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
-use super::abc::*;
+use types::abc::*;
+use BType;
 
 
 impl Type for bool {

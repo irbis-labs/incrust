@@ -2,8 +2,7 @@ use std::borrow::Cow;
 
 use abc::{EvalResult, EvalError};
 use container::expression::*;
-use types::abc::*;
-use {Context, ex};
+use {BType, Context, ex};
 
 
 pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResult<Cow<'a, BType>> {

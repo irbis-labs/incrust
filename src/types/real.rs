@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 
 use types::abc::*;
-use ex;
+use {BType, ex};
 
 
 impl Type for f64 {

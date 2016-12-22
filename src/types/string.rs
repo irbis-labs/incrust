@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 
 use types::abc::*;
 //use types::function::Function;
-use ex;
+use {BType, ex};
 
 
 impl Type for String {

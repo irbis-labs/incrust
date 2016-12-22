@@ -7,13 +7,11 @@ use std::slice::Iter;
 
 use abc::EvalResult;
 use renderer::Writer;
+use BType;
 use Context;
 
 
 // --------------------------------------------------------------------------------------------------------------------
-
-//pub type BType = Box<Type>;
-pub use super::btype::BType;
 
 pub trait Type:
     AsString + AsBool + AsReal + AsInt + AsIterable + AsComposable + AsInvocable +

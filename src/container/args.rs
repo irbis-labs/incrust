@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use abc::*;
+use BType;
 
 
 pub type EntityId<'a> = Cow<'a, str>;

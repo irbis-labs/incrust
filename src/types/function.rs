@@ -4,7 +4,8 @@ use std::fmt::{Debug, Formatter, Error};
 use abc::EvalResult;
 use Context;
 
-use super::abc::*;
+use types::abc::*;
+use BType;
 
 
 pub struct Function {

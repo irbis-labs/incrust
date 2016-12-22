@@ -1,6 +1,6 @@
 use types::abc::*;
 
-use ex;
+use {BType, ex};
 
 
 #[derive(Debug, Clone)]

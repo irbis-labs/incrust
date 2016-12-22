@@ -5,6 +5,7 @@ use std::fmt::Write;
 
 use types::abc::*;
 use renderer::Writer;
+use BType;
 
 
 // CHECK whether it is necessary

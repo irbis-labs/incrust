@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use super::abc::Type;
+use types::abc::Type;
 
 
 #[derive(Debug)]
