@@ -14,7 +14,7 @@ pub struct Function {
 
 impl Function {
     pub fn new(f: fn(&[Cow<Arg>], &Context) -> EvalResult<Arg>) -> Arg {
-        Arg::Boxed(box Function { f: f })
+        Arg::from(Function { f: f })
     }
 }
 
@@ -31,9 +31,9 @@ impl Debug for Function {
 }
 
 impl Type for Function {
-    fn iclone(&self) -> Arg {
-        Arg::Boxed(box self.clone())
-    }
+//    fn iclone(&self) -> Arg {
+//        Arg(Arc::new(box self.clone()))
+//    }
 }
 
 impl AsInvocable for Function {

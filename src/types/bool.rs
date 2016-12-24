@@ -5,9 +5,9 @@ use Arg;
 
 
 impl Type for bool {
-    fn iclone(&self) -> Arg {
-        Arg::Boxed(box *self)
-    }
+//    fn iclone(&self) -> Arg {
+//        Arg(box *self)
+//    }
 }
 
 impl AsBool for bool {

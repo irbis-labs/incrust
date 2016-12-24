@@ -4,7 +4,7 @@ use abc::*;
 use container::expression::*;
 use container::template::*;
 use renderer::Writer;
-use {Args, Context};
+use {Args, Context, ex};
 
 use super::eval_expr;
 
@@ -64,8 +64,8 @@ pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForSt
                 {
                     let local_scope: Args = hashmap! {
                         // fixme iclone
-                        stmt.value_var.as_str().into() => v.iclone(),
-                        "loop".into() => state.iclone(),
+                        stmt.value_var.as_str().into() => v.clone(),
+                        "loop".into() => ex(state),
                     };
                     render_text(writer, &context.nested_scope(&local_scope), &stmt.block)?;
                 }

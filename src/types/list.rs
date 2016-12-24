@@ -1,17 +1,15 @@
-use std::ops::Deref;
-
 use types::abc::*;
 use {Arg, ex};
 
 
 impl Type for Vec<Arg> {
-    fn iclone(&self) -> Arg {
-        Arg::Boxed(
-            box self.into_iter()
-                .map(|v| v.deref().iclone())
-                .collect::<Vec<Arg>>()
-        )
-    }
+//    fn iclone(&self) -> Arg {
+//        Arg(
+//            box self.into_iter()
+//                .map(|v| v.deref().iclone())
+//                .collect::<Vec<Arg>>()
+//        )
+//    }
 }
 
 // todo resolve specialization conflict

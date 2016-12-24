@@ -23,9 +23,9 @@ impl Fruit {
 }
 
 impl Type for Fruit {
-    fn iclone(&self) -> Arg {
-        Arg::Boxed(box self.clone())
-    }
+//    fn iclone(&self) -> Arg {
+//        Arg(box self.clone())
+//    }
 }
 
 

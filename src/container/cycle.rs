@@ -3,7 +3,7 @@ use types::abc::*;
 use {Arg, ex};
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct LoopState {
     index: usize,
     is_first: bool,
@@ -29,9 +29,9 @@ impl LoopState {
 }
 
 impl Type for LoopState {
-    fn iclone(&self) -> Arg {
-        Arg::Boxed(box self.clone())
-    }
+//    fn iclone(&self) -> Arg {
+//        Arg(box self.clone())
+//    }
 }
 
 

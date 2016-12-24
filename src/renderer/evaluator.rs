@@ -149,10 +149,10 @@ pub fn eval_invocation<'a>(context: &'a Context, inv: &'a Invocation) -> EvalRes
 
 pub fn literal<'a>(l: &'a Literal) -> EvalResult<Arg> {
     Ok( Some( match *l {
-        Literal::Str(ref string) => Arg::Boxed(box string.clone()),
-        Literal::Char(ref chr)   => Arg::Boxed(box *chr),
-        Literal::Int(ref int)    => Arg::Boxed(box *int),
-        Literal::Real(ref real)  => Arg::Boxed(box *real),
+        Literal::Str(ref string) => Arg::from(string.clone()),
+        Literal::Char(ref chr)   => Arg::from(*chr),
+        Literal::Int(ref int)    => Arg::from(*int),
+        Literal::Real(ref real)  => Arg::from(*real),
     } ) )
 }
 

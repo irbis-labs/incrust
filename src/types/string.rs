@@ -7,9 +7,9 @@ use {Arg, ex};
 
 
 impl Type for String {
-    fn iclone(&self) -> Arg {
-        Arg::Boxed(box self.clone())
-    }
+//    fn iclone(&self) -> Arg {
+//        Arg(box self.clone())
+//    }
 }
 
 

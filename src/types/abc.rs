@@ -18,7 +18,7 @@ pub trait Type:
     AsPartialEq + AsPartialOrd +
     IArithm + IRender + fmt::Debug + Send + Sync
 {
-    fn iclone(&self) -> Arg;
+    //fn iclone(&self) -> Arg;
 }
 
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------

@@ -6,9 +6,9 @@ use {Arg, ex};
 
 
 impl Type for f64 {
-    fn iclone(&self) -> Arg {
-        Arg::Boxed(box *self)
-    }
+//    fn iclone(&self) -> Arg {
+//        Arg(box *self)
+//    }
 }
 
 

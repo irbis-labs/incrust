@@ -10,9 +10,9 @@ use Arg;
 
 // CHECK whether it is necessary
 impl <'a, T> Type for &'a T where T: Type {
-    fn iclone(&self) -> Arg {
-        (*self as &Type).iclone()
-    }
+//    fn iclone(&self) -> Arg {
+//        (*self as &Type).iclone()
+//    }
 }
 
 
