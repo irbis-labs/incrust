@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use abc::*;
-use {Args, BType, Incrust, Template};
+use {Args, Arg, Incrust, Template};
 
 
 pub type TemplateStack<'a> = Vec<&'a Template>;
@@ -119,7 +119,7 @@ impl <'a> Context<'a> {
         self.global.env()
     }
 
-    pub fn get(&self, id: &str) -> Option<&BType> {
+    pub fn get(&self, id: &str) -> Option<&Arg> {
         self.args.get(id)
             .or_else(|| self.parent
                 .and_then(|p| p.get(id))

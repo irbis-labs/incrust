@@ -1,9 +1,9 @@
 use types::abc::*;
-use BType;
+use Arg;
 
 
 impl Type for char {
-    fn iclone(&self) -> BType {
-        BType(box *self)
+    fn iclone(&self) -> Arg {
+        Arg::Boxed(box *self)
     }
 }

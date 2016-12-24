@@ -3,12 +3,12 @@ use std::cmp::Ordering;
 
 use types::abc::*;
 //use types::function::Function;
-use {BType, ex};
+use {Arg, ex};
 
 
 impl Type for String {
-    fn iclone(&self) -> BType {
-        BType(box self.clone())
+    fn iclone(&self) -> Arg {
+        Arg::Boxed(box self.clone())
     }
 }
 
@@ -32,14 +32,14 @@ impl AsString for String {
 
 
 impl IPartialEq for String {
-    fn eq(&self, other: &BType) -> bool {
+    fn eq(&self, other: &Arg) -> bool {
         other.is_string() && other.try_as_string().map(|s| s.as_ref() == self).unwrap_or(false)
     }
 }
 
 
 impl IPartialOrd for String {
-    fn partial_cmp(&self, other: &BType) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &Arg) -> Option<Ordering> {
         if other.is_string() {
             other.try_as_string().and_then(|s| self.as_str().partial_cmp(s.as_ref()))
         } else {
@@ -51,7 +51,7 @@ impl IPartialOrd for String {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for String {
-    fn try_add<'a> (&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> {
+    fn try_add<'a> (&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> {
         if self == "" {
             match other.is_string() {
                 true => Some(other),
@@ -66,8 +66,8 @@ impl IArithm for String {
 }
 
 
-impl <'a> Into<BType> for &'a str {
-    fn into(self) -> BType {
+impl <'a> Into<Arg> for &'a str {
+    fn into(self) -> Arg {
         self.to_owned().into()
     }
 }
@@ -81,7 +81,7 @@ impl AsComposable for String {
 
 
 impl IComposable for String {
-    fn get_attr(&self, id: &str) -> Option<BType> {
+    fn get_attr(&self, id: &str) -> Option<Arg> {
         match id {
             "length" => Some(ex(self.len() as i64)),
 //            "len" => Some(ex(Len(self))),

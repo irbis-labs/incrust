@@ -2,10 +2,10 @@ use std::borrow::Cow;
 
 use abc::{EvalResult, EvalError};
 use container::expression::*;
-use {BType, Context, ex};
+use {Arg, Context, ex};
 
 
-pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResult<Cow<'a, BType>> {
+pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResult<Cow<'a, Arg>> {
     let mut itr = disj_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -23,7 +23,7 @@ pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResul
         } } }
 
 
-pub fn eval_conj<'a>(context: &'a Context, conj_expr: &'a ConjExpr) -> EvalResult<Cow<'a, BType>> {
+pub fn eval_conj<'a>(context: &'a Context, conj_expr: &'a ConjExpr) -> EvalResult<Cow<'a, Arg>> {
     let mut itr = conj_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -42,7 +42,7 @@ pub fn eval_conj<'a>(context: &'a Context, conj_expr: &'a ConjExpr) -> EvalResul
 
 
 #[allow(unused_variables)]
-pub fn eval_cmp<'a>(context: &'a Context, cmp_expr: &'a CmpExpr) -> EvalResult<Cow<'a, BType>> {
+pub fn eval_cmp<'a>(context: &'a Context, cmp_expr: &'a CmpExpr) -> EvalResult<Cow<'a, Arg>> {
     let mut itr = cmp_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -70,7 +70,7 @@ pub fn eval_cmp<'a>(context: &'a Context, cmp_expr: &'a CmpExpr) -> EvalResult<C
         } } }
 
 
-pub fn eval_sum<'a>(context: &'a Context, expr: &'a Expr) -> EvalResult<Cow<'a, BType>> {
+pub fn eval_sum<'a>(context: &'a Context, expr: &'a Expr) -> EvalResult<Cow<'a, Arg>> {
     let mut itr = expr.sum.iter();
     match itr.next() {
         None => unreachable!(),
@@ -89,7 +89,7 @@ pub fn eval_sum<'a>(context: &'a Context, expr: &'a Expr) -> EvalResult<Cow<'a, 
         } } }
 
 
-pub fn eval_prod<'a>(context: &'a Context, term: &'a Term) -> EvalResult<Cow<'a, BType>> {
+pub fn eval_prod<'a>(context: &'a Context, term: &'a Term) -> EvalResult<Cow<'a, Arg>> {
     let mut itr = term.mul.iter();
     match itr.next() {
         None => unreachable!(),
@@ -108,7 +108,7 @@ pub fn eval_prod<'a>(context: &'a Context, term: &'a Term) -> EvalResult<Cow<'a,
         } } }
 
 
-pub fn eval_factor<'a>(context: &'a Context, fctr: &'a Factor) -> EvalResult<Cow<'a, BType>> {
+pub fn eval_factor<'a>(context: &'a Context, fctr: &'a Factor) -> EvalResult<Cow<'a, Arg>> {
     match *fctr {
         Factor::Variable(ref id)        => Ok(context.get(id).map(Cow::Borrowed)),
         Factor::Literal(ref lit)        => literal(lit).map(|v| v.map(Cow::Owned)),
@@ -119,7 +119,7 @@ pub fn eval_factor<'a>(context: &'a Context, fctr: &'a Factor) -> EvalResult<Cow
 }
 
 
-pub fn eval_attribute<'a>(context: &'a Context, attr: &'a Attribute) -> EvalResult<Cow<'a, BType>> {
+pub fn eval_attribute<'a>(context: &'a Context, attr: &'a Attribute) -> EvalResult<Cow<'a, Arg>> {
     match eval_factor(context, &attr.on)? {
         None => Err(EvalError::NotComposable),
         Some(value) => match value.try_as_composable() {
@@ -130,13 +130,13 @@ pub fn eval_attribute<'a>(context: &'a Context, attr: &'a Attribute) -> EvalResu
             } } } }
 
 
-pub fn eval_invocation<'a>(context: &'a Context, inv: &'a Invocation) -> EvalResult<Cow<'a, BType>> {
+pub fn eval_invocation<'a>(context: &'a Context, inv: &'a Invocation) -> EvalResult<Cow<'a, Arg>> {
     match eval_factor(context, &inv.on)? {
         None => Err(EvalError::NotInvocable),
         Some(value) => match value.try_as_invocable() {
             None => Err(EvalError::NotInvocable),
             Some(invocable) => {
-                let mut args: Vec<Cow<BType>> = Vec::with_capacity(inv.args.len());
+                let mut args: Vec<Cow<Arg>> = Vec::with_capacity(inv.args.len());
                 for expr in &inv.args {
                     match eval_expr(context, expr)? {
                         None => return Err(EvalError::NoneArg),
@@ -147,12 +147,12 @@ pub fn eval_invocation<'a>(context: &'a Context, inv: &'a Invocation) -> EvalRes
             } } } }
 
 
-pub fn literal<'a>(l: &'a Literal) -> EvalResult<BType> {
+pub fn literal<'a>(l: &'a Literal) -> EvalResult<Arg> {
     Ok( Some( match *l {
-        Literal::Str(ref string) => BType(box string.clone()),
-        Literal::Char(ref chr)   => BType(box *chr),
-        Literal::Int(ref int)    => BType(box *int),
-        Literal::Real(ref real)  => BType(box *real),
+        Literal::Str(ref string) => Arg::Boxed(box string.clone()),
+        Literal::Char(ref chr)   => Arg::Boxed(box *chr),
+        Literal::Int(ref int)    => Arg::Boxed(box *int),
+        Literal::Real(ref real)  => Arg::Boxed(box *real),
     } ) )
 }
 
@@ -165,7 +165,7 @@ mod tests {
     use std::fmt::Debug;
 
     use abc::*;
-    use {Incrust, BType, Args, ex, Template};
+    use {Incrust, Arg, Args, ex, Template};
     use parser::expressions::expression as parse_expr;
     use super::eval_expr;
 
@@ -187,7 +187,7 @@ mod tests {
         let context = context.top_scope();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult<Cow<BType>>| {
+        let x = |r: EvalResult<Cow<Arg>>| {
             r.unwrap().unwrap().as_ref()
                 .try_as_string()
                 .map(|c| c.into_owned())
@@ -214,7 +214,7 @@ mod tests {
         let context = context.top_scope();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult<Cow<BType>>| {
+        let x = |r: EvalResult<Cow<Arg>>| {
             r.unwrap().unwrap().as_ref()
                 .try_as_string()
                 .map(|c| c.into_owned())
@@ -245,7 +245,7 @@ mod tests {
         let context = context.top_scope();
 
         let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult<Cow<BType>>| {
+        let x = |r: EvalResult<Cow<Arg>>| {
             r.unwrap().unwrap().as_ref()
                 .try_as_string()
                 .map(|c| c.into_owned())

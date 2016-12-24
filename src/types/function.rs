@@ -5,16 +5,16 @@ use abc::EvalResult;
 use Context;
 
 use types::abc::*;
-use BType;
+use Arg;
 
 
 pub struct Function {
-    pub f: fn(&[Cow<BType>], &Context) -> EvalResult<BType>,
+    pub f: fn(&[Cow<Arg>], &Context) -> EvalResult<Arg>,
 }
 
 impl Function {
-    pub fn new(f: fn(&[Cow<BType>], &Context) -> EvalResult<BType>) -> BType {
-        BType(box Function { f: f })
+    pub fn new(f: fn(&[Cow<Arg>], &Context) -> EvalResult<Arg>) -> Arg {
+        Arg::Boxed(box Function { f: f })
     }
 }
 
@@ -31,8 +31,8 @@ impl Debug for Function {
 }
 
 impl Type for Function {
-    fn iclone(&self) -> BType {
-        BType(box self.clone())
+    fn iclone(&self) -> Arg {
+        Arg::Boxed(box self.clone())
     }
 }
 
@@ -47,7 +47,7 @@ impl AsInvocable for Function {
 }
 
 impl IInvocable for Function {
-    fn invoke<'a: 'b, 'b>(&self, args: &'b [Cow<'a, BType>], context: &'a Context) -> EvalResult<Cow<'a, BType>> {
+    fn invoke<'a: 'b, 'b>(&self, args: &'b [Cow<'a, Arg>], context: &'a Context) -> EvalResult<Cow<'a, Arg>> {
         // todo Cow for self.f
         (self.f)(args, context).map(|v| v.map(Cow::Owned))
     }

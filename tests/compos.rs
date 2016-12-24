@@ -8,7 +8,7 @@ extern crate incrust;
 use std::borrow::Cow;
 use std::path::Path;
 
-use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, BType, Function, Context};
+use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, Arg, Function, Context};
 use incrust::types::abc::{AsComposable, IComposable};
 use incrust::abc::{EvalResult};
 
@@ -23,8 +23,8 @@ impl Fruit {
 }
 
 impl Type for Fruit {
-    fn iclone(&self) -> BType {
-        BType(box self.clone())
+    fn iclone(&self) -> Arg {
+        Arg::Boxed(box self.clone())
     }
 }
 
@@ -35,7 +35,7 @@ impl AsComposable for Fruit {
 
 
 impl IComposable for Fruit {
-    fn get_attr(&self, id: &str) -> Option<BType> {
+    fn get_attr(&self, id: &str) -> Option<Arg> {
         match id {
             "title" => Some(ex(self.title.as_str())),
             "price" => Some(ex(self.price)),
@@ -71,7 +71,7 @@ fn invocables() {
     incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
-    fn title(_: &[Cow<BType>], _: &Context) -> EvalResult<BType> {
+    fn title(_: &[Cow<Arg>], _: &Context) -> EvalResult<Arg> {
         Ok(Some(ex("fruits")))
     }
 

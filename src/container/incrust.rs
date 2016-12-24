@@ -3,14 +3,14 @@ use std::collections::HashMap;
 
 use abc::*;
 use loader::GroupLoader;
-use {Args, BType, ex, GlobalContext, Context, Template};
+use {Args, Arg, ex, GlobalContext, Context, Template};
 
 
 #[derive(Debug)]
 pub struct Incrust {
     pub loaders: GroupLoader,
     filters: HashMap<String, Box<Filter>>,
-    top_context: HashMap<String, BType>,
+    top_context: HashMap<String, Arg>,
 }
 
 
@@ -51,7 +51,7 @@ impl Incrust {
         }
     }
 
-    pub fn top_context(&self) -> &HashMap<String, BType> {
+    pub fn top_context(&self) -> &HashMap<String, Arg> {
         &self.top_context
     }
 
@@ -64,7 +64,7 @@ impl Incrust {
         Err(LoadError::NotFound)
     }
 
-    pub fn filter<'a, 's: 'a>(&'s self, id: &str, context: &'a Context, value: Option<Cow<'a, BType>>) -> FilterResult<Cow<'a, BType>> {
+    pub fn filter<'a, 's: 'a>(&'s self, id: &str, context: &'a Context, value: Option<Cow<'a, Arg>>) -> FilterResult<Cow<'a, Arg>> {
         match self.filters.get(id) {
             Some(ref filter) => filter.filter(context, value),
             None => Err(FilterError::UnknownFormatter(id.into()))

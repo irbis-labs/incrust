@@ -1,6 +1,6 @@
 use types::abc::*;
 
-use {BType, ex};
+use {Arg, ex};
 
 
 #[derive(Debug, Clone)]
@@ -29,14 +29,14 @@ impl LoopState {
 }
 
 impl Type for LoopState {
-    fn iclone(&self) -> BType {
-        BType(box self.clone())
+    fn iclone(&self) -> Arg {
+        Arg::Boxed(box self.clone())
     }
 }
 
 
 impl IComposable for LoopState {
-    fn get_attr(&self, id: &str) -> Option<BType> {
+    fn get_attr(&self, id: &str) -> Option<Arg> {
         match id {
             "index0"    => Some(ex(self.index as i64)),
             "index"     => Some(ex((self.index + 1) as i64)),

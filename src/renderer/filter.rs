@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use abc::{Filter, FilterResult, FilterError};
 use renderer::Writer;
-use {Context, ex, BType};
+use {Context, ex, Arg};
 
 
 #[derive(Debug)]
@@ -10,7 +10,7 @@ pub struct Escape;
 
 impl Filter for Escape {
     #[allow(unused_variables)]
-    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Cow<'a, BType>>) -> FilterResult<Cow<'a, BType>> {
+    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Cow<'a, Arg>>) -> FilterResult<Cow<'a, Arg>> {
         use marksman_escape::Escape as F;
 
         match value {
@@ -39,7 +39,7 @@ pub struct Unescape;
 
 impl Filter for Unescape {
     #[allow(unused_variables)]
-    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Cow<'a, BType>>) -> FilterResult<Cow<'a, BType>> {
+    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Cow<'a, Arg>>) -> FilterResult<Cow<'a, Arg>> {
         use marksman_escape::Unescape as F;
 
         match value {

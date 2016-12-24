@@ -5,12 +5,12 @@ use std::fmt::Write;
 
 use types::abc::*;
 use renderer::Writer;
-use BType;
+use Arg;
 
 
 // CHECK whether it is necessary
 impl <'a, T> Type for &'a T where T: Type {
-    fn iclone(&self) -> BType {
+    fn iclone(&self) -> Arg {
         (*self as &Type).iclone()
     }
 }
@@ -162,8 +162,8 @@ impl <T> AsPartialOrd for T where T: Type + IPartialOrd {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl <S> IArithm for S where S: Type {
-    default fn try_add<'a>(&self, _other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { None }
-    default fn try_sub<'a>(&self, _other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { None }
-    default fn try_mul<'a>(&self, _other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { None }
-    default fn try_div<'a>(&self, _other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { None }
+    default fn try_add<'a>(&self, _other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { None }
+    default fn try_sub<'a>(&self, _other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { None }
+    default fn try_mul<'a>(&self, _other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { None }
+    default fn try_div<'a>(&self, _other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { None }
 }

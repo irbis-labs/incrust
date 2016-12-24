@@ -7,7 +7,7 @@ use std::slice::Iter;
 
 use abc::EvalResult;
 use renderer::Writer;
-use BType;
+use Arg;
 use Context;
 
 
@@ -18,7 +18,7 @@ pub trait Type:
     AsPartialEq + AsPartialOrd +
     IArithm + IRender + fmt::Debug + Send + Sync
 {
-    fn iclone(&self) -> BType;
+    fn iclone(&self) -> Arg;
 }
 
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
@@ -85,14 +85,14 @@ pub trait AsPartialOrd {
 // --- [ impl interfaces ] --------------------------------------------------------------------------------------------
 
 pub trait IArithm {
-    fn try_add<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>>;
-    fn try_sub<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>>;
-    fn try_mul<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>>;
-    fn try_div<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>>;
+    fn try_add<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>>;
+    fn try_sub<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>>;
+    fn try_mul<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>>;
+    fn try_div<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>>;
 }
 
 pub trait IInvocable: Send + Sync {
-    fn invoke<'a: 'b, 'b>(&self, args: &'b [Cow<'a, BType>], context: &'a Context) -> EvalResult<Cow<'a, BType>>;
+    fn invoke<'a: 'b, 'b>(&self, args: &'b [Cow<'a, Arg>], context: &'a Context) -> EvalResult<Cow<'a, Arg>>;
 }
 
 pub trait IIterable: Send + Sync {
@@ -102,33 +102,33 @@ pub trait IIterable: Send + Sync {
 
 pub trait IIndexable: Send + Sync {
 //    fn has_index(&self, index: usize) -> bool;
-    fn get_index(&self, index: usize) -> Option<&BType>;
+    fn get_index(&self, index: usize) -> Option<&Arg>;
 //    fn as_slice(&self, range: Range) -> &[BType];
     fn len(&self) -> usize;
 }
 
 pub trait IComposable: Send + Sync {
-    fn get_attr(&self, id: &str) -> Option<BType>;
+    fn get_attr(&self, id: &str) -> Option<Arg>;
 //    fn attrs(&self) -> &[BType];
 }
 
 pub trait IPartialEq: Send + Sync {
-    fn eq(&self, other: &BType) -> bool;
-    fn ne(&self, other: &BType) -> bool { !self.eq(other) }
+    fn eq(&self, other: &Arg) -> bool;
+    fn ne(&self, other: &Arg) -> bool { !self.eq(other) }
 }
 
 pub trait IPartialOrd: Send + Sync {
-    fn partial_cmp(&self, other: &BType) -> Option<Ordering>;
-    fn lt(&self, other: &BType) -> Option<bool> {
+    fn partial_cmp(&self, other: &Arg) -> Option<Ordering>;
+    fn lt(&self, other: &Arg) -> Option<bool> {
         self.partial_cmp(other).map(|res| res == Ordering::Less)
     }
-    fn le(&self, other: &BType) -> Option<bool> {
+    fn le(&self, other: &Arg) -> Option<bool> {
         self.partial_cmp(other).map(|res| res != Ordering::Greater)
     }
-    fn gt(&self, other: &BType) -> Option<bool> {
+    fn gt(&self, other: &Arg) -> Option<bool> {
         self.partial_cmp(other).map(|res| res == Ordering::Greater)
     }
-    fn ge(&self, other: &BType) -> Option<bool> {
+    fn ge(&self, other: &Arg) -> Option<bool> {
         self.partial_cmp(other).map(|res| res != Ordering::Less)
     }
 }
@@ -137,11 +137,11 @@ pub trait IPartialOrd: Send + Sync {
 // --- [ feature interfaces ] -----------------------------------------------------------------------------------------
 
 pub struct VIterator<'a> {
-    pub me: Iter<'a, BType>,
+    pub me: Iter<'a, Arg>,
 }
 
 impl <'a> Iterator for VIterator<'a> {
-    type Item = &'a BType;
+    type Item = &'a Arg;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.me.next()

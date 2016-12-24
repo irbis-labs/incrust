@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::fmt;
 
 use abc::*;
-use {BType, Context};
+use {Arg, Context};
 
 
 pub type EvalResult<T> = Result<Option<T>, EvalError>;
@@ -32,7 +32,7 @@ impl From<fmt::Error>  for FilterError { fn from(err: fmt::Error)  -> Self { Fil
 
 
 pub trait Filter: fmt::Debug + Send + Sync {
-    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Cow<'a, BType>>) -> FilterResult<Cow<'a, BType>>;
+    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Cow<'a, Arg>>) -> FilterResult<Cow<'a, Arg>>;
 }
 
 

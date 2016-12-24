@@ -1,13 +1,15 @@
+use std::ops::Deref;
+
 use types::abc::*;
-use {BType, ex};
+use {Arg, ex};
 
 
-impl Type for Vec<BType> {
-    fn iclone(&self) -> BType {
-        BType(
+impl Type for Vec<Arg> {
+    fn iclone(&self) -> Arg {
+        Arg::Boxed(
             box self.into_iter()
-                .map(|v| v.0.iclone())
-                .collect::<Vec<BType>>()
+                .map(|v| v.deref().iclone())
+                .collect::<Vec<Arg>>()
         )
     }
 }
@@ -20,19 +22,19 @@ impl Type for Vec<BType> {
 //    }
 //}
 
-impl AsBool for Vec<BType> {
+impl AsBool for Vec<Arg> {
     fn to_bool(&self) -> bool {
         !self.is_empty()
     }
 }
 
-impl AsIterable for Vec<BType> {
+impl AsIterable for Vec<Arg> {
     fn try_as_iterable(&self) -> Option<&IIterable> {
         Some(self)
     }
 }
 
-impl AsComposable for Vec<BType> {
+impl AsComposable for Vec<Arg> {
     fn try_as_composable(&self) -> Option<&IComposable> {
         Some(self)
     }
@@ -42,7 +44,7 @@ impl AsComposable for Vec<BType> {
 // --------------------------------------------------------------------------------------------------------------------
 
 
-impl IIterable for Vec<BType> {
+impl IIterable for Vec<Arg> {
     fn is_empty(&self) -> bool {
         Vec::is_empty(self)
     }
@@ -53,8 +55,8 @@ impl IIterable for Vec<BType> {
 }
 
 
-impl IIndexable for Vec<BType> {
-    fn get_index(&self, index: usize) -> Option<&BType> {
+impl IIndexable for Vec<Arg> {
+    fn get_index(&self, index: usize) -> Option<&Arg> {
         self.get(index)
     }
 
@@ -64,8 +66,8 @@ impl IIndexable for Vec<BType> {
 }
 
 
-impl IComposable for Vec<BType> {
-    fn get_attr(&self, id: &str) -> Option<BType> {
+impl IComposable for Vec<Arg> {
+    fn get_attr(&self, id: &str) -> Option<Arg> {
         match id {
             "length" => Some(ex(self.len() as i64)),
             _ => None

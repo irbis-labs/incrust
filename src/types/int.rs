@@ -2,12 +2,12 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 
 use types::abc::*;
-use {BType, ex};
+use {Arg, ex};
 
 
 impl Type for i64 {
-    fn iclone(&self) -> BType {
-        BType(box *self)
+    fn iclone(&self) -> Arg {
+        Arg::Boxed(box *self)
     }
 }
 
@@ -35,14 +35,14 @@ impl AsInt for i64 {
 
 
 impl IPartialEq for i64 {
-    fn eq(&self, other: &BType) -> bool {
+    fn eq(&self, other: &Arg) -> bool {
         other.try_as_int().map(|s| s == *self).unwrap_or(false)
     }
 }
 
 
 impl IPartialOrd for i64 {
-    fn partial_cmp(&self, other: &BType) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &Arg) -> Option<Ordering> {
         if other.is_int() {
             other.try_as_int().and_then(|s| (self as &PartialOrd<i64>).partial_cmp(&s))
         } else {
@@ -60,8 +60,8 @@ impl IPartialOrd for i64 {
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for i64 {
     // todo Cow::Borrowed for Zero and One cases
-    fn try_add<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self + s)) }) }
-    fn try_sub<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self - s)) }) }
-    fn try_mul<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self * s)) }) }
-    fn try_div<'a>(&self, other: Cow<'a, BType>) -> Option<Cow<'a, BType>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self / s)) }) }
+    fn try_add<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self + s)) }) }
+    fn try_sub<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self - s)) }) }
+    fn try_mul<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self * s)) }) }
+    fn try_div<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self / s)) }) }
 }
