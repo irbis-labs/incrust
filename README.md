@@ -22,7 +22,7 @@ Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be
 
 ```toml
 [dependencies]
-incrust = "=0.2.10"
+incrust = "=0.2.11"
 ```
 
 For ease of use hashmaps you may use the [maplit](https://crates.io/crates/maplit)
@@ -47,18 +47,18 @@ fn create_env() -> Incrust {
 fn main() {
     let incrust = create_env();
     let args = hashmap!{ "name".into() => ex("World") };
-    incrust.render("hello", args).unwrap();
+    incrust.render("hello", &args).unwrap();
 }
 ```
 
 Though Incrust has smart loaders, it may be used just as advanced formatter to render directly from string template
 
 ```rust
-incrust.render_text("Hello, {{ name | e }}!", hashmap!{ "name".into() => ex("World") }).unwrap();
+let args = hashmap!{ "name".into() => ex("World") };
+incrust.render_text("Hello, {{ name | e }}!", &args).unwrap();
 // or with prepared template
 let hello = incrust.parse("Hello, {{ name | e }}!");
-let args = hashmap!{ "name".into() => ex("World") };
-incrust.render_parsed(&hello, args).unwrap();
+incrust.render_parsed(&hello, &args).unwrap();
 ```
 
 
@@ -139,8 +139,8 @@ The answer is 42
 Amount: {{ amount and ("" + amount + " pcs") or "-" }}
 ```
 ```rust
-assert_eq!("Amount: 6 pcs", incrust.render("tpl", hashmap!{ "amount".into() => ex(6isize) }).unwrap());
-assert_eq!("Amount: -", incrust.render("tpl", hashmap!{ "amount".into() => ex(0isize) }).unwrap());
+assert_eq!("Amount: 6 pcs", incrust.render("tpl", &hashmap!{ "amount".into() => ex(6isize) }).unwrap());
+assert_eq!("Amount: -", incrust.render("tpl", &hashmap!{ "amount".into() => ex(0isize) }).unwrap());
 ```
 
 ### Conditional statements
@@ -179,7 +179,7 @@ let args = hashmap!{ "fruits".into() => ex(vec![ex("Orange"), ex("Apple"), ex("B
 
 ```rust
 let args = hashmap!{ "parent_layout".into() => ex("default") };
-incrust.render("template", args).unwrap()
+incrust.render("template", &args).unwrap()
 ```
 default.tpl
 ```twig
@@ -214,7 +214,7 @@ Output
 
 ```rust
 let args = hashmap!{ "menu".into() => ex("default_menu") };
-assert_eq!(expected, incrust.render("tpl", args).unwrap());
+assert_eq!(expected, incrust.render("tpl", &args).unwrap());
 ```
 default_menu.tpl
 ```twig
