@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::fmt::{Debug, Formatter, Error};
 
 use abc::EvalResult;
@@ -9,12 +8,12 @@ use Arg;
 
 
 pub struct Function {
-    pub f: fn(&[Cow<Arg>], &Context) -> EvalResult<Arg>,
+    pub f: for <'res> fn(&[Arg<'res>], &'res Context<'res>) -> EvalResult<Arg<'res>>,
 }
 
 impl Function {
-    pub fn new(f: fn(&[Cow<Arg>], &Context) -> EvalResult<Arg>) -> Arg {
-        Arg::from(Function { f: f })
+    pub fn new(f: for <'res> fn(&[Arg<'res>], &'res Context<'res>) -> EvalResult<Arg<'res>>) -> Arg<'static> {
+        Arg::Owned(box Function { f: f })
     }
 }
 
@@ -26,30 +25,19 @@ impl Clone for Function {
 
 impl Debug for Function {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), Error> {
-        fmt.write_str("Anonymous Function")
+        fmt.write_str("AnonymousFunction")
     }
 }
 
-impl Type for Function {
-//    fn iclone(&self) -> Arg {
-//        Arg(Arc::new(box self.clone()))
-//    }
-}
-
-impl AsInvocable for Function {
-    fn try_as_invocable(&self) -> Option<&IInvocable> {
-        Some(self)
-    }
-
-    fn is_invocable(&self) -> bool {
-        true
+impl <'t> Type<'t> for Function {
+    fn clone_type(&self) -> Arg<'static> {
+        Arg::Owned(box self.clone())
     }
 }
 
 impl IInvocable for Function {
-    fn invoke<'a: 'b, 'b>(&self, args: &'b [Cow<'a, Arg>], context: &'a Context) -> EvalResult<Cow<'a, Arg>> {
-        // todo Cow for self.f
-        (self.f)(args, context).map(|v| v.map(Cow::Owned))
+    fn invoke<'r: 'rr, 'rr>(&self, args: &'rr [Arg<'r>], context: &'r Context<'r>) -> EvalResult<Arg<'r>> {
+        (self.f)(args, context)
     }
 }
 

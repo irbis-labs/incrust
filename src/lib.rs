@@ -34,8 +34,7 @@ pub mod renderer;
 pub mod types;
 
 pub use self::abc::Loader;
-pub use self::container::arg::{Arg, ex};
-pub use self::container::args::{Args, EntityId};
+pub use self::container::args::{Arg, Args, EntityId, ex};
 pub use self::container::context::{GlobalContext, Context};
 pub use self::container::incrust::Incrust;
 pub use self::container::template::Template;

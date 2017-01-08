@@ -1,14 +1,13 @@
-use std::borrow::Cow;
 use std::cmp::Ordering;
 
 use types::abc::*;
-use {Arg, ex};
+use Arg;
 
 
-impl Type for i64 {
-//    fn iclone(&self) -> Arg {
-//        Arg(box *self)
-//    }
+impl <'t> Type<'t> for i64 {
+    fn clone_type(&self) -> Arg<'static> {
+        Arg::Owned(box *self)
+    }
 }
 
 impl AsBool for i64 {
@@ -35,14 +34,14 @@ impl AsInt for i64 {
 
 
 impl IPartialEq for i64 {
-    fn eq(&self, other: &Arg) -> bool {
+    fn eq<'o>(&self, other: &'o Arg<'o>) -> bool {
         other.try_as_int().map(|s| s == *self).unwrap_or(false)
     }
 }
 
 
 impl IPartialOrd for i64 {
-    fn partial_cmp(&self, other: &Arg) -> Option<Ordering> {
+    fn partial_cmp<'o>(&self, other: &'o Arg<'o>) -> Option<Ordering> {
         if other.is_int() {
             other.try_as_int().and_then(|s| (self as &PartialOrd<i64>).partial_cmp(&s))
         } else {
@@ -60,8 +59,8 @@ impl IPartialOrd for i64 {
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for i64 {
     // todo Cow::Borrowed for Zero and One cases
-    fn try_add<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self + s)) }) }
-    fn try_sub<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self - s)) }) }
-    fn try_mul<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self * s)) }) }
-    fn try_div<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_int().map(|s| { Cow::Owned(ex(*self / s)) }) }
+    fn try_add<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_int().map(|s| { Arg::Owned(box (*self + s)) }) }
+    fn try_sub<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_int().map(|s| { Arg::Owned(box (*self - s)) }) }
+    fn try_mul<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_int().map(|s| { Arg::Owned(box (*self * s)) }) }
+    fn try_div<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_int().map(|s| { Arg::Owned(box (*self / s)) }) }
 }

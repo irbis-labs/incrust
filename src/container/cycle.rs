@@ -28,10 +28,10 @@ impl LoopState {
     }
 }
 
-impl Type for LoopState {
-//    fn iclone(&self) -> Arg {
-//        Arg(box self.clone())
-//    }
+impl <'t> Type<'t> for LoopState {
+    fn clone_type(&self) -> Arg<'static> {
+        Arg::Owned(box self.clone())
+    }
 }
 
 

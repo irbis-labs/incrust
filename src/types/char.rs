@@ -1,4 +1,9 @@
 use types::abc::*;
+use Arg;
 
 
-impl Type for char {}
+impl <'t> Type<'t> for char {
+    fn clone_type(&self) -> Arg<'static> {
+        Arg::Owned(box *self)
+    }
+}

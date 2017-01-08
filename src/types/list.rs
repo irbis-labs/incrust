@@ -2,14 +2,17 @@ use types::abc::*;
 use {Arg, ex};
 
 
-impl Type for Vec<Arg> {
-//    fn iclone(&self) -> Arg {
-//        Arg(
-//            box self.into_iter()
-//                .map(|v| v.deref().iclone())
-//                .collect::<Vec<Arg>>()
-//        )
+impl <'r, 't> Type<'t> for Vec<Arg<'r>> {
+//    fn clone_type(&self) -> Arg<'static> {
+//        Arg::Owned(box self.clone())
 //    }
+    fn clone_type(&self) -> Arg<'static> {
+        Arg::Owned(
+            box self.into_iter()
+                .map(|v| (*v).clone_type())
+                .collect::<Vec<Arg<'static>>>()
+        )
+    }
 }
 
 // todo resolve specialization conflict
@@ -20,19 +23,19 @@ impl Type for Vec<Arg> {
 //    }
 //}
 
-impl AsBool for Vec<Arg> {
+impl <'r> AsBool for Vec<Arg<'r>> {
     fn to_bool(&self) -> bool {
         !self.is_empty()
     }
 }
 
-impl AsIterable for Vec<Arg> {
+impl <'r> AsIterable for Vec<Arg<'r>> {
     fn try_as_iterable(&self) -> Option<&IIterable> {
         Some(self)
     }
 }
 
-impl AsComposable for Vec<Arg> {
+impl <'r> AsComposable for Vec<Arg<'r>> {
     fn try_as_composable(&self) -> Option<&IComposable> {
         Some(self)
     }
@@ -42,7 +45,7 @@ impl AsComposable for Vec<Arg> {
 // --------------------------------------------------------------------------------------------------------------------
 
 
-impl IIterable for Vec<Arg> {
+impl <'r> IIterable for Vec<Arg<'r>> {
     fn is_empty(&self) -> bool {
         Vec::is_empty(self)
     }
@@ -53,7 +56,7 @@ impl IIterable for Vec<Arg> {
 }
 
 
-impl IIndexable for Vec<Arg> {
+impl <'r> IIndexable for Vec<Arg<'r>> {
     fn get_index(&self, index: usize) -> Option<&Arg> {
         self.get(index)
     }
@@ -64,7 +67,7 @@ impl IIndexable for Vec<Arg> {
 }
 
 
-impl IComposable for Vec<Arg> {
+impl <'r> IComposable for Vec<Arg<'r>> {
     fn get_attr(&self, id: &str) -> Option<Arg> {
         match id {
             "length" => Some(ex(self.len() as i64)),

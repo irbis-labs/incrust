@@ -5,12 +5,11 @@
 extern crate maplit;
 extern crate incrust;
 
-use std::borrow::Cow;
 use std::path::Path;
 
+use incrust::abc::EvalResult;
 use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, Arg, Function, Context};
 use incrust::types::abc::{AsComposable, IComposable};
-use incrust::abc::{EvalResult};
 
 #[derive(Debug, Clone)]
 struct Fruit {
@@ -22,10 +21,10 @@ impl Fruit {
     pub fn new(title: &str, price: f64) -> Fruit { Fruit { title: title.to_owned(), price: price } }
 }
 
-impl Type for Fruit {
-//    fn iclone(&self) -> Arg {
-//        Arg(box self.clone())
-//    }
+impl <'t> Type<'t> for Fruit {
+    fn clone_type(&self) -> Arg<'static> {
+        Arg::Owned(box self.clone())
+    }
 }
 
 
@@ -52,7 +51,7 @@ fn attributes() {
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
     let sample_a = sample_loader.load("2a.html").unwrap();
-    let args = || hashmap!{
+    let args = hashmap!{
         "title".into() => ex("fruits"),
         "fruits".into() => ex(vec![
             ex(Fruit::new("Orange", 4.0)),
@@ -61,7 +60,7 @@ fn attributes() {
         ])
     };
 
-    assert_eq!(sample_a, incrust.render("2a", args()).unwrap());
+    assert_eq!(sample_a, incrust.render("2a", &args).unwrap());
 }
 
 
@@ -71,12 +70,12 @@ fn invocables() {
     incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
-    fn title(_: &[Cow<Arg>], _: &Context) -> EvalResult<Arg> {
+    fn title<'res>(_: &[Arg<'res>], _: &'res Context<'res>) -> EvalResult<Arg<'res>> {
         Ok(Some(ex("fruits")))
     }
 
     let sample_a = sample_loader.load("2a.html").unwrap();
-    let args = || hashmap!{
+    let args = hashmap!{
         "title".into() => Function::new(title),
         "fruits".into() => ex(vec![
             ex(Fruit::new("Orange", 4.0)),
@@ -85,5 +84,5 @@ fn invocables() {
         ])
     };
 
-    assert_eq!(sample_a, incrust.render("2b", args()).unwrap());
+    assert_eq!(sample_a, incrust.render("2b", &args).unwrap());
 }

@@ -6,10 +6,10 @@ use types::abc::*;
 use {Arg, ex};
 
 
-impl Type for String {
-//    fn iclone(&self) -> Arg {
-//        Arg(box self.clone())
-//    }
+impl <'t> Type<'t> for String {
+    fn clone_type(&self) -> Arg<'static> {
+        Arg::Owned(box self.clone())
+    }
 }
 
 
@@ -32,14 +32,14 @@ impl AsString for String {
 
 
 impl IPartialEq for String {
-    fn eq(&self, other: &Arg) -> bool {
+    fn eq<'o>(&self, other: &'o Arg<'o>) -> bool {
         other.is_string() && other.try_as_string().map(|s| s.as_ref() == self).unwrap_or(false)
     }
 }
 
 
 impl IPartialOrd for String {
-    fn partial_cmp(&self, other: &Arg) -> Option<Ordering> {
+    fn partial_cmp<'o>(&self, other: &'o Arg<'o>) -> Option<Ordering> {
         if other.is_string() {
             other.try_as_string().and_then(|s| self.as_str().partial_cmp(s.as_ref()))
         } else {
@@ -51,24 +51,25 @@ impl IPartialOrd for String {
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for String {
-    fn try_add<'a> (&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> {
+    fn try_add<'o> (&self, other: Arg<'o>) -> Option<Arg<'o>> {
         if self == "" {
             match other.is_string() {
                 true => Some(other),
                 false => other.try_as_string()
-                    .map(|s| Cow::Owned(ex(s.into_owned()))),
+                    .map(|s| ex(s.into_owned())),
             }
         } else {
             other.try_as_string()
-                .map(move |s| Cow::Owned(ex(self.to_string() + s.as_ref())))
+                .map(move |s| ex(self.to_string() + s.as_ref()))
         }
     }
 }
 
 
-impl <'a> Into<Arg> for &'a str {
-    fn into(self) -> Arg {
-        self.to_owned().into()
+impl <'r> Into<Arg<'r>> for &'r str {
+    fn into(self) -> Arg<'r> {
+        ex(self.to_owned())
+        // FIXME Arg::Ref(self)
     }
 }
 

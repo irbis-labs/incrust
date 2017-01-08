@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::fmt;
 
 use abc::*;
@@ -32,7 +31,7 @@ impl From<fmt::Error>  for FilterError { fn from(err: fmt::Error)  -> Self { Fil
 
 
 pub trait Filter: fmt::Debug + Send + Sync {
-    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Cow<'a, Arg>>) -> FilterResult<Cow<'a, Arg>>;
+    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context<'a>, value: Option<Arg<'a>>) -> FilterResult<Arg<'a>>;
 }
 
 

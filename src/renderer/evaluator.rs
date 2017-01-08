@@ -1,11 +1,9 @@
-use std::borrow::Cow;
-
 use abc::{EvalResult, EvalError};
 use container::expression::*;
-use {Arg, Context, ex};
+use {Arg, Context};
 
 
-pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResult<Cow<'a, Arg>> {
+pub fn eval_expr<'r>(context: &'r Context<'r>, disj_expr: &'r DisjExpr) -> EvalResult<Arg<'r>> {
     let mut itr = disj_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -15,15 +13,15 @@ pub fn eval_expr<'a>(context: &'a Context, disj_expr: &'a DisjExpr) -> EvalResul
                 acc = match acc {
                     // FIXME eval None as False?
                     None => return Ok(None),
-                    Some(acc) => match acc.to_bool() {
-                        true => return Ok(Some(acc)),
+                    Some(a) => match a.to_bool() {
+                        true => return Ok(Some(a)),
                         false => eval_conj(context, conj)?,
                     } } }
             Ok(acc)
         } } }
 
 
-pub fn eval_conj<'a>(context: &'a Context, conj_expr: &'a ConjExpr) -> EvalResult<Cow<'a, Arg>> {
+pub fn eval_conj<'r>(context: &'r Context<'r>, conj_expr: &'r ConjExpr) -> EvalResult<Arg<'r>> {
     let mut itr = conj_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -42,7 +40,7 @@ pub fn eval_conj<'a>(context: &'a Context, conj_expr: &'a ConjExpr) -> EvalResul
 
 
 #[allow(unused_variables)]
-pub fn eval_cmp<'a>(context: &'a Context, cmp_expr: &'a CmpExpr) -> EvalResult<Cow<'a, Arg>> {
+pub fn eval_cmp<'r>(context: &'r Context<'r>, cmp_expr: &'r CmpExpr) -> EvalResult<Arg<'r>> {
     let mut itr = cmp_expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -55,22 +53,22 @@ pub fn eval_cmp<'a>(context: &'a Context, cmp_expr: &'a CmpExpr) -> EvalResult<C
                         None => return Ok(None),
                         Some(expr) => match *op {
                             // todo error if is not partial_eq ?
-                            CmpOp::Eq   => acc.as_ref().try_as_partial_eq().map(|acc| acc.eq(expr.as_ref())),
-                            CmpOp::Neq  => acc.as_ref().try_as_partial_eq().map(|acc| acc.ne(expr.as_ref())),
-                            CmpOp::Lt   => acc.as_ref().try_as_partial_ord().and_then(|acc| acc.lt(expr.as_ref())),
-                            CmpOp::Gt   => acc.as_ref().try_as_partial_ord().and_then(|acc| acc.gt(expr.as_ref())),
-                            CmpOp::Lte  => acc.as_ref().try_as_partial_ord().and_then(|acc| acc.le(expr.as_ref())),
-                            CmpOp::Gte  => acc.as_ref().try_as_partial_ord().and_then(|acc| acc.ge(expr.as_ref())),
+                            CmpOp::Eq   => acc.try_as_partial_eq().map(|acc| acc.eq(&expr)),
+                            CmpOp::Neq  => acc.try_as_partial_eq().map(|acc| acc.ne(&expr)),
+                            CmpOp::Lt   => acc.try_as_partial_ord().and_then(|acc| acc.lt(&expr)),
+                            CmpOp::Gt   => acc.try_as_partial_ord().and_then(|acc| acc.gt(&expr)),
+                            CmpOp::Lte  => acc.try_as_partial_ord().and_then(|acc| acc.le(&expr)),
+                            CmpOp::Gte  => acc.try_as_partial_ord().and_then(|acc| acc.ge(&expr)),
                             CmpOp::In   => unimplemented!(),
                             CmpOp::Nin  => unimplemented!(),
                         }
-                            .map(|res| Cow::Owned(ex(res)) )
+                            .map(Arg::from)
                     } } }
             Ok(acc)
         } } }
 
 
-pub fn eval_sum<'a>(context: &'a Context, expr: &'a Expr) -> EvalResult<Cow<'a, Arg>> {
+pub fn eval_sum<'r>(context: &'r Context<'r>, expr: &'r Expr) -> EvalResult<Arg<'r>> {
     let mut itr = expr.sum.iter();
     match itr.next() {
         None => unreachable!(),
@@ -82,14 +80,14 @@ pub fn eval_sum<'a>(context: &'a Context, expr: &'a Expr) -> EvalResult<Cow<'a, 
                     Some(acc) => match eval_prod(context, term)? {
                         None => return Ok(None),
                         Some(term) => match *op {
-                            SumOp::Add => acc.as_ref().try_add(term),
-                            SumOp::Sub => acc.as_ref().try_sub(term),
+                            SumOp::Add => acc.try_add(term),
+                            SumOp::Sub => acc.try_sub(term),
                         } } } }
             Ok(acc)
         } } }
 
 
-pub fn eval_prod<'a>(context: &'a Context, term: &'a Term) -> EvalResult<Cow<'a, Arg>> {
+pub fn eval_prod<'r>(context: &'r Context<'r>, term: &'r Term) -> EvalResult<Arg<'r>> {
     let mut itr = term.mul.iter();
     match itr.next() {
         None => unreachable!(),
@@ -101,17 +99,17 @@ pub fn eval_prod<'a>(context: &'a Context, term: &'a Term) -> EvalResult<Cow<'a,
                     Some(acc) => match eval_factor(context, factor)? {
                         None => return Ok(None),
                         Some(factor) => match *op {
-                            MulOp::Mul => acc.as_ref().try_mul(factor),
-                            MulOp::Div => acc.as_ref().try_div(factor),
+                            MulOp::Mul => acc.try_mul(factor),
+                            MulOp::Div => acc.try_div(factor),
                         } } } }
             Ok(acc)
         } } }
 
 
-pub fn eval_factor<'a>(context: &'a Context, fctr: &'a Factor) -> EvalResult<Cow<'a, Arg>> {
+pub fn eval_factor<'r>(context: &'r Context<'r>, fctr: &'r Factor) -> EvalResult<Arg<'r>> {
     match *fctr {
-        Factor::Variable(ref id)        => Ok(context.get(id).map(Cow::Borrowed)),
-        Factor::Literal(ref lit)        => literal(lit).map(|v| v.map(Cow::Owned)),
+        Factor::Variable(ref id)        => Ok(context.get(id)),
+        Factor::Literal(ref lit)        => literal(lit),
         Factor::Subexpression(ref expr) => eval_expr(context, expr),
         Factor::Attribute(ref attr)     => eval_attribute(context, attr),
         Factor::Invocation(ref inv)     => eval_invocation(context, inv),
@@ -119,24 +117,26 @@ pub fn eval_factor<'a>(context: &'a Context, fctr: &'a Factor) -> EvalResult<Cow
 }
 
 
-pub fn eval_attribute<'a>(context: &'a Context, attr: &'a Attribute) -> EvalResult<Cow<'a, Arg>> {
+pub fn eval_attribute<'r>(context: &'r Context<'r>, attr: &'r Attribute) -> EvalResult<Arg<'r>> {
     match eval_factor(context, &attr.on)? {
         None => Err(EvalError::NotComposable),
-        Some(value) => match value.try_as_composable() {
-            None => Err(EvalError::NotComposable),
-            Some(composable) => match composable.get_attr(&attr.id) {
-                None => Err(EvalError::AttributeNotExists(attr.id.clone())),
-                Some(result) => Ok(Some(Cow::Owned(result))),
-            } } } }
+        Some(value) => {
+            match value.try_as_composable() {
+                None => Err(EvalError::NotComposable),
+                Some(composable) => match composable.get_attr(&attr.id) {
+                    None => Err(EvalError::AttributeNotExists(attr.id.clone())),
+                    // fixme extra clone
+                    Some(result) => Ok(Some(result.to_owned())),
+                } } } } }
 
 
-pub fn eval_invocation<'a>(context: &'a Context, inv: &'a Invocation) -> EvalResult<Cow<'a, Arg>> {
+pub fn eval_invocation<'r>(context: &'r Context<'r>, inv: &'r Invocation) -> EvalResult<Arg<'r>> {
     match eval_factor(context, &inv.on)? {
         None => Err(EvalError::NotInvocable),
         Some(value) => match value.try_as_invocable() {
             None => Err(EvalError::NotInvocable),
             Some(invocable) => {
-                let mut args: Vec<Cow<Arg>> = Vec::with_capacity(inv.args.len());
+                let mut args: Vec<Arg> = Vec::with_capacity(inv.args.len());
                 for expr in &inv.args {
                     match eval_expr(context, expr)? {
                         None => return Err(EvalError::NoneArg),
@@ -147,7 +147,7 @@ pub fn eval_invocation<'a>(context: &'a Context, inv: &'a Invocation) -> EvalRes
             } } } }
 
 
-pub fn literal<'a>(l: &'a Literal) -> EvalResult<Arg> {
+pub fn literal<'r>(l: &'r Literal) -> EvalResult<Arg<'r>> {
     Ok( Some( match *l {
         Literal::Str(ref string) => Arg::from(string.clone()),
         Literal::Char(ref chr)   => Arg::from(*chr),
@@ -160,12 +160,11 @@ pub fn literal<'a>(l: &'a Literal) -> EvalResult<Arg> {
 #[cfg(test)]
 mod tests {
     #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
-    use std::borrow::Cow;
     use nom::IResult;
     use std::fmt::Debug;
 
     use abc::*;
-    use {Incrust, Arg, Args, ex, Template};
+    use {Incrust, Arg, Args, Context, ex, Template};
     use parser::expressions::expression as parse_expr;
     use super::eval_expr;
 
@@ -178,6 +177,17 @@ mod tests {
         }
     }
 
+    fn test_eval_expr(context: &Context, a: &str, b: &[u8]) {
+        let b = unwrap_iresult(parse_expr(b));
+        let r = eval_expr(&context, &b);
+        let res = r.unwrap().unwrap()
+            .try_as_string()
+            .map(|c| c.into_owned())
+            .unwrap();
+        assert_eq!(a, res)
+    }
+
+
     #[test]
     fn eval_attr() {
         let args: Args = hashmap!{ "the_one".into() => ex("World") };
@@ -186,17 +196,9 @@ mod tests {
         let context = incrust.create_global_context(&template, &args).unwrap();
         let context = context.top_scope();
 
-        let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult<Cow<Arg>>| {
-            r.unwrap().unwrap().as_ref()
-                .try_as_string()
-                .map(|c| c.into_owned())
-                .unwrap()
-        };
-
-        assert_eq!("1"   , x(eval_expr(&context, &parse(br#""a".length"#))));
-        assert_eq!("2"   , x(eval_expr(&context, &parse(br#"("a" + "b").length"#))));
-        assert_eq!("5"   , x(eval_expr(&context, &parse(br#"the_one . length"#))));
+        test_eval_expr(&context, "1", br#""a".length"#);
+        test_eval_expr(&context, "2", br#"("a" + "b").length"#);
+        test_eval_expr(&context, "5", br#"the_one . length"#);
     }
 
     #[test]
@@ -213,9 +215,8 @@ mod tests {
         let context = incrust.create_global_context(&template, &args).unwrap();
         let context = context.top_scope();
 
-        let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult<Cow<Arg>>| {
-            r.unwrap().unwrap().as_ref()
+        let x = |r: EvalResult<Arg>| {
+            r.unwrap().unwrap()
                 .try_as_string()
                 .map(|c| c.into_owned())
                 .unwrap()
@@ -225,15 +226,15 @@ mod tests {
         assert!("World"  == x(eval_factor(&context, &the_one)));
         assert!("Space"  != x(eval_factor(&context, &the_one)));
 
-        assert_eq!("1"    , x(eval_expr(&context, &parse(b"1"))));
-        assert_eq!("2"    , x(eval_expr(&context, &parse(b"1 + 1"))));
-        assert_eq!("0"    , x(eval_expr(&context, &parse(b"1 - 1"))));
-        assert_eq!("1"    , x(eval_expr(&context, &parse(b"2 / 2"))));
-        assert_eq!("1"    , x(eval_expr(&context, &parse(b"3 / 2.0"))));
-        assert_eq!("1.5"  , x(eval_expr(&context, &parse(b"3.0 / 2"))));
+        test_eval_expr(&context, "1",   b"1");
+        test_eval_expr(&context, "2",   b"1 + 1");
+        test_eval_expr(&context, "0",   b"1 - 1");
+        test_eval_expr(&context, "1",   b"2 / 2");
+        test_eval_expr(&context, "1",   b"3 / 2.0");
+        test_eval_expr(&context, "1.5", b"3.0 / 2");
 
-        assert_eq!("ab"   , x(eval_expr(&context, &parse(br#""a" + "b""#))));
-        assert_eq!("ab"   , x(eval_expr(&context, &parse(br#"("a" + "b")"#))));
+        test_eval_expr(&context, "ab",  br#""a" + "b""#);
+        test_eval_expr(&context, "ab",  br#"("a" + "b")"#);
     }
 
     #[test]
@@ -244,22 +245,14 @@ mod tests {
         let context = incrust.create_global_context(&template, &args).unwrap();
         let context = context.top_scope();
 
-        let parse = |s| unwrap_iresult(parse_expr(s));
-        let x = |r: EvalResult<Cow<Arg>>| {
-            r.unwrap().unwrap().as_ref()
-                .try_as_string()
-                .map(|c| c.into_owned())
-                .unwrap()
-        };
-
-        assert_eq!("1",     x(eval_expr(&context, &parse(b"0 or 1"))));
-        assert_eq!("0",     x(eval_expr(&context, &parse(b"0 and 1"))));
-        assert_eq!("str",   x(eval_expr(&context, &parse(br#""" or "str""#))));
-        assert_eq!("",      x(eval_expr(&context, &parse(br#""" and "str""#))));
-        assert_eq!("2",     x(eval_expr(&context, &parse(br#"0 and 1 or 2"#))));
-        assert_eq!("2",     x(eval_expr(&context, &parse(br#"0 or 1 and 2"#))));
-        assert_eq!("1",     x(eval_expr(&context, &parse(br#"0 or 1 or 2"#))));
-        assert_eq!("1",     x(eval_expr(&context, &parse(br#"1 or 0 and 2"#))));
+        test_eval_expr(&context, "1",     b"0 or 1");
+        test_eval_expr(&context, "0",     b"0 and 1");
+        test_eval_expr(&context, "str",   br#""" or "str""#);
+        test_eval_expr(&context, "",      br#""" and "str""#);
+        test_eval_expr(&context, "2",     br#"0 and 1 or 2"#);
+        test_eval_expr(&context, "2",     br#"0 or 1 and 2"#);
+        test_eval_expr(&context, "1",     br#"0 or 1 or 2"#);
+        test_eval_expr(&context, "1",     br#"1 or 0 and 2"#);
     }
 
     #[test]
@@ -270,42 +263,33 @@ mod tests {
         let context = incrust.create_global_context(&template, &args).unwrap();
         let context = context.top_scope();
 
-        let parse = |s| unwrap_iresult(parse_expr(s));
-        let test = |s, b| {
-            let res = eval_expr(&context, &parse(b))
-                .unwrap().unwrap().as_ref()
-                .try_as_string()
-                .unwrap().into_owned();
-            assert_eq!(s, res);
-        };
+        test_eval_expr(&context, "true",  b"1 == 1");
+        test_eval_expr(&context, "true",  b"1 != 2");
+        test_eval_expr(&context, "false", b"1 == 2");
 
-        test("true",  b"1 == 1");
-        test("true",  b"1 != 2");
-        test("false", b"1 == 2");
+        test_eval_expr(&context, "true",  br#""1" == "1""#);
+        test_eval_expr(&context, "true",  br#""1" != "2""#);
+        test_eval_expr(&context, "false", br#""1" == "2""#);
 
-        test("true",  br#""1" == "1""#);
-        test("true",  br#""1" != "2""#);
-        test("false", br#""1" == "2""#);
+        test_eval_expr(&context, "false", br#""1" == 1"#);
+        test_eval_expr(&context, "true",  br#""1" != 1"#);
 
-        test("false", br#""1" == 1"#);
-        test("true",  br#""1" != 1"#);
+        test_eval_expr(&context, "false", br#"1 == "1""#);
+        test_eval_expr(&context, "true",  br#"1 != "1""#);
 
-        test("false", br#"1 == "1""#);
-        test("true",  br#"1 != "1""#);
+        test_eval_expr(&context, "true",  b"1 <= 1");
+        test_eval_expr(&context, "false", b"1 < 1");
+        test_eval_expr(&context, "true",  b"1 <= 2");
+        test_eval_expr(&context, "true",  b"1 < 2");
+        test_eval_expr(&context, "false", b"1 >= 2");
+        test_eval_expr(&context, "false", b"1 > 2");
 
-        test("true",  b"1 <= 1");
-        test("false", b"1 < 1");
-        test("true",  b"1 <= 2");
-        test("true",  b"1 < 2");
-        test("false", b"1 >= 2");
-        test("false", b"1 > 2");
-
-        test("true",  b"1 >= 1");
-        test("false", b"1 > 1");
-        test("true",  b"1 >= 1");
-        test("true",  b"2 > 1");
-        test("false", b"2 <= 1");
-        test("false", b"2 < 1");
+        test_eval_expr(&context, "true",  b"1 >= 1");
+        test_eval_expr(&context, "false", b"1 > 1");
+        test_eval_expr(&context, "true",  b"1 >= 1");
+        test_eval_expr(&context, "true",  b"2 > 1");
+        test_eval_expr(&context, "false", b"2 <= 1");
+        test_eval_expr(&context, "false", b"2 < 1");
     }
 
 //    #[test]

@@ -1,14 +1,13 @@
-use std::borrow::Cow;
 use std::cmp::Ordering;
 
 use types::abc::*;
-use {Arg, ex};
+use Arg;
 
 
-impl Type for f64 {
-//    fn iclone(&self) -> Arg {
-//        Arg(box *self)
-//    }
+impl <'t> Type<'t> for f64 {
+    fn clone_type(&self) -> Arg<'static> {
+        Arg::Owned(box *self)
+    }
 }
 
 
@@ -38,14 +37,14 @@ impl AsInt for f64 {
 
 
 impl IPartialEq for f64 {
-    fn eq(&self, other: &Arg) -> bool {
+    fn eq<'o>(&self, other: &'o Arg<'o>) -> bool {
         other.try_as_real().map(|s| s == *self).unwrap_or(false)
     }
 }
 
 
 impl IPartialOrd for f64 {
-    fn partial_cmp(&self, other: &Arg) -> Option<Ordering> {
+    fn partial_cmp<'o>(&self, other: &'o Arg<'o>) -> Option<Ordering> {
         if other.is_real() || other.is_int() {
             other.try_as_real().and_then(|s| (self as &PartialOrd<f64>).partial_cmp(&s))
         } else {
@@ -58,8 +57,8 @@ impl IPartialOrd for f64 {
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for f64 {
     // todo Cow::Borrowed for Zero and One cases
-    fn try_add<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_real().map(|s| { Cow::Owned(ex(*self + s)) }) }
-    fn try_sub<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_real().map(|s| { Cow::Owned(ex(*self - s)) }) }
-    fn try_mul<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_real().map(|s| { Cow::Owned(ex(*self * s)) }) }
-    fn try_div<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { other.try_as_real().map(|s| { Cow::Owned(ex(*self / s)) }) }
+    fn try_add<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_real().map(|s| { Arg::Owned(box (*self + s)) }) }
+    fn try_sub<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_real().map(|s| { Arg::Owned(box (*self - s)) }) }
+    fn try_mul<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_real().map(|s| { Arg::Owned(box (*self * s)) }) }
+    fn try_div<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_real().map(|s| { Arg::Owned(box (*self / s)) }) }
 }

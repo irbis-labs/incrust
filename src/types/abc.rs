@@ -13,12 +13,12 @@ use Context;
 
 // --------------------------------------------------------------------------------------------------------------------
 
-pub trait Type:
+pub trait Type<'r>:
     AsString + AsBool + AsReal + AsInt + AsIterable + AsComposable + AsInvocable +
     AsPartialEq + AsPartialOrd +
     IArithm + IRender + fmt::Debug + Send + Sync
 {
-    //fn iclone(&self) -> Arg;
+    fn clone_type(&self) -> Arg<'static>;
 }
 
 // --- [ try interfaces ] ---------------------------------------------------------------------------------------------
@@ -85,14 +85,14 @@ pub trait AsPartialOrd {
 // --- [ impl interfaces ] --------------------------------------------------------------------------------------------
 
 pub trait IArithm {
-    fn try_add<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>>;
-    fn try_sub<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>>;
-    fn try_mul<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>>;
-    fn try_div<'a>(&self, other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>>;
+    fn try_add<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>>;
+    fn try_sub<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>>;
+    fn try_mul<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>>;
+    fn try_div<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>>;
 }
 
 pub trait IInvocable: Send + Sync {
-    fn invoke<'a: 'b, 'b>(&self, args: &'b [Cow<'a, Arg>], context: &'a Context) -> EvalResult<Cow<'a, Arg>>;
+    fn invoke<'r: 'rr, 'rr>(&self, args: &'rr [Arg<'r>], context: &'r Context<'r>) -> EvalResult<Arg<'r>>;
 }
 
 pub trait IIterable: Send + Sync {
@@ -113,22 +113,22 @@ pub trait IComposable: Send + Sync {
 }
 
 pub trait IPartialEq: Send + Sync {
-    fn eq(&self, other: &Arg) -> bool;
-    fn ne(&self, other: &Arg) -> bool { !self.eq(other) }
+    fn eq<'o>(&self, other: &'o Arg<'o>) -> bool;
+    fn ne<'o>(&self, other: &'o Arg<'o>) -> bool { !self.eq(other) }
 }
 
 pub trait IPartialOrd: Send + Sync {
-    fn partial_cmp(&self, other: &Arg) -> Option<Ordering>;
-    fn lt(&self, other: &Arg) -> Option<bool> {
+    fn partial_cmp<'o>(&self, other: &'o Arg<'o>) -> Option<Ordering>;
+    fn lt<'o>(&self, other: &'o Arg<'o>) -> Option<bool> {
         self.partial_cmp(other).map(|res| res == Ordering::Less)
     }
-    fn le(&self, other: &Arg) -> Option<bool> {
+    fn le<'o>(&self, other: &'o Arg<'o>) -> Option<bool> {
         self.partial_cmp(other).map(|res| res != Ordering::Greater)
     }
-    fn gt(&self, other: &Arg) -> Option<bool> {
+    fn gt<'o>(&self, other: &'o Arg<'o>) -> Option<bool> {
         self.partial_cmp(other).map(|res| res == Ordering::Greater)
     }
-    fn ge(&self, other: &Arg) -> Option<bool> {
+    fn ge<'o>(&self, other: &'o Arg<'o>) -> Option<bool> {
         self.partial_cmp(other).map(|res| res != Ordering::Less)
     }
 }
@@ -136,12 +136,12 @@ pub trait IPartialOrd: Send + Sync {
 
 // --- [ feature interfaces ] -----------------------------------------------------------------------------------------
 
-pub struct VIterator<'a> {
-    pub me: Iter<'a, Arg>,
+pub struct VIterator<'r> {
+    pub me: Iter<'r, Arg<'r>>,
 }
 
-impl <'a> Iterator for VIterator<'a> {
-    type Item = &'a Arg;
+impl <'r> Iterator for VIterator<'r> {
+    type Item = &'r Arg<'r>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.me.next()

@@ -21,24 +21,6 @@ pub struct Context<'a> {
 }
 
 
-pub enum ParentScope<'a> {
-    Global(&'a GlobalContext<'a>),
-    Local(&'a Context<'a>),
-}
-
-impl <'a> From<&'a GlobalContext<'a>> for ParentScope<'a> {
-    fn from(x: &'a GlobalContext<'a>) -> Self {
-        ParentScope::Global(x)
-    }
-}
-
-impl <'a> From<&'a Context<'a>> for ParentScope<'a> {
-    fn from(x: &'a Context<'a>) -> Self {
-        ParentScope::Local(x)
-    }
-}
-
-
 impl <'a> GlobalContext<'a> {
     pub fn new(env: &'a Incrust, template: &'a Template, args: &'a Args<'a>) -> RenderResult<Self> {
         use ::renderer::evaluator::eval_expr;
@@ -69,11 +51,11 @@ impl <'a> GlobalContext<'a> {
     }
 
     pub fn top_scope(&'a self) -> Context<'a> {
-        Context::new(self, self.args)
+         Context::new(self, self.args)
     }
 
     pub fn template(&'a self) -> &'a Template {
-        self.stack.last().as_ref().unwrap()
+        self.stack.last().unwrap()
     }
 
     pub fn stack(&'a self) -> &'a [Cow<'a, Template>] {
@@ -87,14 +69,10 @@ impl <'a> GlobalContext<'a> {
 
 
 impl <'a> Context<'a> {
-    pub fn new<PS: Into<ParentScope<'a>>>(parent_scope: PS, args: &'a Args<'a>) -> Self {
-        let (global, parent) = match parent_scope.into() {
-            ParentScope::Global(global) => (global, None),
-            ParentScope::Local(local) => (local.global(), Some(local)),
-        };
+    pub fn new(global: &'a GlobalContext<'a>, args: &'a Args<'a>) -> Self {
         Context {
             global: global,
-            parent: parent,
+            parent: None,
             args: args
         }
     }
@@ -119,11 +97,11 @@ impl <'a> Context<'a> {
         self.global.env()
     }
 
-    pub fn get(&self, id: &str) -> Option<&Arg> {
-        self.args.get(id)
+    pub fn get(&'a self, id: &str) -> Option<Arg<'a>> {
+        self.args.get(id).map(Arg::from)
             .or_else(|| self.parent
                 .and_then(|p| p.get(id))
-                .or_else(|| self.global.env().top_context().get(id))
+                .or_else(|| self.global.env().top_context().get(id).map(Arg::from))
             )
     }
 }

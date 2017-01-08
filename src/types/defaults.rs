@@ -9,29 +9,29 @@ use Arg;
 
 
 // CHECK whether it is necessary
-impl <'a, T> Type for &'a T where T: Type {
-//    fn iclone(&self) -> Arg {
-//        (*self as &Type).iclone()
-//    }
-}
+//impl <'a, T> Type for &'a T where T: Type {
+////    fn iclone(&self) -> Arg {
+////        (*self as &Type).iclone()
+////    }
+//}
 
 
 // --- [ default implementations ] ------------------------------------------------------------------------------------
 
-impl <T> IRender for T where T: Type {
+impl <'r, T> IRender for T where T: for <'t> Type<'t> + 'r {
     default fn render<'w>(&self, writer: &mut Writer<'w>) -> fmt::Result {
         debug!("Default render for Type {:?}", self);
         write!(writer, "#Type")
     }
 }
 
-impl <T> IRender for T where T: Type + Display {
+impl <'r, T> IRender for T where T: for <'t> Type<'t> + 'r + Display {
     default fn render<'w>(&self, writer: &mut Writer<'w>) -> fmt::Result {
         write!(writer, "{}", self)
     }
 }
 
-impl <T> AsString for T where T: Type {
+impl <'r, T> AsString for T where T: for <'t> Type<'t> + 'r {
     default fn is_string(&self) -> bool {
         false
     }
@@ -41,13 +41,13 @@ impl <T> AsString for T where T: Type {
     }
 }
 
-impl <T> AsString for T where T: Type + Display {
+impl <'r, T> AsString for T where T: for <'t> Type<'t> + 'r + Display {
     default fn try_as_string(&self) -> Option<Cow<str>> {
         Some(Cow::Owned(ToString::to_string(self)))
     }
 }
 
-impl <T> AsBool for T where T: Type {
+impl <'r, T> AsBool for T where T: for <'t> Type<'t> + 'r {
     default fn is_bool(&self) -> bool {
         false
     }
@@ -56,7 +56,7 @@ impl <T> AsBool for T where T: Type {
     }
 }
 
-impl <T> AsReal for T where T: Type {
+impl <'r, T> AsReal for T where T: for <'t> Type<'t> + 'r {
     default fn is_real(&self) -> bool {
         false
     }
@@ -65,7 +65,7 @@ impl <T> AsReal for T where T: Type {
     }
 }
 
-impl <T> AsInt for T where T: Type {
+impl <'r, T> AsInt for T where T: for <'t> Type<'t> + 'r {
     default fn is_int(&self) -> bool {
         false
     }
@@ -75,9 +75,9 @@ impl <T> AsInt for T where T: Type {
     }
 }
 
-impl <T> AsIterable for T where T: Type {
+impl <'r, T> AsIterable for T where T: for <'t> Type<'t> + 'r {
     default fn is_iterable(&self) -> bool {
-        self.try_as_iterable().is_some()
+        false
     }
 
     default fn try_as_iterable(&self) -> Option<&IIterable> {
@@ -85,7 +85,17 @@ impl <T> AsIterable for T where T: Type {
     }
 }
 
-impl <T> AsComposable for T where T: Type {
+impl <'r, T> AsIterable for T where T: for <'t> Type<'t> + 'r + IIterable {
+    fn is_iterable(&self) -> bool {
+        true
+    }
+
+    default fn try_as_iterable(&self) -> Option<&IIterable> {
+        Some(self)
+    }
+}
+
+impl <'r, T> AsComposable for T where T: for <'t> Type<'t> + 'r {
     default fn is_composable(&self) -> bool {
         false
     }
@@ -95,7 +105,7 @@ impl <T> AsComposable for T where T: Type {
     }
 }
 
-impl <T> AsComposable for T where T: Type + IComposable {
+impl <'r, T> AsComposable for T where T: for <'t> Type<'t> + 'r + IComposable {
     fn is_composable(&self) -> bool {
         true
     }
@@ -105,9 +115,9 @@ impl <T> AsComposable for T where T: Type + IComposable {
     }
 }
 
-impl <T> AsInvocable for T where T: Type {
+impl <'r, T> AsInvocable for T where T: for <'t> Type<'t> + 'r {
     default fn is_invocable(&self) -> bool {
-        self.try_as_invocable().is_some()
+        false
     }
 
     default fn try_as_invocable(&self) -> Option<&IInvocable> {
@@ -115,8 +125,18 @@ impl <T> AsInvocable for T where T: Type {
     }
 }
 
+impl <'r, T> AsInvocable for T where T: for <'t> Type<'t> + 'r + IInvocable {
+    fn is_invocable(&self) -> bool {
+        true
+    }
 
-impl <T> AsPartialEq for T where T: Type {
+    default fn try_as_invocable(&self) -> Option<&IInvocable> {
+        Some(self)
+    }
+}
+
+
+impl <'r, T> AsPartialEq for T where T: for <'t> Type<'t> + 'r {
     default fn is_partial_eq(&self) -> bool {
         false
     }
@@ -126,7 +146,7 @@ impl <T> AsPartialEq for T where T: Type {
     }
 }
 
-impl <T> AsPartialEq for T where T: Type + IPartialEq {
+impl <'r, T> AsPartialEq for T where T: for <'t> Type<'t> + 'r + IPartialEq {
     default fn is_partial_eq(&self) -> bool {
         true
     }
@@ -136,7 +156,7 @@ impl <T> AsPartialEq for T where T: Type + IPartialEq {
     }
 }
 
-impl <T> AsPartialOrd for T where T: Type {
+impl <'r, T> AsPartialOrd for T where T: for <'t> Type<'t> + 'r {
     default fn is_partial_ord(&self) -> bool {
         false
     }
@@ -146,7 +166,7 @@ impl <T> AsPartialOrd for T where T: Type {
     }
 }
 
-impl <T> AsPartialOrd for T where T: Type + IPartialOrd {
+impl <'r, T> AsPartialOrd for T where T: for <'t> Type<'t> + 'r + IPartialOrd {
     default fn is_partial_ord(&self) -> bool {
         true
     }
@@ -161,9 +181,9 @@ impl <T> AsPartialOrd for T where T: Type + IPartialOrd {
 
 
 #[cfg_attr(feature = "clippy", allow(boxed_local))]
-impl <S> IArithm for S where S: Type {
-    default fn try_add<'a>(&self, _other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { None }
-    default fn try_sub<'a>(&self, _other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { None }
-    default fn try_mul<'a>(&self, _other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { None }
-    default fn try_div<'a>(&self, _other: Cow<'a, Arg>) -> Option<Cow<'a, Arg>> { None }
+impl <'r, S> IArithm for S where S: for <'t> Type<'t> + 'r {
+    default fn try_add<'o>(&self, _other: Arg<'o>) -> Option<Arg<'o>> { None }
+    default fn try_sub<'o>(&self, _other: Arg<'o>) -> Option<Arg<'o>> { None }
+    default fn try_mul<'o>(&self, _other: Arg<'o>) -> Option<Arg<'o>> { None }
+    default fn try_div<'o>(&self, _other: Arg<'o>) -> Option<Arg<'o>> { None }
 }

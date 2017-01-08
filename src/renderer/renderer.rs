@@ -4,19 +4,19 @@ use abc::*;
 use container::expression::*;
 use container::template::*;
 use renderer::Writer;
-use {Args, Context, ex};
+use {Arg, Args, Context};
 
 use super::eval_expr;
 
 
-pub fn text<'a>(context: &'a Context) -> RenderResult<String> {
+pub fn text(context: &Context) -> RenderResult<String> {
     let mut buffer: String = Default::default();
     render_text(&mut buffer, context, context.template().root.as_slice())?;
     Ok(buffer)
 }
 
 
-pub fn render_text<'a, W: fmt::Write>(writer: &mut W, context: &'a Context, nodes: &'a[Node]) -> RenderResult<()> {
+pub fn render_text<W: fmt::Write>(writer: &mut W, context: &Context, nodes: &[Node]) -> RenderResult<()> {
     for x in nodes {
         match *x {
             Node::Text(ref txt) => write!(writer, "{}", txt)?,
@@ -45,7 +45,7 @@ pub fn render_expression<W: fmt::Write>(writer: &mut W, context: &Context, expr:
     }
     match acc {
         None => write!(writer, "#None")?,
-        Some(acc) => acc.as_ref().render(&mut Writer(writer))?,
+        Some(acc) => acc.render(&mut Writer(writer))?,
     }
     Ok(())
 }
@@ -63,9 +63,8 @@ pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForSt
             for v in iterable.ivalues() {
                 {
                     let local_scope: Args = hashmap! {
-                        // fixme iclone
-                        stmt.value_var.as_str().into() => v.clone(),
-                        "loop".into() => ex(state),
+                        stmt.value_var.as_str().into() => v.to_ref(),
+                        "loop".into() => Arg::Ref(&state),
                     };
                     render_text(writer, &context.nested_scope(&local_scope), &stmt.block)?;
                 }

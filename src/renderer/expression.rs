@@ -5,7 +5,7 @@ use Context;
 use container::expression::*;
 
 
-pub fn render_expr<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, expr: &'a DisjExpr) -> RenderResult<()> {
+pub fn render_expr<W: fmt::Write>(writer: &mut W, context: &Context, expr: &DisjExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -19,7 +19,7 @@ pub fn render_expr<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, 
         } } }
 
 
-pub fn render_conj<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, expr: &'a ConjExpr) -> RenderResult<()> {
+pub fn render_conj<W: fmt::Write>(writer: &mut W, context: &Context, expr: &ConjExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -33,7 +33,7 @@ pub fn render_conj<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, 
         } } }
 
 
-pub fn render_cmp<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, expr: &'a CmpExpr) -> RenderResult<()> {
+pub fn render_cmp<W: fmt::Write>(writer: &mut W, context: &Context, expr: &CmpExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -57,7 +57,7 @@ pub fn render_cmp<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, e
         } } }
 
 
-pub fn render_sum<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, expr: &'a Expr) -> RenderResult<()> {
+pub fn render_sum<W: fmt::Write>(writer: &mut W, context: &Context, expr: &Expr) -> RenderResult<()> {
     let mut itr = expr.sum.iter();
     match itr.next() {
         None => unreachable!(),
@@ -75,7 +75,7 @@ pub fn render_sum<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, e
         } } }
 
 
-pub fn render_prod<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, term: &'a Term) -> RenderResult<()> {
+pub fn render_prod<W: fmt::Write>(writer: &mut W, context: &Context, term: &Term) -> RenderResult<()> {
     let mut itr = term.mul.iter();
     match itr.next() {
         None => unreachable!(),
@@ -93,7 +93,7 @@ pub fn render_prod<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, 
         } } }
 
 
-pub fn render_factor<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context, fctr: &'a Factor) -> RenderResult<()> {
+pub fn render_factor<W: fmt::Write>(writer: &mut W, context: &Context, fctr: &Factor) -> RenderResult<()> {
     match *fctr {
         Factor::Literal(ref lit) => {
             render_literal(writer, lit)?;
@@ -124,7 +124,7 @@ pub fn render_factor<'a, 'b, W: fmt::Write>(writer: &mut W, context: &'b Context
 }
 
 
-pub fn render_literal<'a, 'b, W: fmt::Write>(writer: &mut W, l: &'a Literal) -> RenderResult<()> {
+pub fn render_literal<W: fmt::Write>(writer: &mut W, l: &Literal) -> RenderResult<()> {
     match *l {
         Literal::Str(ref string) => write!(writer, "{:?}", string)?,
         Literal::Char(ref chr)   => write!(writer, "{:?}", chr)?,

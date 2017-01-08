@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::collections::HashMap;
 
 use abc::*;
@@ -10,7 +9,7 @@ use {Args, Arg, ex, GlobalContext, Context, Template};
 pub struct Incrust {
     pub loaders: GroupLoader,
     filters: HashMap<String, Box<Filter>>,
-    top_context: HashMap<String, Arg>,
+    top_context: HashMap<String, Arg<'static>>,
 }
 
 
@@ -51,7 +50,7 @@ impl Incrust {
         }
     }
 
-    pub fn top_context(&self) -> &HashMap<String, Arg> {
+    pub fn top_context<'s>(&'s self) -> &'s HashMap<String, Arg<'s>> {
         &self.top_context
     }
 
@@ -64,7 +63,7 @@ impl Incrust {
         Err(LoadError::NotFound)
     }
 
-    pub fn filter<'a, 's: 'a>(&'s self, id: &str, context: &'a Context, value: Option<Cow<'a, Arg>>) -> FilterResult<Cow<'a, Arg>> {
+    pub fn filter<'s>(&'s self, id: &str, context: &'s Context<'s>, value: Option<Arg<'s>>) -> FilterResult<Arg<'s>> {
         match self.filters.get(id) {
             Some(ref filter) => filter.filter(context, value),
             None => Err(FilterError::UnknownFormatter(id.into()))
@@ -75,23 +74,25 @@ impl Incrust {
         Template::parse(template)
     }
 
-    pub fn render<'a, C:Into<Args<'a>>>(&'a self, name: &str, args: C) -> RenderResult<String> {
+    pub fn render<'r>(&self, name: &str, args: &'r Args<'r>) -> RenderResult<String> {
         self.render_text(&self.load(name)?, args)
     }
 
-    pub fn render_text<'a, C:Into<Args<'a>>>(&'a self, text: &str, args: C) -> RenderResult<String> {
+    pub fn render_text<'r>(&self, text: &str, args: &'r Args<'r>) -> RenderResult<String> {
         self.render_parsed(&self.parse(text)?, args)
     }
 
-    pub fn render_parsed<'a, C:Into<Args<'a>>>(&'a self, template: &Template, args: C) -> RenderResult<String> {
-        self.render_prepared(&self.create_global_context(template, &args.into())?.top_scope())
+    pub fn render_parsed<'r>(&self, template: &Template, args: &'r Args<'r>) -> RenderResult<String> {
+        let global = self.create_global_context(template, args)?;
+        let local = global.top_scope();
+        self.render_prepared(&local)
     }
 
-    pub fn render_prepared(&self, context: &Context) -> RenderResult<String> {
+    pub fn render_prepared<'r>(&self, context: &'r Context<'r>) -> RenderResult<String> {
         ::renderer::text(context)
     }
 
-    pub fn create_global_context<'a>(&'a self, template: &'a Template, args: &'a Args<'a>) -> RenderResult<GlobalContext<'a>> {
+    pub fn create_global_context<'s>(&'s self, template: &'s Template, args: &'s Args<'s>) -> RenderResult<GlobalContext<'s>> {
         GlobalContext::new(self, template, args)
     }
 }
@@ -104,10 +105,10 @@ mod tests {
 
     #[test]
     fn text() {
+        let incrust = Incrust::new();
         let templ = "Hello, World!";
         let expected = "Hello, World!";
-        let incrust = Incrust::new();
-        let result = incrust.render_text(templ, hashmap!{}).unwrap();
+        let result = incrust.render_text(templ, &Default::default()).unwrap();
         assert_eq!(result, expected);
     }
 
@@ -116,7 +117,7 @@ mod tests {
         let incrust = Incrust::new();
         let templ = incrust.parse("<p>Visible {# partially #} paragraph</p>").unwrap();
         let expected = "<p>Visible  paragraph</p>";
-        let result = incrust.render_parsed(&templ, hashmap!{}).unwrap();
+        let result = incrust.render_parsed(&templ, &Default::default()).unwrap();
         assert_eq!(result, expected);
     }
 
@@ -125,7 +126,8 @@ mod tests {
         let templ = "Hello, {{name}}!";
         let expected = "Hello, World!";
         let incrust = Incrust::new();
-        let result = incrust.render_text(templ, hashmap!{ "name".into() => ex("World") }).unwrap();
+        let args = hashmap!{ "name".into() => ex("World") };
+        let result = incrust.render_text(templ, &args).unwrap();
         assert_eq!(result, expected);
     }
 
@@ -135,16 +137,17 @@ mod tests {
         let args: Args = hashmap!{ "html".into() => ex("<h1>Hello, World!</h1>") };
         let expected = "<textarea>&lt;h1&gt;Hello, World&#33;&lt;/h1&gt;</textarea>";
         let incrust = Incrust::new();
-        let result = incrust.render_text(templ, args).unwrap();
+        let result = incrust.render_text(templ, &args).unwrap();
         assert_eq!(result, expected);
     }
 
     #[test]
     fn literal() {
         let incrust = Incrust::new();
-        assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, hashmap!{}).unwrap());
-        assert_eq!("The answer: 42", incrust.render_text(r#"The answer: {{ 42 }}"#, hashmap!{}).unwrap());
-        assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, hashmap!{}).unwrap());
+        let args = Default::default();
+        assert_eq!("Braces: {{", incrust.render_text(r#"Braces: {{ "{{" }}"#, &args).unwrap());
+        assert_eq!("The answer: 42", incrust.render_text(r#"The answer: {{ 42 }}"#, &args).unwrap());
+        assert_eq!("Pi: 3.1415926", incrust.render_text(r#"Pi: {{ 3.1415926 }}"#, &args).unwrap());
     }
 
     #[test]
@@ -154,27 +157,25 @@ mod tests {
             "what".into() => ex("Hello"),
             "who".into() => ex("World")
         };
-        assert_eq!(r#"Say: "Hello, World!""#, incrust.render_text(r#"Say: "{{ what + ", " + who }}!""#, args).unwrap());
+        assert_eq!(r#"Say: "Hello, World!""#, incrust.render_text(r#"Say: "{{ what + ", " + who }}!""#, &args).unwrap());
         let args = hashmap!{
             "alpha".into() => ex(6_i64),
             "omega".into() => ex(7_f64)
         };
-        assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, args).unwrap());
+        assert_eq!("The answer is 42", incrust.render_text(r#"The answer is {{ alpha * omega }}"#, &args).unwrap());
 
         let args = hashmap!{ "amount".into() => ex(6_i64) };
-        assert_eq!("1 + 1 = 2", incrust.render_text(r#"1 + 1 = {{ 1 + 1 }}"#, args).unwrap());
-
-        let args = hashmap!{ "amount".into() => ex(6_i64) };
-        assert_eq!("Amount: 6 pcs", incrust.render_text(r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#, args).unwrap());
+        assert_eq!("1 + 1 = 2", incrust.render_text(r#"1 + 1 = {{ 1 + 1 }}"#, &args).unwrap());
+        assert_eq!("Amount: 6 pcs", incrust.render_text(r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#, &args).unwrap());
 
         let args = hashmap!{ "amount".into() => ex(0_i64) };
-        assert_eq!("Amount: -", incrust.render_text(r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#, args).unwrap());
+        assert_eq!("Amount: -", incrust.render_text(r#"Amount: {{ amount and ("" + amount + " pcs") or "-" }}"#, &args).unwrap());
     }
 
     #[test]
     fn if_statement() {
         let incrust = Incrust::new();
-        let test = |expected, template| assert_eq!(expected, incrust.render_text(template, hashmap!{}).unwrap());
+        let test = |expected, template| assert_eq!(expected, incrust.render_text(template, &Default::default()).unwrap());
         test("Mode: on",        r#"Mode: {% if True %}on{% endif %}"#);
         test("String is empty", r#"String {% if "" %}has chars{% else %}is empty{% endif %}"#);
         test("String is true",  r#"String {% if "" %}has chars{% elif True %}is true{% else %}is empty{% endif %}"#);
@@ -198,7 +199,7 @@ mod tests {
         <li>3. Banana</li>
     </ul>
 "#;
-        assert_eq!(expected, incrust.render_text(tpl, args).unwrap());
+        assert_eq!(expected, incrust.render_text(tpl, &args).unwrap());
     }
 
     #[test]
@@ -215,7 +216,7 @@ mod tests {
     <h1>Default title</h1>
 </body>
 "#;
-        assert_eq!(expected, incrust.render_text(tpl, args).unwrap());
+        assert_eq!(expected, incrust.render_text(tpl, &args).unwrap());
     }
 
     #[test]
@@ -253,7 +254,7 @@ mod tests {
         });
 
         let args = hashmap!{ "parent_layout".into() => ex("base") };
-        assert_eq!(expected, incrust.render("tpl", args).unwrap());
+        assert_eq!(expected, incrust.render("tpl", &args).unwrap());
     }
 
     #[test]
@@ -290,6 +291,6 @@ mod tests {
         });
 
         let args = hashmap!{ "menu".into() => ex("default_menu") };
-        assert_eq!(expected, incrust.render("tpl", args).unwrap());
+        assert_eq!(expected, incrust.render("tpl", &args).unwrap());
     }
 }

@@ -4,10 +4,10 @@ use types::abc::*;
 use Arg;
 
 
-impl Type for bool {
-//    fn iclone(&self) -> Arg {
-//        Arg(box *self)
-//    }
+impl <'t> Type<'t> for bool {
+    fn clone_type(&self) -> Arg<'static> {
+        Arg::Owned(box *self)
+    }
 }
 
 impl AsBool for bool {
@@ -33,13 +33,13 @@ impl AsInt for bool {
 }
 
 impl IPartialEq for bool {
-    fn eq(&self, other: &Arg) -> bool {
+    fn eq<'o>(&self, other: &'o Arg<'o>) -> bool {
         other.is_bool() && *self == other.to_bool()
     }
 }
 
 impl IPartialOrd for bool {
-    fn partial_cmp(&self, other: &Arg) -> Option<Ordering> {
+    fn partial_cmp<'o>(&self, other: &'o Arg<'o>) -> Option<Ordering> {
         if other.is_bool() {
             (self as &PartialOrd<bool>).partial_cmp(&other.to_bool())
         } else {
