@@ -22,7 +22,7 @@ Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be
 
 ```toml
 [dependencies]
-incrust = "=0.2.11"
+incrust = "=0.2.12"
 ```
 
 For ease of use hashmaps you may use the [maplit](https://crates.io/crates/maplit)

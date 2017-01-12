@@ -8,13 +8,31 @@ pub type EvalResult<T> = Result<Option<T>, EvalError>;
 
 #[derive(Debug)]
 pub enum EvalError {
-    NotInvocable,
+    Invoke(InvokeError),
     NoneArg,
     NotComposable,
     AttributeNotExists(String),
     Input(String),
     Process(String),
 }
+
+
+#[derive(Debug)]
+pub enum InvokeError {
+    NotInvocable,
+    WrongArgsNumber(usize, usize),
+    WrongArgType(usize, ExpectedArgType),
+}
+
+#[derive(Debug)]
+pub enum ExpectedArgType {
+    String,
+    Int,
+    Real,
+    Bool
+}
+
+impl From<InvokeError> for EvalError { fn from(err: InvokeError)  -> Self { EvalError::Invoke(err) } }
 
 
 pub type FilterResult<T> = Result<Option<T>, FilterError>;

@@ -91,33 +91,34 @@ pub trait IArithm {
     fn try_div<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>>;
 }
 
-pub trait IInvocable: Send + Sync {
+pub trait IInvocable {
     fn invoke<'r: 'rr, 'rr>(&self, args: &'rr [Arg<'r>], context: &'r Context<'r>) -> EvalResult<Arg<'r>>;
 }
 
-pub trait IIterable: Send + Sync {
+pub trait IIterable {
     fn is_empty(&self) -> bool;
-    fn ivalues(&self) -> VIterator;
+    fn ivalues<'s: 'i, 'i>(&'s self) -> Box<Iterator<Item=Arg> + 'i>;
 }
 
-pub trait IIndexable: Send + Sync {
+pub trait IIndexable {
 //    fn has_index(&self, index: usize) -> bool;
-    fn get_index(&self, index: usize) -> Option<&Arg>;
-//    fn as_slice(&self, range: Range) -> &[BType];
+    fn get_index(&self, index: usize) -> Option<Arg>;
+    fn is_empty(&self) -> bool;
     fn len(&self) -> usize;
+    // fn as_slice(&self) -> &[Arg];
 }
 
-pub trait IComposable: Send + Sync {
+pub trait IComposable {
     fn get_attr(&self, id: &str) -> Option<Arg>;
 //    fn attrs(&self) -> &[BType];
 }
 
-pub trait IPartialEq: Send + Sync {
+pub trait IPartialEq {
     fn eq<'o>(&self, other: &'o Arg<'o>) -> bool;
     fn ne<'o>(&self, other: &'o Arg<'o>) -> bool { !self.eq(other) }
 }
 
-pub trait IPartialOrd: Send + Sync {
+pub trait IPartialOrd {
     fn partial_cmp<'o>(&self, other: &'o Arg<'o>) -> Option<Ordering>;
     fn lt<'o>(&self, other: &'o Arg<'o>) -> Option<bool> {
         self.partial_cmp(other).map(|res| res == Ordering::Less)
