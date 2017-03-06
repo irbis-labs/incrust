@@ -64,7 +64,7 @@ impl <'r> Deref for Arg<'r> {
 
 
 impl <'r> AsRef<for <'t> Type<'t> + 'r> for Arg<'r> {
-    fn as_ref(&self) -> & for <'t> Type<'t> + 'r {
+    fn as_ref(&self) -> &(for <'t> Type<'t> + 'r) {
         &**self
     }
 }
