@@ -78,7 +78,6 @@ pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForSt
 
 pub fn render_if<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &IfStatement) -> RenderResult<()> {
     for branch in &stmt.if_branches {
-        // FIXME implement instead: expression(&branch.begin.expression, context)
         if let Some(res) = eval_expr(context, &branch.expr.expr)? {
             if res.to_bool() {
                 render_text(writer, context, &branch.block)?;

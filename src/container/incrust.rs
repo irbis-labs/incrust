@@ -90,6 +90,10 @@ impl Incrust {
 
     pub fn render_prepared<'r>(&self, context: &'r Context<'r>) -> RenderResult<String> {
         ::renderer::text(context)
+            .map_err(|err| {
+                debug!("Render error: {:?}", err);
+                err
+            })
     }
 
     pub fn create_global_context<'s>(&'s self, template: &'s Template, args: &'s Args<'s>) -> RenderResult<GlobalContext<'s>> {
