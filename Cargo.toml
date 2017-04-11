@@ -18,6 +18,8 @@ exclude = [
 #build = "build.rs"
 publish = true
 
+[badges]
+travis-ci = { repository = "alexander-irbis/incrust" }
 
 [dependencies]
 marksman_escape = "0.1.2"
