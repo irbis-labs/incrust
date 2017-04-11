@@ -256,6 +256,8 @@ If you are looking for a template engine for your project, you may also look at 
  * [colin-kiegel/twig-rust](https://github.com/colin-kiegel/twig-rust)   Rust port of the twig-php template library
  * [Nercury/twig-rs](https://github.com/Nercury/twig-rs)   The Twig templating engine for Rust (work in progress)
  * [Keats/tera](https://github.com/Keats/tera)   A template engine for Rust
+ * [djc/askama](https://github.com/djc/askama)   Type-safe, compiled Jinja-like templates for Rust
+
 
 ### Others
 
