@@ -95,6 +95,46 @@ impl <'r, T> AsIterable for T where T: for <'t> Type<'t> + 'r + IIterable {
     }
 }
 
+impl <'r, T> AsIndexable for T where T: for <'t> Type<'t> + 'r {
+    default fn is_indexable(&self) -> bool {
+        false
+    }
+
+    default fn try_as_indexable(&self) -> Option<&IIndexable> {
+        None
+    }
+}
+
+impl <'r, T> AsIndexable for T where T: for <'t> Type<'t> + 'r + IIndexable {
+    fn is_indexable(&self) -> bool {
+        true
+    }
+
+    default fn try_as_indexable(&self) -> Option<&IIndexable> {
+        Some(self)
+    }
+}
+
+impl <'r, T> AsMappable for T where T: for <'t> Type<'t> + 'r {
+    default fn is_mappable(&self) -> bool {
+        false
+    }
+
+    default fn try_as_mappable(&self) -> Option<&IMappable> {
+        None
+    }
+}
+
+impl <'r, T> AsMappable for T where T: for <'t> Type<'t> + 'r + IMappable {
+    fn is_mappable(&self) -> bool {
+        true
+    }
+
+    default fn try_as_mappable(&self) -> Option<&IMappable> {
+        Some(self)
+    }
+}
+
 impl <'r, T> AsComposable for T where T: for <'t> Type<'t> + 'r {
     default fn is_composable(&self) -> bool {
         false

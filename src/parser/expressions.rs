@@ -100,21 +100,50 @@ fn mul(input: &[u8]) -> IResult<&[u8], Term> {
     IResult::Done(i, Term{mul: mul.into_iter().map(|(op, f)| TermItem(op, f) ).collect()} )
 }
 
+#[derive(Debug)]
+enum RevFactor {
+    Invocation(Vec<DisjExpr>),
+    Index(DisjExpr),
+    Attribute(String),
+}
+
+//        b: many0!(chain!(many0!(multispace) ~ char!('.') ~ many0!(multispace) ~ id: variable, || id)),
 fn factor(input: &[u8]) -> IResult<&[u8], Factor> {
     let (i, res) = try_parse!(input, chain!(
         a: simple_factor ~
-        b: many0!(chain!(many0!(multispace) ~ char!('.') ~ many0!(multispace) ~ id: variable, || id)),
-        || b.into_iter().fold(a, |acc, arg| {
-            trace!("::: acc, arg: {:?}, {:?}", acc, arg);
-            match arg {
-                Factor::Variable(id) => Factor::Attribute(Attribute{ id: id, on: Box::new(acc) }),
-                Factor::Invocation(inv) => Factor::Invocation(inv),
-                _ => unreachable!()
+        b: many0!(attr_chain),
+        || b.into_iter().fold(a, |acc, rf| {
+            trace!("::: acc, rf: {:?}, {:?}", acc, rf);
+            match rf {
+                RevFactor::Attribute(id) => Factor::Attribute(Attribute { id: id, on: box acc }),
+                RevFactor::Index(expr) => Factor::Index(Index { index: box expr, on: box acc }),
+                RevFactor::Invocation(args) => Factor::Invocation(Invocation { args: args, on: box acc }),
             }
         })
     ) );
     trace!("::: factor: {:?}", res);
     IResult::Done(i, res)
+}
+
+fn attr_chain(input: &[u8]) -> IResult<&[u8], RevFactor> {
+    let (i, rf) = try_parse!(input,
+        chain!(
+            many0!(multispace) ~
+            rf: alt!(
+                chain!(char!('.') ~ many0!(multispace) ~ id: identifier,
+                    || RevFactor::Attribute(id)) |
+
+                chain!(char!('(') ~ many0!(multispace) ~ args: expr_list ~ many0!(multispace) ~ char!(')'),
+                    || RevFactor::Invocation(args)) |
+
+                chain!(char!('[') ~ index: expression ~ char!(']'),
+                    || RevFactor::Index(index) )
+            ),
+            || rf
+        )
+    );
+    trace!("::: RevFactor: {:?}", rf);
+    IResult::Done(i, rf)
 }
 
 fn simple_factor(input: &[u8]) -> IResult<&[u8], Factor> {

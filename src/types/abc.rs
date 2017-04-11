@@ -14,7 +14,8 @@ use Context;
 // --------------------------------------------------------------------------------------------------------------------
 
 pub trait Type<'r>:
-    AsString + AsBool + AsReal + AsInt + AsIterable + AsComposable + AsInvocable +
+    AsString + AsBool + AsReal + AsInt + AsIterable +
+    AsIndexable + AsMappable + AsComposable + AsInvocable +
     AsPartialEq + AsPartialOrd +
     IArithm + IRender + fmt::Debug + Send + Sync
 {
@@ -71,6 +72,11 @@ pub trait AsIndexable {
     fn try_as_indexable(&self) -> Option<&IIndexable>;
 }
 
+pub trait AsMappable {
+    fn is_mappable(&self) -> bool;
+    fn try_as_mappable(&self) -> Option<&IMappable>;
+}
+
 pub trait AsPartialEq {
     fn is_partial_eq(&self) -> bool;
     fn try_as_partial_eq(&self) -> Option<&IPartialEq>;
@@ -111,6 +117,13 @@ pub trait IIndexable {
 pub trait IComposable {
     fn get_attr(&self, id: &str) -> Option<Arg>;
 //    fn attrs(&self) -> &[BType];
+}
+
+pub trait IMappable {
+//    fn has_key(&self, key: &str) -> bool;
+    fn get_by_key(&self, key: &str) -> Option<Arg>;
+    fn is_empty(&self) -> bool;
+    fn len(&self) -> usize;
 }
 
 pub trait IPartialEq {

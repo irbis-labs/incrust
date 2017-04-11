@@ -11,7 +11,12 @@ pub enum EvalError {
     Invoke(InvokeError),
     NoneArg,
     NotComposable,
+    NotIndexable,
+    NotMappable,
+    UnexpectedIndexType,
     AttributeNotExists(String),
+    IndexNotExists(usize),
+    KeyNotExists(String),
     Input(String),
     Process(String),
 }

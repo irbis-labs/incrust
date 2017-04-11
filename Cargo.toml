@@ -1,13 +1,15 @@
 [package]
 name = "incrust"
-version = "0.2.12"
+version = "0.2.15"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Template engine inspired by Jinja2"
-repository = "https://github.com/alexander-irbis/incrust"
-readme = "README.md"
-documentation = "https://docs.rs/incrust/"
 keywords = ["template", "jinja2", "django", "twig", "swig"]
+categories = ["parser-implementations", "template-engine", "web-programming"]
+readme = "README.md"
+homepage = "https://github.com/alexander-irbis/incrust"
+repository = "https://github.com/alexander-irbis/incrust"
+documentation = "https://docs.rs/incrust/"
 exclude = [
     ".gitignore",
     ".travis.yml",

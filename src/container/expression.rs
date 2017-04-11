@@ -84,6 +84,7 @@ pub struct TermItem(pub MulOp, pub Factor);
 #[derive(Debug, PartialEq, Clone)]
 pub enum Factor {
     Invocation(Invocation),
+    Index(Index),
     Attribute(Attribute),
     Variable(String),
     Literal(Literal),
@@ -99,6 +100,12 @@ pub struct Attribute {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Invocation {
     pub args: Vec<DisjExpr>,
+    pub on: Box<Factor>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Index {
+    pub index: Box<DisjExpr>,
     pub on: Box<Factor>,
 }
 

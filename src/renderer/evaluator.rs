@@ -111,10 +111,39 @@ pub fn eval_factor<'r>(context: &'r Context<'r>, fctr: &'r Factor) -> EvalResult
         Factor::Variable(ref id)        => Ok(context.get(id)),
         Factor::Literal(ref lit)        => literal(lit),
         Factor::Subexpression(ref expr) => eval_expr(context, expr),
+        Factor::Index(ref index)        => eval_index(context, index),
         Factor::Attribute(ref attr)     => eval_attribute(context, attr),
         Factor::Invocation(ref inv)     => eval_invocation(context, inv),
     }
 }
+
+
+pub fn eval_index<'r>(context: &'r Context<'r>, index: &'r Index) -> EvalResult<Arg<'r>> {
+    match eval_factor(context, &index.on)? {
+        None => Err(EvalError::NotComposable),
+        Some(value) => {
+            if let Some(key) = eval_expr(context, &index.index)? {
+                if let Some(key) = key.try_as_int() {
+                    return match value.try_as_indexable() {
+                        None => Err(EvalError::NotIndexable),
+                        // TODO consider negative values
+                        Some(indexable) => match indexable.get_index(key as usize) {
+                            None => Err(EvalError::IndexNotExists(key as usize)),
+                            // fixme extra clone
+                            Some(result) => Ok(Some(result.to_owned())),
+                        } } }
+
+                if let Some(key) = key.try_as_string() {
+                    return match value.try_as_mappable() {
+                        None => Err(EvalError::NotMappable),
+                        Some(mappable) => match mappable.get_by_key(key.as_ref()) {
+                            None => Err(EvalError::KeyNotExists(key.into_owned())),
+                            // fixme extra clone
+                            Some(result) => Ok(Some(result.to_owned())),
+                        } } }
+            }
+            Err(EvalError::UnexpectedIndexType)
+        } } }
 
 
 pub fn eval_attribute<'r>(context: &'r Context<'r>, attr: &'r Attribute) -> EvalResult<Arg<'r>> {

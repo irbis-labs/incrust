@@ -110,6 +110,12 @@ pub fn render_factor<W: fmt::Write>(writer: &mut W, context: &Context, fctr: &Fa
             render_factor(writer, context, &*attr.on)?;
             write!(writer, ".{}", attr.id)?;
         },
+        Factor::Index(ref index) => {
+            render_factor(writer, context, &*index.on)?;
+            write!(writer, "[")?;
+            render_expr(writer, context, &index.index)?;
+            write!(writer, "]")?;
+        },
         Factor::Invocation(ref inv) => {
             render_factor(writer, context, &*inv.on)?;
             write!(writer, "(")?;
