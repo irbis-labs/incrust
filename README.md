@@ -1,5 +1,7 @@
 
-![](https://img.shields.io/crates/l/incrust.svg) [![](https://img.shields.io/crates/v/incrust.svg)](https://crates.io/crates/incrust)
+![](https://img.shields.io/crates/l/incrust.svg)
+[![crates.io](https://img.shields.io/crates/v/incrust.svg)](https://crates.io/crates/incrust)
+[![Build Status](https://travis-ci.org/alexander-irbis/robots_txt.svg)](https://travis-ci.org/alexander-irbis/incrust)
 
 ## {% Incrust %}
 
@@ -22,7 +24,7 @@ Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be
 
 ```toml
 [dependencies]
-incrust = "=0.2.12"
+incrust = "=0.2.15"
 ```
 
 For ease of use hashmaps you may use the [maplit](https://crates.io/crates/maplit)
