@@ -1,7 +1,6 @@
 pub mod abc;
 pub mod evaluator;
 pub mod expression;
-pub mod filter;
 pub mod renderer;
 pub mod writer;
 

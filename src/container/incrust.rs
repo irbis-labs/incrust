@@ -16,13 +16,18 @@ pub struct Incrust {
 impl Default for Incrust {
     fn default() -> Self {
         #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
-        use ::renderer::filter::{Escape, Unescape};
+        use ::filter::*;
 
         let mut filters: HashMap<String, Box<Filter>> = HashMap::new();
 
         filters.insert("e".into(), box Escape);
         filters.insert("escape".into(), box Escape);
         filters.insert("unescape".into(), box Unescape);
+
+        filters.insert("html_escape".into(), box Escape);
+        filters.insert("html_unescape".into(), box Unescape);
+        filters.insert("url_escape".into(), box UrlEscape);
+        filters.insert("url_unescape".into(), box UrlUnescape);
 
         let env = hashmap!{
             "True".into()  => ex(true),
