@@ -29,6 +29,9 @@ impl Default for Incrust {
         filters.insert("url_escape".into(), box UrlEscape);
         filters.insert("url_unescape".into(), box UrlUnescape);
 
+        filters.insert("nl2spc".into(), box NewlineToSpace);
+        filters.insert("newline_to_space".into(), box NewlineToSpace);
+
         let env = hashmap!{
             "True".into()  => ex(true),
             "true".into()  => ex(true),
