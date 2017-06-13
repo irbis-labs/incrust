@@ -9,96 +9,89 @@ use parser::literals::literal;
 
 // ---------------------------------------------------------------------------
 
-pub fn full_expression(input: &[u8]) -> IResult<&[u8], FullExpression> {
-    let (i, (expr, filters)) = try_parse!(input, tuple!( expression, filter_agg ) );
-    IResult::Done(i, FullExpression::new(expr, filters))
-}
-
-named!(pub filter_agg<&[u8], Vec<FilterItem> >,
-    many0!(chain!(
-        many0!(multispace) ~
-        f: filter,
-        || f
-    ))
-);
-
-
-pub fn filter(input: &[u8]) -> IResult<&[u8], FilterItem> {
-    let (i, (_, _, id)) = try_parse!(input,
-        tuple!(
-            tag!("|"),
-            opt!(multispace),
-            identifier
-        )
-    );
-    IResult::Done(i, FilterItem::Simple(id))
-}
+named!(pub full_expression<&[u8], FullExpression>, do_parse!(
+    expr: expression                        >>
+    filters: filter_agg                     >>
+    ( FullExpression::new(expr, filters) )
+));
 
 // ---------------------------------------------------------------------------
 
-pub fn identifier(input: &[u8]) -> IResult<&[u8], String> {
-    let (i, id) = try_parse!(input,
-        chain!(
-            start: map_res!(alpha, str::from_utf8)~
-            rest: many0!(map_res!(alt!(tag!("_") | alphanumeric), str::from_utf8)),
-            || {
-                rest.into_iter().fold(start.to_string(), |mut acc, slice| {
-                    acc.push_str(slice);
-                    acc
-                })
-            }
-        )
-    );
-    trace!("::: identifier {:?}", id);
-    IResult::Done(i, id)
-}
+named!(pub filter_agg<&[u8], Vec<FilterItem> >, many0!(do_parse!(
+    many0!(multispace)  >>
+    f: filter           >>
+    (f)
+)));
+
+
+named!(pub filter<&[u8], FilterItem>, do_parse!(
+    char!('|')          >>
+    opt!(multispace)    >>
+    id: identifier      >>
+    ( FilterItem::Simple(id) )
+));
 
 // ---------------------------------------------------------------------------
 
-pub fn expression(input: &[u8]) -> IResult<&[u8], DisjExpr> {
-    let (i, lst) = try_parse!(input, chain!(
-        a: tuple!(value!(()), conj) ~
-        mut b: many0!(tuple!(op_disj_bin, conj)) ,
-        || { b.insert(0, a); b }
-    ));
-    IResult::Done(i, DisjExpr { list: lst.into_iter().map(|(_, t)| t ).collect() })
-}
+named!(pub identifier<&[u8], String>, do_parse!(
+    res: map_res!(
+        recognize!(do_parse!(alpha >> many0!(alt!(tag!("_") | alphanumeric)) >> (()) )),
+        str::from_utf8
+    ) >>
+    ( res.to_string() )
+));
 
-pub fn conj(input: &[u8]) -> IResult<&[u8], ConjExpr> {
-    let (i, lst) = try_parse!(input, chain!(
-        a: tuple!(value!(()), cmp) ~
-        mut b: many0!(tuple!(op_conj_bin, cmp)) ,
-        || { b.insert(0, a); b }
-    ));
-    IResult::Done(i, ConjExpr { list: lst.into_iter().map(|(_, t)| t ).collect() })
-}
+// ---------------------------------------------------------------------------
 
-pub fn cmp(input: &[u8]) -> IResult<&[u8], CmpExpr> {
-    let (i, lst) = try_parse!(input, chain!(
-        a: tuple!(value!(CmpOp::Eq), sum) ~
-        mut b: many0!(tuple!(op_cmp_bin, sum)) ,
-        || { b.insert(0, a); b }
-    ));
-    IResult::Done(i, CmpExpr { list: lst.into_iter().map(|(op, t)| CmpItem(op, t) ).collect() })
-}
+named!(pub expression<&[u8], DisjExpr>, do_parse!(
+    a:  conj                                                >>
+    b:  many0!(do_parse!(op_disj_bin >> c: conj >> (c)))    >>
+    ( {
+        let mut list = b;
+        list.insert(0, a);
+        DisjExpr { list }
+    } )
+));
 
-pub fn sum(input: &[u8]) -> IResult<&[u8], Expr> {
-    let (i, sum) = try_parse!(input, chain!(
-        a: tuple!(value!(SumOp::Add), mul) ~
-        mut b: many0!(tuple!(op_sum_bin, mul)) ,
-        || { b.insert(0, a); b }
-    ));
-    IResult::Done(i, Expr { sum: sum.into_iter().map(|(op, t)| ExprItem(op, t) ).collect() })
-}
+named!(pub conj<&[u8], ConjExpr>, do_parse!(
+    a:  cmp                                                 >>
+    b:  many0!(do_parse!(op_conj_bin >> c: cmp >> (c)))     >>
+    ( {
+        let mut list = b;
+        list.insert(0, a);
+        ConjExpr { list }
+    } )
+));
 
-fn mul(input: &[u8]) -> IResult<&[u8], Term> {
-    let (i, mul) = try_parse!(input, chain!(
-        a: tuple!(value!(MulOp::Mul), factor) ~
-        mut b: many0!(tuple!(op_mul_bin, factor)) ,
-        || { b.insert(0, a); b }
-    ));
-    IResult::Done(i, Term{mul: mul.into_iter().map(|(op, f)| TermItem(op, f) ).collect()} )
-}
+named!(pub cmp<&[u8], CmpExpr>, do_parse!(
+    a:  do_parse!(op: value!(CmpOp::Eq) >> t: sum >> ( CmpItem(op, t) ))    >>
+    b:  many0!(do_parse!(op: op_cmp_bin >> t: sum >> ( CmpItem(op, t) )) )  >>
+    ( {
+        let mut list = b;
+        list.insert(0, a);
+        CmpExpr { list }
+    } )
+));
+
+named!(pub sum<&[u8], Expr>, do_parse!(
+    a:  do_parse!(op: value!(SumOp::Add) >> t: mul >> ( ExprItem(op, t) ))  >>
+    b:  many0!(do_parse!(op: op_sum_bin >> t: mul >> ( ExprItem(op, t) )))  >>
+    ( {
+        let mut list = b;
+        list.insert(0, a);
+        Expr { sum: list }
+    } )
+));
+
+named!(pub mul<&[u8], Term>, do_parse!(
+    a:  do_parse!(op: value!(MulOp::Mul) >> t: factor >> ( TermItem(op, t) ))   >>
+    b:  many0!(do_parse!(op: op_mul_bin >> t: factor >> ( TermItem(op, t) )))   >>
+    ( {
+        let mut list = b;
+        list.insert(0, a);
+        Term { mul: list }
+    } )
+));
 
 #[derive(Debug)]
 enum RevFactor {
@@ -107,156 +100,155 @@ enum RevFactor {
     Attribute(String),
 }
 
-//        b: many0!(chain!(many0!(multispace) ~ char!('.') ~ many0!(multispace) ~ id: variable, || id)),
-fn factor(input: &[u8]) -> IResult<&[u8], Factor> {
-    let (i, res) = try_parse!(input, chain!(
-        a: simple_factor ~
-        b: many0!(attr_chain),
-        || b.into_iter().fold(a, |acc, rf| {
+named!(factor<&[u8], Factor>, do_parse!(
+    a:  simple_factor       >>
+    b:  many0!(attr_chain)  >>
+    ( {
+        let res = b.into_iter().fold(a, |acc, rf| {
             trace!("::: acc, rf: {:?}, {:?}", acc, rf);
             match rf {
                 RevFactor::Attribute(id) => Factor::Attribute(Attribute { id: id, on: box acc }),
                 RevFactor::Index(expr) => Factor::Index(Index { index: box expr, on: box acc }),
                 RevFactor::Invocation(args) => Factor::Invocation(Invocation { args: args, on: box acc }),
             }
+        } );
+        trace!("::: factor: {:?}", res);
+        res
+    })
+));
+
+named!(attr_chain<&[u8], RevFactor>,
+    do_parse!(
+        many0!(multispace) >>
+        rf: alt!(
+            do_parse!(char!('.') >> many0!(multispace) >> id: identifier >>
+                (RevFactor::Attribute(id))
+            ) |
+            do_parse!(char!('(') >> many0!(multispace) >> args: expr_list >> many0!(multispace) >> char!(')') >>
+                (RevFactor::Invocation(args))
+            ) |
+            do_parse!(char!('[') >> index: expression >> char!(']') >>
+                (RevFactor::Index(index))
+            )
+        ) >> ({
+            trace!("::: RevFactor: {:?}", rf);
+            rf
         })
-    ) );
-    trace!("::: factor: {:?}", res);
-    IResult::Done(i, res)
-}
+    )
+);
 
-fn attr_chain(input: &[u8]) -> IResult<&[u8], RevFactor> {
-    let (i, rf) = try_parse!(input,
-        chain!(
-            many0!(multispace) ~
-            rf: alt!(
-                chain!(char!('.') ~ many0!(multispace) ~ id: identifier,
-                    || RevFactor::Attribute(id)) |
+named!(simple_factor<&[u8], Factor>, alt!(literal | variable | subexpression) );
 
-                chain!(char!('(') ~ many0!(multispace) ~ args: expr_list ~ many0!(multispace) ~ char!(')'),
-                    || RevFactor::Invocation(args)) |
+named!(subexpression<&[u8], Factor>, do_parse!(
+    char!('(') >> many0!(multispace) >> e: expression >> many0!(multispace) >> char!(')') >>
+    (Factor::Subexpression(e))
+));
 
-                chain!(char!('[') ~ index: expression ~ char!(']'),
-                    || RevFactor::Index(index) )
-            ),
-            || rf
-        )
-    );
-    trace!("::: RevFactor: {:?}", rf);
-    IResult::Done(i, rf)
-}
+named!(variable<&[u8], Factor>, do_parse!(
+    id: identifier >>
+    inv: opt!(complete!(do_parse!(
+        many0!(multispace) >> char!('(') >> many0!(multispace) >>
+        e: expr_list >> many0!(multispace) >> char!(')') >>
+        (e)
+    ))) >>
+    ({
+        let var = Factor::Variable(id);
+        let v = match inv {
+            Some(args) => Invocation { on: Box::new(var), args: args } .into(),
+            None => var
+        };
+        trace!("::: v: {:?}", v);
+        v
+    })
+));
 
-fn simple_factor(input: &[u8]) -> IResult<&[u8], Factor> {
-    let (i, f) = try_parse!(input, alt!(literal | variable | subexpression) );
-    IResult::Done(i, f)
-}
-
-fn subexpression(input: &[u8]) -> IResult<&[u8], Factor> {
-    let (i, (_, _, e, _, _)) = try_parse!(input, tuple!(
-        char!('('), many0!(multispace), expression, many0!(multispace), char!(')')
-    ));
-    IResult::Done(i, Factor::Subexpression(e))
-}
-
-
-fn variable(input: &[u8]) -> IResult<&[u8], Factor> {
-    let (i, (id, inv)) = try_parse!(input, tuple!(
-        identifier,
-        opt!(complete!(tuple!(
-            many0!(multispace), char!('('), many0!(multispace), expr_list, many0!(multispace), char!(')')
-        )))
-    ));
-    let var = Factor::Variable(id);
-    let v = match inv {
-        Some((_, _, _, args, _, _)) => Invocation { on: Box::new(var), args: args } .into(),
-        None => var
-    };
-    trace!("::: v: {:?}", v);
-    IResult::Done(i, v)
-}
-
-fn expr_list(input: &[u8]) -> IResult<&[u8], Vec<DisjExpr> > {
-    let (i, lst) = try_parse!(input, opt!(chain!(
-        a: expression ~
-        b: many0!(tuple!(expr_sep, expression)),
-        || {
-            let mut lst = Vec::with_capacity(b.len() + 1);
-            lst.push(a);
-            lst.extend(b.into_iter().map(|(_, e)| e));
+named!(expr_list<&[u8], Vec<DisjExpr> >, do_parse!(
+    lst: opt!(do_parse!(
+        a: expression                                               >>
+        b: many0!(do_parse!(expr_sep >> e: expression >> (e) ))     >>
+        ({
+            let mut lst = b;
+            lst.insert(0, a);
             lst
+        })
+    )) >>
+    ({
+        trace!("::: expr_list: {:?}", lst);
+        lst.unwrap_or_else(Vec::new)
+    })
+));
+
+
+
+named!(expr_sep<&[u8], ()>, do_parse!(
+    many0!(multispace) >> char!(',') >> many0!(multispace) >>
+    (())
+));
+
+
+named!(op_disj_bin<&[u8], ()>, do_parse!(
+    many0!(multispace) >> o: tag!("or") >> many0!(multispace) >>
+    ({
+        trace!(":::: or");
+        match o {
+            b"or" => (),
+            _ => unreachable!()
         }
-    )));
-    trace!("::: expr_list: {:?}", lst);
-    IResult::Done(i, lst.unwrap_or_else(Vec::new))
-}
-
-
-
-fn expr_sep(input: &[u8]) -> IResult<&[u8], ()> {
-    let (i, _) = try_parse!(input, tuple!(many0!(multispace), char!(','), many0!(multispace)) );
-    IResult::Done(i, ())
-}
-
-
-fn op_disj_bin(input: &[u8]) -> IResult<&[u8], ()> {
-    let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("or")), many0!(multispace)) );
-
-    trace!(":::: or");
-    IResult::Done(i, match o {
-        b"or" => (),
-        _ => unreachable!()
     })
-}
+));
 
-fn op_conj_bin(input: &[u8]) -> IResult<&[u8], ()> {
-    let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("and")), many0!(multispace)) );
-
-    trace!(":::: and");
-    IResult::Done(i, match o {
-        b"and" => (),
-        _ => unreachable!()
+named!(op_conj_bin<&[u8], ()>, do_parse!(
+    many0!(multispace) >> o: tag!("and") >> many0!(multispace) >>
+    ({
+        trace!(":::: and");
+        match o {
+            b"and" => (),
+            _ => unreachable!()
+        }
     })
-}
+));
 
-fn op_cmp_bin(input: &[u8]) -> IResult<&[u8], CmpOp> {
-    let (i, (_, o, _)) = try_parse!(input, tuple!(
-        many0!(multispace),
-        alt!(tag!("<=") | tag!("<") | tag!("==") | tag!("!=") | tag!("in") | tag!("not in") | tag!(">=") | tag!(">")),
-        many0!(multispace)
-    ));
-    trace!(":::: cmp {:?}", o);
-    IResult::Done(i, match o {
-        b"<"        => CmpOp::Lt,
-        b"<="       => CmpOp::Lte,
-        b"=="       => CmpOp::Eq,
-        b"!="       => CmpOp::Neq,
-        b"in"       => CmpOp::In,
-        b"not in"   => CmpOp::Nin,
-        b">="       => CmpOp::Gte,
-        b">"        => CmpOp::Gt,
-        _ => unreachable!()
+named!(op_cmp_bin<&[u8], CmpOp>, do_parse!(
+    many0!(multispace) >>
+    o: alt!(tag!("<=") | tag!("<") | tag!("==") | tag!("!=") | tag!("in") | tag!("not in") | tag!(">=") | tag!(">")) >>
+    many0!(multispace) >>
+    ({
+        trace!(":::: cmp {:?}", o);
+        match o {
+            b"<"        => CmpOp::Lt,
+            b"<="       => CmpOp::Lte,
+            b"=="       => CmpOp::Eq,
+            b"!="       => CmpOp::Neq,
+            b"in"       => CmpOp::In,
+            b"not in"   => CmpOp::Nin,
+            b">="       => CmpOp::Gte,
+            b">"        => CmpOp::Gt,
+            _ => unreachable!()
+        }
     })
-}
+));
 
-fn op_sum_bin(input: &[u8]) -> IResult<&[u8], SumOp> {
-    let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("+") | tag!("-")), many0!(multispace)) );
-
-    IResult::Done(i, match o {
-        b"+" => SumOp::Add,
-        b"-" => SumOp::Sub,
-        _ => unreachable!()
+named!(op_sum_bin<&[u8], SumOp>, do_parse!(
+    many0!(multispace) >> o: alt!(tag!("+") | tag!("-")) >> many0!(multispace) >>
+    ({
+        match o {
+            b"+" => SumOp::Add,
+            b"-" => SumOp::Sub,
+            _ => unreachable!()
+        }
     })
-}
+));
 
-fn op_mul_bin(input: &[u8]) -> IResult<&[u8], MulOp> {
-    let (i, (_, o, _)) = try_parse!(input, tuple!(many0!(multispace), alt!(tag!("*") | tag!("/")), many0!(multispace)) );
-
-    IResult::Done(i, match o {
-        b"*" => MulOp::Mul,
-        b"/" => MulOp::Div,
-        _ => unreachable!()
+named!(op_mul_bin<&[u8], MulOp>, do_parse!(
+    many0!(multispace) >> o: alt!(tag!("*") | tag!("/")) >> many0!(multispace) >>
+    ({
+        match o {
+            b"*" => MulOp::Mul,
+            b"/" => MulOp::Div,
+            _ => unreachable!()
+        }
     })
-}
+));
 
 // ---------------------------------------------------------------------------
 

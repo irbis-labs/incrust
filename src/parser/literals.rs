@@ -50,17 +50,15 @@ fn lit_char(input: &[u8]) -> IResult<&[u8], Literal> {
     }
 }
 
-named!(pub char_char_agg<&[u8], String>,
-    chain!(
-        c: many0!(alt!( char_escaped | char_char )),
-        || c.join("")
-    )
-);
+named!(pub char_char_agg<&[u8], String>, do_parse!(
+    c: many0!(alt!( char_escaped | char_char )) >>
+    (c.join(""))
+));
 
 named!(pub char_char<&[u8], &str>, map_res!( is_not!(r#"\'"#), str::from_utf8 ) );
 
-named!(pub char_escaped<&[u8], &str>, chain!(
-    char!('\\')         ~
+named!(pub char_escaped<&[u8], &str>, do_parse!(
+    char!('\\')         >>
     c: alt!(
         char!('\\') |
         char!('\'') |
@@ -68,8 +66,8 @@ named!(pub char_escaped<&[u8], &str>, chain!(
         char!('t')  |
         char!('r')  |
         char!('n')
-    )                   ,
-    || match c {
+    )                   >>
+    (match c {
         '\\' => "\\",
         '\'' => "\'",
         '"'  => "\"",
@@ -77,41 +75,29 @@ named!(pub char_escaped<&[u8], &str>, chain!(
         'r'  => "\r",
         'n'  => "\n",
         _  => unreachable!()
-    }
+    })
 ));
 
 fn parse_char(s: &str) -> Result<char, u32> {
     let mut i = s.chars();
-    let (a, b) = (i.next(), i.next());
-    match a {
-        None => Err(1303u32),
-        Some(c) => match b {
-            Some(_) => Err(1304u32),
-            None => Ok(c)
-        },
+    match (i.next(), i.next()) {
+        (None,       _) => Err(1303u32),
+        (Some(c), None) => Ok(c),
+        _               => Err(1304u32),
     }
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-pub fn lit_str(input: &[u8]) -> IResult<&[u8], Literal> {
-    let (i, (_, s, _)) = try_parse!(input,
-        tuple!(
-            char!('"'),
-            str_char_agg,
-            char!('"')
-        )
-    );
-    IResult::Done(i, Literal::Str(s))
-}
+named!(pub lit_str<&[u8], Literal>, do_parse!(
+    char!('"') >> s: str_char_agg >> char!('"') >>
+    (Literal::Str(s))
+));
 
-
-named!(pub str_char_agg<&[u8], String>,
-    chain!(
-        c: many0!(alt!( char_escaped | str_char )),
-        || c.join("")
-    )
-);
+named!(pub str_char_agg<&[u8], String>, do_parse!(
+    c: many0!(alt!( char_escaped | str_char )) >>
+    (c.join(""))
+));
 
 named!(pub str_char<&[u8], &str>, map_res!( is_not!(r#"\""#), str::from_utf8 ) );
 

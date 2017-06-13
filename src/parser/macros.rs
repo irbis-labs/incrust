@@ -3,15 +3,15 @@ macro_rules! stmt_simple {
     ( $i:expr, $cmd: expr ) => ({
         use nom::multispace;
 
-        chaining_parser!($i, 0usize,
-            tag!("{%")          ~
-            l: opt!(tag!("-"))  ~
-            many0!(multispace)  ~
-            tag!($cmd)          ~
-            many0!(multispace)  ~
-            r: opt!(tag!("-"))  ~
-            tag!("%}")          ,
-            || SimpleStatement { strip_left: l.is_some(), strip_right: r.is_some() }
+        do_parse!($i,
+            tag!("{%")          >>
+            l: opt!(tag!("-"))  >>
+            many0!(multispace)  >>
+            tag!($cmd)          >>
+            many0!(multispace)  >>
+            r: opt!(tag!("-"))  >>
+            tag!("%}")          >>
+            ( SimpleStatement { strip_left: l.is_some(), strip_right: r.is_some() } )
         )
     });
 }
@@ -23,17 +23,17 @@ macro_rules! stmt_named {
         use nom::multispace;
         use parser::expressions::identifier;
 
-        chaining_parser!($i, 0usize,
-            tag!("{%")          ~
-            l: opt!(tag!("-"))  ~
-            many0!(multispace)  ~
-            tag!($cmd)          ~
-            many0!(multispace)  ~
-            e: identifier       ~
-            many0!(multispace)  ~
-            r: opt!(tag!("-"))  ~
-            tag!("%}")          ,
-            || NamedStatement { strip_left: l.is_some(), strip_right: r.is_some(), name: e }
+        do_parse!($i,
+            tag!("{%")          >>
+            l: opt!(tag!("-"))  >>
+            many0!(multispace)  >>
+            tag!($cmd)          >>
+            many0!(multispace)  >>
+            e: identifier       >>
+            many0!(multispace)  >>
+            r: opt!(tag!("-"))  >>
+            tag!("%}")          >>
+            ( NamedStatement { strip_left: l.is_some(), strip_right: r.is_some(), name: e } )
         )
     });
 }
@@ -45,17 +45,17 @@ macro_rules! stmt_expr {
         use nom::multispace;
         use parser::expressions::full_expression;
 
-        chaining_parser!($i, 0usize,
-            tag!("{%")          ~
-            l: opt!(tag!("-"))  ~
-            many0!(multispace)  ~
-            tag!($cmd)          ~
-            many0!(multispace)  ~
-            e: full_expression  ~
-            many0!(multispace)  ~
-            r: opt!(tag!("-"))  ~
-            tag!("%}")          ,
-            || ExprStatement { strip_left: l.is_some(), strip_right: r.is_some(), expression: e }
+        do_parse!($i,
+            tag!("{%")          >>
+            l: opt!(tag!("-"))  >>
+            many0!(multispace)  >>
+            tag!($cmd)          >>
+            many0!(multispace)  >>
+            e: full_expression  >>
+            many0!(multispace)  >>
+            r: opt!(tag!("-"))  >>
+            tag!("%}")          >>
+            ( ExprStatement { strip_left: l.is_some(), strip_right: r.is_some(), expression: e } )
         )
     });
 }

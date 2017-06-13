@@ -46,16 +46,14 @@ fn comment(input: &[u8]) -> IResult<&[u8], ParsedNode> {
 
 
 fn mustache(input: &[u8]) -> IResult<&[u8], ParsedNode> {
-    let (i, (_, _, fe, _, _)) = try_parse!(input,
-        tuple!(
-            tag!("{{"),
-            many0!(multispace),
-            full_expression,
-            many0!(multispace),
-            tag!("}}")
-        )
-    );
-    IResult::Done(i, Mustache::new(fe).into())
+    do_parse!(input,
+            tag!("{{")          >>
+            many0!(multispace)  >>
+        fe: full_expression     >>
+            many0!(multispace)  >>
+            tag!("}}")          >>
+        ( Mustache::new(fe).into() )
+    )
 }
 
 
@@ -73,9 +71,12 @@ fn plain_text(input: &[u8]) -> IResult<&[u8], ParsedNode> {
     }
 
     let (i, text) = try_parse!(input,
-        chain!( v: many1!(
-            alt!( map_res!( is_not!("{"), str::from_utf8 ) | try_brace )
-        ), || v.join("") )
+        do_parse!(
+            v: many1!(
+                alt!( map_res!( is_not!("{"), str::from_utf8 ) | try_brace )
+            ) >>
+            ( v.join("") )
+        )
     );
     IResult::Done(i, ParsedNode::Text(text))
 }
