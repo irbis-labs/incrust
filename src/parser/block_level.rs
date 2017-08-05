@@ -58,7 +58,6 @@ fn mustache(input: &[u8]) -> IResult<&[u8], ParsedNode> {
 
 
 fn plain_text(input: &[u8]) -> IResult<&[u8], ParsedNode> {
-    #[cfg_attr(feature = "clippy", allow(needless_lifetimes))]
     fn try_brace<'a>(input: &'a [u8]) -> IResult<&[u8], &str> {
         let b = || -> IResult<&'a [u8], ()> {
             let _ = try_parse!(input, alt!( mustache | comment | stmt_edge ) );
@@ -88,7 +87,7 @@ fn plain_text(input: &[u8]) -> IResult<&[u8], ParsedNode> {
 
 //#[cfg(test)]
 //mod tests {
-//    #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
+//    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
 //
 //    use nom::IResult::Done;
 //

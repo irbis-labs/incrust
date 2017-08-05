@@ -54,7 +54,6 @@ impl IPartialOrd for f64 {
 }
 
 
-#[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for f64 {
     // todo Cow::Borrowed for Zero and One cases
     fn try_add<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_real().map(|s| { Arg::Owned(box (*self + s)) }) }

@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "clippy", allow(many_single_char_names))]
-
 use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
@@ -159,7 +157,7 @@ mod tests {
 
     #[test]
     fn literal_real() {
-        #![cfg_attr(feature = "clippy", allow(approx_constant))]
+        #![cfg_attr(feature = "cargo-clippy", allow(approx_constant))]
         use container::expression::Literal::Real;
         assert_eq!(Ok(Real(3.1415926)),                     super::parse_float("3.1415926"));
         assert_eq!(Ok(Real(0.1)),                           super::parse_float(".1"));

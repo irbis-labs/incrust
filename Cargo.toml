@@ -21,14 +21,16 @@ publish = true
 [badges]
 travis-ci = { repository = "alexander-irbis/incrust" }
 
+
+[features]
+default         = []
+verbose         = []
+quiet           = []
+
+
 [dependencies]
 marksman_escape = "0.1.2"
 log             = "0.3"
 maplit          = "0.1"
 nom             = { version = "^3.0", features = ["verbose-errors"] }
 url             = "^1.4"
-
-[features]
-default         = []
-verbose         = []
-quiet           = []

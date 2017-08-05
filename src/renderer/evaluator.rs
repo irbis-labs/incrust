@@ -176,7 +176,7 @@ pub fn eval_invocation<'r>(context: &'r Context<'r>, inv: &'r Invocation) -> Eva
             } } } }
 
 
-pub fn literal<'r>(l: &'r Literal) -> EvalResult<Arg<'r>> {
+pub fn literal(l: &Literal) -> EvalResult<Arg> {
     Ok( Some( match *l {
         Literal::Str(ref string) => Arg::from(string.clone()),
         Literal::Char(ref chr)   => Arg::from(*chr),
@@ -188,7 +188,7 @@ pub fn literal<'r>(l: &'r Literal) -> EvalResult<Arg<'r>> {
 
 #[cfg(test)]
 mod tests {
-    #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
+    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
     use nom::IResult;
     use std::fmt::Debug;
 

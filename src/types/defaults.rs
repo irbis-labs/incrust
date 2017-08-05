@@ -220,7 +220,6 @@ impl <'r, T> AsPartialOrd for T where T: for <'t> Type<'t> + 'r + IPartialOrd {
 // -------------------------------------------------------------------------------------------------
 
 
-#[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl <'r, S> IArithm for S where S: for <'t> Type<'t> + 'r {
     default fn try_add<'o>(&self, _other: Arg<'o>) -> Option<Arg<'o>> { None }
     default fn try_sub<'o>(&self, _other: Arg<'o>) -> Option<Arg<'o>> { None }

@@ -23,16 +23,15 @@ impl Filter for NewlineToSpace {
 
 fn is_nl(c: char) -> bool {
     match c {
-        '\n' => true,
-        '\r' => true,
-        _ => false,
+        '\n' | '\r' => true,
+        _           => false,
     }
 }
 
 
 #[cfg(test)]
 mod tests {
-    #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
+    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
 
     use {Incrust, ex, Args};
 

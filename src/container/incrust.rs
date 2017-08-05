@@ -15,7 +15,6 @@ pub struct Incrust {
 
 impl Default for Incrust {
     fn default() -> Self {
-        #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
         use ::filter::*;
 
         let mut filters: HashMap<String, Box<Filter>> = HashMap::new();
@@ -58,7 +57,7 @@ impl Incrust {
         }
     }
 
-    pub fn top_context<'s>(&'s self) -> &'s HashMap<String, Arg<'s>> {
+    pub fn top_context(&self) -> &HashMap<String, Arg> {
         &self.top_context
     }
 
@@ -73,7 +72,7 @@ impl Incrust {
 
     pub fn filter<'s>(&'s self, id: &str, context: &'s Context<'s>, value: Option<Arg<'s>>) -> FilterResult<Arg<'s>> {
         match self.filters.get(id) {
-            Some(ref filter) => filter.filter(context, value),
+            Some(filter) => filter.filter(context, value),
             None => Err(FilterError::UnknownFormatter(id.into()))
         }
     }
@@ -112,7 +111,7 @@ impl Incrust {
 
 #[cfg(test)]
 mod tests {
-    #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
+    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
     use super::*;
 
     #[test]

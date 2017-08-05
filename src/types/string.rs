@@ -49,7 +49,6 @@ impl IPartialOrd for String {
 }
 
 
-#[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for String {
     fn try_add<'o> (&self, other: Arg<'o>) -> Option<Arg<'o>> {
         if self == "" {

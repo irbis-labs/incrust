@@ -10,8 +10,8 @@
 #![feature(box_syntax)]
 #![feature(specialization)]
 
-#![cfg_attr(feature = "clippy", allow(items_after_statements))]
-#![cfg_attr(feature = "clippy", allow(match_bool))]
+#![cfg_attr(feature = "cargo-clippy", allow(items_after_statements))]
+#![cfg_attr(feature = "cargo-clippy", allow(match_bool))]
 
 #![cfg_attr(feature = "quiet", allow(warnings))]
 

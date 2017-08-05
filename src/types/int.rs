@@ -44,19 +44,16 @@ impl IPartialOrd for i64 {
     fn partial_cmp<'o>(&self, other: &'o Arg<'o>) -> Option<Ordering> {
         if other.is_int() {
             other.try_as_int().and_then(|s| (self as &PartialOrd<i64>).partial_cmp(&s))
+        } else if other.is_real() {
+            let val = *self as f64;
+            other.try_as_real().and_then(|s| (&val as &PartialOrd<f64>).partial_cmp(&s))
         } else {
-            if other.is_real() {
-                let val = *self as f64;
-                other.try_as_real().and_then(|s| (&val as &PartialOrd<f64>).partial_cmp(&s))
-            } else {
-                None
-            }
+            None
         }
     }
 }
 
 
-#[cfg_attr(feature = "clippy", allow(boxed_local))]
 impl IArithm for i64 {
     // todo Cow::Borrowed for Zero and One cases
     fn try_add<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>> { other.try_as_int().map(|s| { Arg::Owned(box (*self + s)) }) }

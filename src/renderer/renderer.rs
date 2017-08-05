@@ -38,7 +38,7 @@ pub fn render_mustache<W: fmt::Write>(writer: &mut W, context: &Context, mus: &M
 
 pub fn render_expression<W: fmt::Write>(writer: &mut W, context: &Context, expr: &FullExpression) -> RenderResult<()> {
     let mut acc = eval_expr(context, &expr.expr)?;
-    for filter in expr.filters.iter() {
+    for filter in &expr.filters {
         acc = match *filter {
             FilterItem::Simple(ref id) => context.env().filter(id, context, acc)?,
         };
@@ -52,8 +52,6 @@ pub fn render_expression<W: fmt::Write>(writer: &mut W, context: &Context, expr:
 
 
 pub fn render_for<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &ForStatement) -> RenderResult<()> {
-    #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
-
     // FIXME implement instead: expression(&stmt.begin.expression, context)
     if let Some(value) = eval_expr(context, &stmt.expression.expr)? {
         if let Some(iterable) = value.try_as_iterable() {
@@ -86,7 +84,7 @@ pub fn render_if<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &IfStat
         }
     }
     if let Some(ref branch) = stmt.else_branch {
-        render_text(writer, context, &branch)?;
+        render_text(writer, context, branch)?;
     }
     Ok(())
 }
@@ -94,12 +92,9 @@ pub fn render_if<W: fmt::Write>(writer: &mut W, context: &Context, stmt: &IfStat
 
 pub fn render_block<W: fmt::Write>(writer: &mut W, context: &Context, name: &str) -> RenderResult<()> {
     for template in context.global().stack() {
-        match template.blocks.get(name) {
-            Some(block) => {
-                render_text(writer, context, &block)?;
-                break;
-            },
-            None => {},
+        if let Some(block) = template.blocks.get(name) {
+            render_text(writer, context, block)?;
+            break;
         };
     }
     Ok(())

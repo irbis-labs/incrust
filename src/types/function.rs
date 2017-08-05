@@ -12,6 +12,8 @@ pub struct Function {
 }
 
 impl Function {
+    // TODO update API to satisfy convention
+    #[cfg_attr(feature = "cargo-clippy", allow(new_ret_no_self))]
     pub fn new(f: for <'res> fn(&[Arg<'res>], &'res Context<'res>) -> EvalResult<Arg<'res>>) -> Arg<'static> {
         Arg::Owned(box Function { f: f })
     }

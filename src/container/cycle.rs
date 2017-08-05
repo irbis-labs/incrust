@@ -30,7 +30,7 @@ impl LoopState {
 
 impl <'t> Type<'t> for LoopState {
     fn clone_type(&self) -> Arg<'static> {
-        Arg::Owned(box self.clone())
+        Arg::Owned(box *self)
     }
 }
 

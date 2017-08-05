@@ -31,20 +31,16 @@ impl <'a> GlobalContext<'a> {
             args: args,
         };
 
-        loop {
-            if let Some(parent) = context.template().extends.clone() {
-                let template = {
-                    let local = context.top_scope();
-                    let name = eval_expr(&local, &parent.expr)?
-                        .ok_or(LoadError::BadName("Can't evaluate name (None result)".into()))?;
-                    let name = name.try_as_string()
-                        .ok_or(LoadError::BadName("Name is not string".into()))?;
-                    Cow::Owned(env.parse(&env.load(&name)?)?)
-                };
-                context.stack.push(template);
-            } else {
-                break;
-            }
+        while let Some(parent) = context.template().extends.clone() {
+            let template = {
+                let local = context.top_scope();
+                let name = eval_expr(&local, &parent.expr)?
+                    .ok_or(LoadError::BadName("Can't evaluate name (None result)".into()))?;
+                let name = name.try_as_string()
+                    .ok_or(LoadError::BadName("Name is not string".into()))?;
+                Cow::Owned(env.parse(&env.load(&name)?)?)
+            };
+            context.stack.push(template);
         }
 
         Ok(context)

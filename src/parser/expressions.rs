@@ -182,7 +182,7 @@ named!(expr_list<&[u8], Vec<DisjExpr> >, do_parse!(
 
 named!(expr_sep<&[u8], ()>, do_parse!(
     many0!(multispace) >> char!(',') >> many0!(multispace) >>
-    (())
+    ()
 ));
 
 
@@ -254,7 +254,7 @@ named!(op_mul_bin<&[u8], MulOp>, do_parse!(
 
 #[cfg(test)]
 mod tests {
-    #![cfg_attr(feature = "clippy", allow(used_underscore_binding))]
+    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
 
     use nom::IResult::Done;
 
