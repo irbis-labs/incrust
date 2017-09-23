@@ -137,7 +137,7 @@ pub fn eval_index<'r>(context: &'r Context<'r>, index: &'r Index) -> EvalResult<
                     return match value.try_as_mappable() {
                         None => Err(EvalError::NotMappable),
                         Some(mappable) => match mappable.get_by_key(key.as_ref()) {
-                            None => Err(EvalError::KeyNotExists(key.into_owned())),
+                            None => Err(EvalError::KeyNotExists(key.into_owned().into())),
                             // fixme extra clone
                             Some(result) => Ok(Some(result.to_owned())),
                         } } }
@@ -153,7 +153,7 @@ pub fn eval_attribute<'r>(context: &'r Context<'r>, attr: &'r Attribute) -> Eval
             match value.try_as_composable() {
                 None => Err(EvalError::NotComposable),
                 Some(composable) => match composable.get_attr(&attr.id) {
-                    None => Err(EvalError::AttributeNotExists(attr.id.clone())),
+                    None => Err(EvalError::AttributeNotExists(attr.id.clone().into())),
                     // fixme extra clone
                     Some(result) => Ok(Some(result.to_owned())),
                 } } } } }

@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use abc::*;
@@ -8,8 +9,8 @@ use {Args, Arg, ex, GlobalContext, Context, Template};
 #[derive(Debug)]
 pub struct Incrust {
     pub loaders: GroupLoader,
-    pub filters: HashMap<String, Box<Filter>>,
-    top_context: HashMap<String, Arg<'static>>,
+    pub filters: HashMap<Cow<'static, str>, Box<Filter>>,
+    top_context: HashMap<Cow<'static, str>, Arg<'static>>,
 }
 
 
@@ -17,7 +18,7 @@ impl Default for Incrust {
     fn default() -> Self {
         use ::filter::*;
 
-        let mut filters: HashMap<String, Box<Filter>> = HashMap::new();
+        let mut filters: HashMap<Cow<'static, str>, Box<Filter>> = HashMap::new();
 
         filters.insert("e".into(), box Escape);
         filters.insert("escape".into(), box Escape);
@@ -57,7 +58,7 @@ impl Incrust {
         }
     }
 
-    pub fn top_context(&self) -> &HashMap<String, Arg> {
+    pub fn top_context(&self) -> &HashMap<Cow<'static, str>, Arg> {
         &self.top_context
     }
 
@@ -73,7 +74,7 @@ impl Incrust {
     pub fn filter<'s>(&'s self, id: &str, context: &'s Context<'s>, value: Option<Arg<'s>>) -> FilterResult<Arg<'s>> {
         match self.filters.get(id) {
             Some(filter) => filter.filter(context, value),
-            None => Err(FilterError::UnknownFormatter(id.into()))
+            None => Err(FilterError::UnknownFormatter(id.to_owned().into()))
         }
     }
 

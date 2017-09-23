@@ -31,7 +31,7 @@ impl Filter for UrlUnescape {
                     }
                 }
                     .map(ex).map(Some)
-                    .map_err(|err| FilterError::Process(format!("{:?}", err)))
+                    .map_err(|err| FilterError::Process(format!("{:?}", err).into()))
             },
         }
     }

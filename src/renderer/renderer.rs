@@ -10,7 +10,7 @@ use super::eval_expr;
 
 
 pub fn text(context: &Context) -> RenderResult<String> {
-    let mut buffer: String = Default::default();
+    let mut buffer = String::new();
     render_text(&mut buffer, context, context.template().root.as_slice())?;
     Ok(buffer)
 }

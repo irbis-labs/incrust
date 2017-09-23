@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt;
 
 use abc::*;
@@ -14,11 +15,11 @@ pub enum EvalError {
     NotIndexable,
     NotMappable,
     UnexpectedIndexType,
-    AttributeNotExists(String),
+    AttributeNotExists(Cow<'static, str>),
     IndexNotExists(usize),
-    KeyNotExists(String),
-    Input(String),
-    Process(String),
+    KeyNotExists(Cow<'static, str>),
+    Input(Cow<'static, str>),
+    Process(Cow<'static, str>),
 }
 
 
@@ -44,9 +45,9 @@ pub type FilterResult<T> = Result<Option<T>, FilterError>;
 
 #[derive(Debug)]
 pub enum FilterError {
-    UnknownFormatter(String),
-    Input(String),
-    Process(String),
+    UnknownFormatter(Cow<'static, str>),
+    Input(Cow<'static, str>),
+    Process(Cow<'static, str>),
     Format(fmt::Error),
 }
 
@@ -64,10 +65,10 @@ pub type RenderResult<T> = Result<T, RenderError>;
 pub enum RenderError {
     LoadTemplate(LoadError),
     ParseTemplate(TemplateParseError),
-    VariableNotExists(String),
+    VariableNotExists(Cow<'static, str>),
     EvalExpression(EvalError),
     Filter(FilterError),
-    FunctionCallException(String),
+    FunctionCallException(Cow<'static, str>),
     Format(fmt::Error),
 }
 

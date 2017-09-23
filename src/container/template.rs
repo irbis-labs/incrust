@@ -13,7 +13,7 @@ pub type Nodes = Vec<Node>;
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Template {
     pub root: Nodes,
-    pub blocks: HashMap<String, Nodes>,
+    pub blocks: HashMap<Cow<'static, str>, Nodes>,
     pub extends: Option<FullExpression>,
 }
 
@@ -31,7 +31,7 @@ impl Template {
         // trace!(" == parsed == {:?}", &parsed);
         match nodes {
             Incomplete(_) => unreachable!(),
-            Error(err) => Err(TemplateParseError::Syntax(format!("{:?}", err))),
+            Error(err) => Err(TemplateParseError::Syntax(format!("{:?}", err).into())),
             Done(_, nodes) => Template::from_parsed(nodes),
         }
     }
@@ -40,6 +40,7 @@ impl Template {
         fn process(templ: &mut Template, parsed: ParsedNodes, need_strip_first: bool, need_strip_last: bool) -> TemplateParseResult<Nodes> {
             let mut nodes: Nodes = Default::default();
 
+            // TODO String
             struct TextCompleter {
                 pub text: Vec<String>,
                 pub need_strip_left: bool,
@@ -151,7 +152,7 @@ impl Template {
                         completer.complete(&mut nodes, node.begin.strip_left);
                         completer.need_strip_left = node.end.strip_right;
                         let block_nodes = process(templ, node.block, node.begin.strip_right, node.end.strip_left)?;
-                        templ.blocks.insert(node.begin.name.clone(), block_nodes);
+                        templ.blocks.insert(node.begin.name.clone().into(), block_nodes);
                         nodes.push(Node::Block(node.begin.name));
                     },
                     ParsedNode::Extends(stmt) => {

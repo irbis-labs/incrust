@@ -1,8 +1,11 @@
+use std::borrow::Cow;
+
+
 pub type TemplateParseResult<T> = Result<T, TemplateParseError>;
 
 #[derive(Debug)]
 pub enum TemplateParseError {
-    Syntax(String),
+    Syntax(Cow<'static, str>),
 }
 
 //quick_error! {
