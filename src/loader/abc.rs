@@ -1,11 +1,12 @@
+use std::borrow::Cow;
 use std::fmt;
 
-pub type LoadResult = Result<String, LoadError>;
+pub type LoadResult = Result<Cow<'static, str>, LoadError>;
 
 #[derive(Debug, PartialEq)]
 pub enum LoadError {
-    BadName(String),
-    IoError(String),
+    BadName(Cow<'static, str>),
+    IoError(Cow<'static, str>),
     NotFound,
 }
 

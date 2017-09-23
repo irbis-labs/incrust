@@ -1,4 +1,5 @@
 use std::fs::File;
+use std::io::Read;
 use std::path::PathBuf;
 
 use ::abc::{Loader, LoadResult, LoadError};
@@ -18,22 +19,20 @@ impl Loader for FilesystemLoader {
     fn load(&self, name: &str) -> LoadResult {
         // TODO Real Security
         if name.contains("..") {
-            return Err(LoadError::BadName(r#"".." is not supported in a path"#.to_owned()))
+            return Err(LoadError::BadName(r#"".." is not supported in a name"#.into()))
         }
         let mut path = self.path.join(name);
-        if path.extension().is_none() { path.set_extension("tpl"); }
-        debug!("Template path: {:?}", path);
+        if path.extension().is_none() {
+            path.set_extension("tpl");
+        }
+        debug!("Load template: {}, path: {:?}", name, path);
         if !path.exists() || !path.is_file() {
             return Err(LoadError::NotFound);
         }
-
-        let load = || -> ::std::io::Result<String> {
-            use std::io::Read;
-            let mut buf = String::new();
-            let mut f = File::open(&path)?;
-            f.read_to_string(&mut buf)?;
-            Ok(buf)
-        };
-        load().map_err(|err| LoadError::IoError(format!("{:?}; {:?}", err, path)))
+        let mut buf = String::new();
+        File::open(&path)
+            .and_then(|mut f| f.read_to_string(&mut buf).map(|_| () ))
+            .map_err(|err| LoadError::IoError(format!("{:?}; {:?}", err, path).into()))?;
+        Ok(buf.into())
     }
 }
