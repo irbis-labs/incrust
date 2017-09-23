@@ -161,10 +161,10 @@ pub fn eval_attribute<'r>(context: &'r Context<'r>, attr: &'r Attribute) -> Eval
 
 pub fn eval_invocation<'r>(context: &'r Context<'r>, inv: &'r Invocation) -> EvalResult<Arg<'r>> {
     match eval_factor(context, &inv.on)? {
-        None => Err(InvokeError::NotInvocable)?,
-        Some(value) => match value.try_as_invocable() {
-            None => Err(InvokeError::NotInvocable)?,
-            Some(invocable) => {
+        None => Err(InvokeError::NotInvokable)?,
+        Some(value) => match value.try_as_invokable() {
+            None => Err(InvokeError::NotInvokable)?,
+            Some(invokable) => {
                 let mut args: Vec<Arg> = Vec::with_capacity(inv.args.len());
                 for expr in &inv.args {
                     match eval_expr(context, expr)? {
@@ -172,7 +172,7 @@ pub fn eval_invocation<'r>(context: &'r Context<'r>, inv: &'r Invocation) -> Eva
                         Some(val) => args.push(val)
                     }
                 }
-                invocable.invoke(args.as_slice(), context)
+                invokable.invoke(args.as_slice(), context)
             } } } }
 
 

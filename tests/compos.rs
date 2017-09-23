@@ -65,7 +65,7 @@ fn attributes() {
 
 
 #[test]
-fn invocables() {
+fn invokables() {
     let mut incrust = Incrust::new();
     incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));

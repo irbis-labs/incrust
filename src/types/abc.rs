@@ -15,7 +15,7 @@ use Context;
 
 pub trait Type<'r>:
     AsString + AsBool + AsReal + AsInt + AsIterable +
-    AsIndexable + AsMappable + AsComposable + AsInvocable +
+    AsIndexable + AsMappable + AsComposable + AsInvokable +
     AsPartialEq + AsPartialOrd +
     IArithm + IRender + fmt::Debug + Send + Sync
 {
@@ -52,9 +52,9 @@ pub trait AsInt {
     fn try_as_int(&self) -> Option<i64>;
 }
 
-pub trait AsInvocable {
-    fn is_invocable(&self) -> bool;
-    fn try_as_invocable(&self) -> Option<&IInvocable>;
+pub trait AsInvokable {
+    fn is_invokable(&self) -> bool;
+    fn try_as_invokable(&self) -> Option<&IInvokable>;
 }
 
 pub trait AsIterable {
@@ -97,7 +97,7 @@ pub trait IArithm {
     fn try_div<'o>(&self, other: Arg<'o>) -> Option<Arg<'o>>;
 }
 
-pub trait IInvocable {
+pub trait IInvokable {
     fn invoke<'r: 'rr, 'rr>(&self, args: &'rr [Arg<'r>], context: &'r Context<'r>) -> EvalResult<Arg<'r>>;
 }
 

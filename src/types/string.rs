@@ -110,7 +110,7 @@ impl IComposable for String {
 //    }
 //}
 //
-//impl <'a> IInvocable for Len<'a> {
+//impl <'a> IInvokable for Len<'a> {
 //    fn invoke(&self, _args: &[BType], _context: &Context) -> EvalResult {
 //        Ok(Some((self.0.len() as i64).into()))
 //    }

@@ -37,7 +37,7 @@ impl <'t> Type<'t> for Function {
     }
 }
 
-impl IInvocable for Function {
+impl IInvokable for Function {
     fn invoke<'r: 'rr, 'rr>(&self, args: &'rr [Arg<'r>], context: &'r Context<'r>) -> EvalResult<Arg<'r>> {
         (self.f)(args, context)
     }
@@ -53,7 +53,7 @@ impl IInvocable for Function {
 //    fn to_bool(&self) -> bool { true }
 //}
 //
-//impl <'a, 'b: 'a> IInvocable<'a> for (fn(&[BType], &Context) -> EvalResult) {
+//impl <'a, 'b: 'a> IInvokable<'a> for (fn(&[BType], &Context) -> EvalResult) {
 //    fn invoke(&self, args: &[BType], context: &Context) -> EvalResult {
 //        self(args, context, env)
 //    }

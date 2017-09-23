@@ -155,22 +155,22 @@ impl <'r, T> AsComposable for T where T: for <'t> Type<'t> + 'r + IComposable {
     }
 }
 
-impl <'r, T> AsInvocable for T where T: for <'t> Type<'t> + 'r {
-    default fn is_invocable(&self) -> bool {
+impl <'r, T> AsInvokable for T where T: for <'t> Type<'t> + 'r {
+    default fn is_invokable(&self) -> bool {
         false
     }
 
-    default fn try_as_invocable(&self) -> Option<&IInvocable> {
+    default fn try_as_invokable(&self) -> Option<&IInvokable> {
         None
     }
 }
 
-impl <'r, T> AsInvocable for T where T: for <'t> Type<'t> + 'r + IInvocable {
-    fn is_invocable(&self) -> bool {
+impl <'r, T> AsInvokable for T where T: for <'t> Type<'t> + 'r + IInvokable {
+    fn is_invokable(&self) -> bool {
         true
     }
 
-    default fn try_as_invocable(&self) -> Option<&IInvocable> {
+    default fn try_as_invokable(&self) -> Option<&IInvokable> {
         Some(self)
     }
 }

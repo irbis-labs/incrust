@@ -25,7 +25,7 @@ pub enum EvalError {
 
 #[derive(Debug)]
 pub enum InvokeError {
-    NotInvocable,
+    NotInvokable,
     WrongArgsNumber(usize, usize),
     WrongArgType(usize, ExpectedArgType),
 }
