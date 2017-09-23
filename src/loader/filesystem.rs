@@ -23,15 +23,17 @@ impl Loader for FilesystemLoader {
         let mut path = self.path.join(name);
         if path.extension().is_none() { path.set_extension("tpl"); }
         debug!("Template path: {:?}", path);
-        if !path.exists() || !path.is_file() { return Err(LoadError::NotFound); }
+        if !path.exists() || !path.is_file() {
+            return Err(LoadError::NotFound);
+        }
 
         let load = || -> ::std::io::Result<String> {
             use std::io::Read;
             let mut buf = String::new();
-            let mut f = File::open(path)?;
+            let mut f = File::open(&path)?;
             f.read_to_string(&mut buf)?;
             Ok(buf)
         };
-        load().map_err(|err| LoadError::IoError(format!("{:?}", err)))
+        load().map_err(|err| LoadError::IoError(format!("{:?}; {:?}", err, path)))
     }
 }

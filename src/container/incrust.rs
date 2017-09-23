@@ -8,7 +8,7 @@ use {Args, Arg, ex, GlobalContext, Context, Template};
 #[derive(Debug)]
 pub struct Incrust {
     pub loaders: GroupLoader,
-    filters: HashMap<String, Box<Filter>>,
+    pub filters: HashMap<String, Box<Filter>>,
     top_context: HashMap<String, Arg<'static>>,
 }
 
@@ -40,7 +40,7 @@ impl Default for Incrust {
 
         Incrust {
             loaders: Vec::new(),
-            filters: filters,
+            filters,
             top_context: env,
         }
     }
