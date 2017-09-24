@@ -82,6 +82,10 @@ impl Incrust {
         Template::parse(template)
     }
 
+    pub fn get_template(&self, name: &str) -> RenderResult<Template> {
+        Ok(self.parse(self.load(name)?.as_ref())?)
+    }
+
     pub fn render<'r>(&self, name: &str, args: &'r Args<'r>) -> RenderResult<String> {
         self.render_text(&self.load(name)?, args)
     }
@@ -105,7 +109,7 @@ impl Incrust {
     }
 
     pub fn create_global_context<'s>(&'s self, template: &'s Template, args: &'s Args<'s>) -> RenderResult<Stack<'s>> {
-        Stack::new(self, template, args)
+        Stack::new(self, Cow::Borrowed(template), args)
     }
 }
 

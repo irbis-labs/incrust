@@ -106,8 +106,7 @@ pub fn render_include<W: fmt::Write>(writer: &mut W, context: &VarContext, expr:
         .ok_or(LoadError::BadName("Can't evaluate name (None result)".into()))?;
     let name = name.try_as_string()
         .ok_or(LoadError::BadName("Name is not string".into()))?;
-    let env = context.global().env();
-    let template = env.parse(&env.load(&name)?)?;
+    let template = context.global().env().get_template(&name)?;
     // FIXME Base context
     // render_text(writer, &context.global().top_scope(), template.root.as_slice())
     // Current scope context

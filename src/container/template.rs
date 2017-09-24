@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use abc::*;
 use container::expression::*;
 use container::parsed::{ParsedNodes, ParsedNode};
+use container::stack::VarContext;
 
 
 pub type Nodes = Vec<Node>;
@@ -184,6 +185,22 @@ impl Template {
         template.root = process(&mut template, parsed, false, false)?;
 
         Ok(template)
+    }
+
+    pub fn get_parent(&self, context: &VarContext) -> RenderResult<Option<Self>> {
+        use ::renderer::evaluator::eval_expr;
+
+        Ok(if let Some(fe) = self.extends.as_ref() {
+            Some({
+                let name = eval_expr(context, &fe.expr)?
+                    .ok_or(LoadError::BadName("Can't evaluate name (None result)".into()))?;
+                let name = name.try_as_string()
+                    .ok_or(LoadError::BadName("Name is not string".into()))?;
+                context.env().get_template(&name)?
+            })
+        } else {
+            None
+        })
     }
 }
 

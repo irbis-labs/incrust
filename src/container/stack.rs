@@ -22,28 +22,16 @@ pub struct VarContext<'a> {
 
 
 impl <'a> Stack<'a> {
-    pub fn new(env: &'a Incrust, template: &'a Template, args: &'a Args<'a>) -> RenderResult<Self> {
-        use ::renderer::evaluator::eval_expr;
+    pub fn new(env: &'a Incrust, template: Cow<'a, Template>, args: &'a Args<'a>) -> RenderResult<Self> {
+        let mut stack = Stack { env, template_stack: vec![], args };
 
-        let mut context = Stack {
-            env: env,
-            template_stack: vec![Cow::Borrowed(template)],
-            args: args,
-        };
-
-        while let Some(parent) = context.template().extends.clone() {
-            let template = {
-                let local = context.top_scope();
-                let name = eval_expr(&local, &parent.expr)?
-                    .ok_or(LoadError::BadName("Can't evaluate name (None result)".into()))?;
-                let name = name.try_as_string()
-                    .ok_or(LoadError::BadName("Name is not string".into()))?;
-                Cow::Owned(env.parse(&env.load(&name)?)?)
-            };
-            context.template_stack.push(template);
+        let mut parent = Some(template);
+        while let Some(template) = parent {
+            parent = template.get_parent(&stack.top_scope())?.map(Cow::Owned);
+            stack.template_stack.push(template);
         }
 
-        Ok(context)
+        Ok(stack)
     }
 
     pub fn top_scope(&'a self) -> VarContext<'a> {
@@ -66,19 +54,11 @@ impl <'a> Stack<'a> {
 
 impl <'a> VarContext<'a> {
     pub fn new(global: &'a Stack<'a>, args: &'a Args<'a>) -> Self {
-        VarContext {
-            global: global,
-            parent: None,
-            args: args
-        }
+        VarContext { global, parent: None, args }
     }
 
     pub fn nested_scope(&'a self, args: &'a Args<'a>) -> Self {
-        VarContext {
-            global: self.global,
-            parent: Some(self),
-            args: args
-        }
+        VarContext { global: self.global, parent: Some(self), args }
     }
 
     pub fn template(&self) -> &'a Template {
