@@ -1,6 +1,6 @@
 use abc::{Filter, FilterResult, FilterError};
 use renderer::Writer;
-use {Context, ex, Arg};
+use {VarContext, ex, Arg};
 
 
 #[derive(Debug)]
@@ -8,7 +8,7 @@ pub struct Escape;
 
 impl Filter for Escape {
     #[allow(unused_variables)]
-    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Arg<'a>>) -> FilterResult<Arg<'a>> {
+    fn filter<'s: 'a, 'a>(&'s self, context: &'a VarContext, value: Option<Arg<'a>>) -> FilterResult<Arg<'a>> {
         use marksman_escape::Escape as F;
 
         match value {

@@ -36,7 +36,7 @@ pub mod types;
 
 pub use self::abc::Loader;
 pub use self::container::args::{Arg, Args, EntityId, ex};
-pub use self::container::context::{GlobalContext, Context};
+pub use self::container::stack::{Stack, VarContext};
 pub use self::container::incrust::Incrust;
 pub use self::container::template::Template;
 pub use self::loader::{DictLoader, FilesystemLoader, GroupLoader, NamespaceLoader};

@@ -1,20 +1,20 @@
 use std::fmt::{Debug, Formatter, Error};
 
 use abc::EvalResult;
-use Context;
+use VarContext;
 
 use types::abc::*;
 use Arg;
 
 
 pub struct Function {
-    pub f: for <'res> fn(&[Arg<'res>], &'res Context<'res>) -> EvalResult<Arg<'res>>,
+    pub f: for <'res: 'ctx, 'ctx> fn(&[Arg<'res>], &'ctx VarContext<'res>) -> EvalResult<Arg<'res>>,
 }
 
 impl Function {
     // TODO update API to satisfy convention
     #[cfg_attr(feature = "cargo-clippy", allow(new_ret_no_self))]
-    pub fn new(f: for <'res> fn(&[Arg<'res>], &'res Context<'res>) -> EvalResult<Arg<'res>>) -> Arg<'static> {
+    pub fn new(f: for <'res: 'ctx, 'ctx> fn(&[Arg<'res>], &'ctx VarContext<'res>) -> EvalResult<Arg<'res>>) -> Arg<'static> {
         Arg::Owned(box Function { f: f })
     }
 }
@@ -38,7 +38,7 @@ impl <'t> Type<'t> for Function {
 }
 
 impl IInvokable for Function {
-    fn invoke<'r: 'rr, 'rr>(&self, args: &'rr [Arg<'r>], context: &'r Context<'r>) -> EvalResult<Arg<'r>> {
+    fn invoke<'r: 'a + 'c, 'a, 'c>(&self, args: &'a [Arg<'r>], context: &'c VarContext<'r>) -> EvalResult<Arg<'r>> {
         (self.f)(args, context)
     }
 }

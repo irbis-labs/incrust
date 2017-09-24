@@ -1,5 +1,5 @@
 use abc::{Filter, FilterResult};
-use {Context, ex, Arg};
+use {VarContext, ex, Arg};
 
 
 #[derive(Debug)]
@@ -7,7 +7,7 @@ pub struct NewlineToSpace;
 
 impl Filter for NewlineToSpace {
     #[allow(unused_variables)]
-    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Arg<'a>>) -> FilterResult<Arg<'a>> {
+    fn filter<'s: 'a, 'a>(&'s self, context: &'a VarContext, value: Option<Arg<'a>>) -> FilterResult<Arg<'a>> {
         match value {
             None => Ok(None),
             Some(value) => {

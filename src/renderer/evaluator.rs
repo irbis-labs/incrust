@@ -1,112 +1,114 @@
 use abc::{EvalResult, EvalError, InvokeError};
 use container::expression::*;
-use {Arg, Context};
+use {Arg, VarContext};
 
 
-pub fn eval_expr<'r>(context: &'r Context<'r>, disj_expr: &'r DisjExpr) -> EvalResult<Arg<'r>> {
+pub fn eval_expr<'r: 'c, 'c>(context: &'c VarContext<'r>, disj_expr: &DisjExpr) -> EvalResult<Arg<'r>> {
     let mut itr = disj_expr.list.iter();
-    match itr.next() {
-        None => unreachable!(),
-        Some(conj) => {
-            let mut acc = eval_conj(context, conj)?;
-            for conj in itr {
-                acc = match acc {
-                    // FIXME eval None as False?
-                    None => return Ok(None),
-                    Some(a) => match a.to_bool() {
-                        true => return Ok(Some(a)),
-                        false => eval_conj(context, conj)?,
-                    } } }
-            Ok(acc)
-        } } }
+    let conj = itr.next().unwrap();
+    let mut acc = eval_conj(context, conj)?;
+    for conj in itr {
+        acc = match acc {
+            // FIXME eval None as False?
+            None => return Ok(None),
+            Some(a) => match a.to_bool() {
+                true => return Ok(Some(a)),
+                false => eval_conj(context, conj)?,
+            }
+        }
+    }
+    Ok(acc)
+}
 
 
-pub fn eval_conj<'r>(context: &'r Context<'r>, conj_expr: &'r ConjExpr) -> EvalResult<Arg<'r>> {
+pub fn eval_conj<'r: 'c, 'c>(context: &'c VarContext<'r>, conj_expr: &ConjExpr) -> EvalResult<Arg<'r>> {
     let mut itr = conj_expr.list.iter();
-    match itr.next() {
-        None => unreachable!(),
-        Some(cmp) => {
-            let mut acc = eval_cmp(context, cmp)?;
-            for cmp in itr {
-                acc = match acc {
-                    // FIXME eval None as False?
-                    None => return Ok(None),
-                    Some(acc) => match acc.to_bool() {
-                        true => eval_cmp(context, cmp)?,
-                        false => return Ok(Some(acc))
-                    } } }
-            Ok(acc)
-        } } }
+    let cmp = itr.next().unwrap();
+    let mut acc = eval_cmp(context, cmp)?;
+    for cmp in itr {
+        acc = match acc {
+            // FIXME eval None as False?
+            None => return Ok(None),
+            Some(acc) => match acc.to_bool() {
+                true => eval_cmp(context, cmp)?,
+                false => return Ok(Some(acc))
+            }
+        }
+    }
+    Ok(acc)
+}
 
 
 #[allow(unused_variables)]
-pub fn eval_cmp<'r>(context: &'r Context<'r>, cmp_expr: &'r CmpExpr) -> EvalResult<Arg<'r>> {
+pub fn eval_cmp<'r: 'c, 'c>(context: &'c VarContext<'r>, cmp_expr: &CmpExpr) -> EvalResult<Arg<'r>> {
     let mut itr = cmp_expr.list.iter();
-    match itr.next() {
-        None => unreachable!(),
-        Some(&CmpItem(_, ref expr)) => {
-            let mut acc = eval_sum(context, expr)?;
-            for &CmpItem(ref op, ref expr) in itr {
-                acc = match acc {
-                    None => return Ok(None),
-                    Some(acc) => match eval_sum(context, expr)? {
-                        None => return Ok(None),
-                        Some(expr) => match *op {
-                            // todo error if is not partial_eq ?
-                            CmpOp::Eq   => acc.try_as_partial_eq().map(|acc| acc.eq(&expr)),
-                            CmpOp::Neq  => acc.try_as_partial_eq().map(|acc| acc.ne(&expr)),
-                            CmpOp::Lt   => acc.try_as_partial_ord().and_then(|acc| acc.lt(&expr)),
-                            CmpOp::Gt   => acc.try_as_partial_ord().and_then(|acc| acc.gt(&expr)),
-                            CmpOp::Lte  => acc.try_as_partial_ord().and_then(|acc| acc.le(&expr)),
-                            CmpOp::Gte  => acc.try_as_partial_ord().and_then(|acc| acc.ge(&expr)),
-                            CmpOp::In   => unimplemented!(),
-                            CmpOp::Nin  => unimplemented!(),
-                        }
-                            .map(Arg::from)
-                    } } }
-            Ok(acc)
-        } } }
+    let &CmpItem(_, ref expr) = itr.next().unwrap();
+    let mut acc = eval_sum(context, expr)?;
+    for &CmpItem(ref op, ref expr) in itr {
+        acc = match acc {
+            None => return Ok(None),
+            Some(acc) => match eval_sum(context, expr)? {
+                None => return Ok(None),
+                Some(expr) => match *op {
+                    // todo error if is not partial_eq ?
+                    CmpOp::Eq => acc.try_as_partial_eq().map(|acc| acc.eq(&expr)),
+                    CmpOp::Neq => acc.try_as_partial_eq().map(|acc| acc.ne(&expr)),
+                    CmpOp::Lt => acc.try_as_partial_ord().and_then(|acc| acc.lt(&expr)),
+                    CmpOp::Gt => acc.try_as_partial_ord().and_then(|acc| acc.gt(&expr)),
+                    CmpOp::Lte => acc.try_as_partial_ord().and_then(|acc| acc.le(&expr)),
+                    CmpOp::Gte => acc.try_as_partial_ord().and_then(|acc| acc.ge(&expr)),
+                    CmpOp::In => unimplemented!(),
+                    CmpOp::Nin => unimplemented!(),
+                }
+                    .map(Arg::from)
+            }
+        }
+    }
+    Ok(acc)
+}
 
 
-pub fn eval_sum<'r>(context: &'r Context<'r>, expr: &'r Expr) -> EvalResult<Arg<'r>> {
+pub fn eval_sum<'r: 'c, 'c>(context: &'c VarContext<'r>, expr: &Expr) -> EvalResult<Arg<'r>> {
     let mut itr = expr.sum.iter();
-    match itr.next() {
-        None => unreachable!(),
-        Some(&ExprItem(_, ref term)) => {
-            let mut acc = eval_prod(context, term)?;
-            for &ExprItem(ref op, ref term) in itr {
-                acc = match acc {
-                    None => return Ok(None),
-                    Some(acc) => match eval_prod(context, term)? {
-                        None => return Ok(None),
-                        Some(term) => match *op {
-                            SumOp::Add => acc.try_add(term),
-                            SumOp::Sub => acc.try_sub(term),
-                        } } } }
-            Ok(acc)
-        } } }
+    let &ExprItem(_, ref term) = itr.next().unwrap();
+    let mut acc = eval_prod(context, term)?;
+    for &ExprItem(ref op, ref term) in itr {
+        acc = match acc {
+            None => return Ok(None),
+            Some(acc) => match eval_prod(context, term)? {
+                None => return Ok(None),
+                Some(term) => match *op {
+                    SumOp::Add => acc.try_add(term),
+                    SumOp::Sub => acc.try_sub(term),
+                }
+            }
+        }
+    }
+    Ok(acc)
+}
 
 
-pub fn eval_prod<'r>(context: &'r Context<'r>, term: &'r Term) -> EvalResult<Arg<'r>> {
+pub fn eval_prod<'r: 'c, 'c>(context: &'c VarContext<'r>, term: &Term) -> EvalResult<Arg<'r>> {
     let mut itr = term.mul.iter();
-    match itr.next() {
-        None => unreachable!(),
-        Some(&TermItem(_, ref factor)) => {
-            let mut acc = eval_factor(context, factor)?;
-            for &TermItem(ref op, ref factor) in itr {
-                acc = match acc {
-                    None => return Ok(None),
-                    Some(acc) => match eval_factor(context, factor)? {
-                        None => return Ok(None),
-                        Some(factor) => match *op {
-                            MulOp::Mul => acc.try_mul(factor),
-                            MulOp::Div => acc.try_div(factor),
-                        } } } }
-            Ok(acc)
-        } } }
+    let &TermItem(_, ref factor) = itr.next().unwrap();
+    let mut acc = eval_factor(context, factor)?;
+    for &TermItem(ref op, ref factor) in itr {
+        acc = match acc {
+            None => return Ok(None),
+            Some(acc) => match eval_factor(context, factor)? {
+                None => return Ok(None),
+                Some(factor) => match *op {
+                    MulOp::Mul => acc.try_mul(factor),
+                    MulOp::Div => acc.try_div(factor),
+                }
+            }
+        }
+    }
+    Ok(acc)
+}
 
 
-pub fn eval_factor<'r>(context: &'r Context<'r>, fctr: &'r Factor) -> EvalResult<Arg<'r>> {
+pub fn eval_factor<'r: 'c, 'c>(context: &'c VarContext<'r>, fctr: &Factor) -> EvalResult<Arg<'r>> {
     match *fctr {
         Factor::Variable(ref id)        => Ok(context.get(id)),
         Factor::Literal(ref lit)        => literal(lit),
@@ -118,7 +120,7 @@ pub fn eval_factor<'r>(context: &'r Context<'r>, fctr: &'r Factor) -> EvalResult
 }
 
 
-pub fn eval_index<'r>(context: &'r Context<'r>, index: &'r Index) -> EvalResult<Arg<'r>> {
+pub fn eval_index<'r: 'c, 'c>(context: &'c VarContext<'r>, index: &Index) -> EvalResult<Arg<'r>> {
     match eval_factor(context, &index.on)? {
         None => Err(EvalError::NotComposable),
         Some(value) => {
@@ -131,7 +133,9 @@ pub fn eval_index<'r>(context: &'r Context<'r>, index: &'r Index) -> EvalResult<
                             None => Err(EvalError::IndexNotExists(key as usize)),
                             // fixme extra clone
                             Some(result) => Ok(Some(result.to_owned())),
-                        } } }
+                        }
+                    }
+                }
 
                 if let Some(key) = key.try_as_string() {
                     return match value.try_as_mappable() {
@@ -140,26 +144,38 @@ pub fn eval_index<'r>(context: &'r Context<'r>, index: &'r Index) -> EvalResult<
                             None => Err(EvalError::KeyNotExists(key.into_owned().into())),
                             // fixme extra clone
                             Some(result) => Ok(Some(result.to_owned())),
-                        } } }
+                        }
+                    }
+                }
             }
             Err(EvalError::UnexpectedIndexType)
-        } } }
+        }
+    }
+}
 
 
-pub fn eval_attribute<'r>(context: &'r Context<'r>, attr: &'r Attribute) -> EvalResult<Arg<'r>> {
+pub fn eval_attribute<'r: 'c, 'c>(context: &'c VarContext<'r>, attr: &Attribute) -> EvalResult<Arg<'r>> {
+//    eval_factor(context, &attr.on)
     match eval_factor(context, &attr.on)? {
         None => Err(EvalError::NotComposable),
         Some(value) => {
+//            Ok(Some(value))
             match value.try_as_composable() {
                 None => Err(EvalError::NotComposable),
-                Some(composable) => match composable.get_attr(&attr.id) {
-                    None => Err(EvalError::AttributeNotExists(attr.id.clone().into())),
-                    // fixme extra clone
-                    Some(result) => Ok(Some(result.to_owned())),
-                } } } } }
+                Some(composable) => {
+                    match composable.get_attr(&attr.id) {
+                        None => Err(EvalError::AttributeNotExists(attr.id.clone().into())),
+                        // fixme extra clone
+                        Some(result) => Ok(Some(result.to_owned())),
+                    }
+                }
+            }
+        }
+    }
+}
 
 
-pub fn eval_invocation<'r>(context: &'r Context<'r>, inv: &'r Invocation) -> EvalResult<Arg<'r>> {
+pub fn eval_invocation<'r: 'c, 'c>(context: &'c VarContext<'r>, inv: &Invocation) -> EvalResult<Arg<'r>> {
     match eval_factor(context, &inv.on)? {
         None => Err(InvokeError::NotInvokable)?,
         Some(value) => match value.try_as_invokable() {
@@ -173,16 +189,19 @@ pub fn eval_invocation<'r>(context: &'r Context<'r>, inv: &'r Invocation) -> Eva
                     }
                 }
                 invokable.invoke(args.as_slice(), context)
-            } } } }
+            }
+        }
+    }
+}
 
 
-pub fn literal(l: &Literal) -> EvalResult<Arg> {
-    Ok( Some( match *l {
+pub fn literal(l: &Literal) -> EvalResult<Arg<'static>> {
+    Ok(Some(match *l {
         Literal::Str(ref string) => Arg::from(string.clone()),
-        Literal::Char(ref chr)   => Arg::from(*chr),
-        Literal::Int(ref int)    => Arg::from(*int),
-        Literal::Real(ref real)  => Arg::from(*real),
-    } ) )
+        Literal::Char(ref chr) => Arg::from(*chr),
+        Literal::Int(ref int) => Arg::from(*int),
+        Literal::Real(ref real) => Arg::from(*real),
+    }))
 }
 
 
@@ -193,7 +212,7 @@ mod tests {
     use std::fmt::Debug;
 
     use abc::*;
-    use {Incrust, Arg, Args, Context, ex, Template};
+    use {Incrust, Arg, Args, VarContext, ex, Template};
     use parser::expressions::expression as parse_expr;
     use super::eval_expr;
 
@@ -206,7 +225,7 @@ mod tests {
         }
     }
 
-    fn test_eval_expr(context: &Context, a: &str, b: &[u8]) {
+    fn test_eval_expr(context: &VarContext, a: &str, b: &[u8]) {
         let b = unwrap_iresult(parse_expr(b));
         let r = eval_expr(&context, &b);
         let res = r.unwrap().unwrap()

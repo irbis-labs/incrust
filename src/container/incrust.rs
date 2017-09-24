@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use abc::*;
 use loader::GroupLoader;
-use {Args, Arg, ex, GlobalContext, Context, Template};
+use {Args, Arg, ex, Stack, VarContext, Template};
 
 
 #[derive(Debug)]
@@ -71,7 +71,7 @@ impl Incrust {
         Err(LoadError::NotFound)
     }
 
-    pub fn filter<'s>(&'s self, id: &str, context: &'s Context<'s>, value: Option<Arg<'s>>) -> FilterResult<Arg<'s>> {
+    pub fn filter<'s>(&'s self, id: &str, context: &'s VarContext<'s>, value: Option<Arg<'s>>) -> FilterResult<Arg<'s>> {
         match self.filters.get(id) {
             Some(filter) => filter.filter(context, value),
             None => Err(FilterError::UnknownFormatter(id.to_owned().into()))
@@ -96,7 +96,7 @@ impl Incrust {
         self.render_prepared(&local)
     }
 
-    pub fn render_prepared<'r>(&self, context: &'r Context<'r>) -> RenderResult<String> {
+    pub fn render_prepared<'r>(&self, context: &'r VarContext<'r>) -> RenderResult<String> {
         ::renderer::text(context)
             .map_err(|err| {
                 debug!("Render error: {:?}", err);
@@ -104,8 +104,8 @@ impl Incrust {
             })
     }
 
-    pub fn create_global_context<'s>(&'s self, template: &'s Template, args: &'s Args<'s>) -> RenderResult<GlobalContext<'s>> {
-        GlobalContext::new(self, template, args)
+    pub fn create_global_context<'s>(&'s self, template: &'s Template, args: &'s Args<'s>) -> RenderResult<Stack<'s>> {
+        Stack::new(self, template, args)
     }
 }
 

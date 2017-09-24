@@ -8,7 +8,7 @@ extern crate incrust;
 use std::path::Path;
 
 use incrust::abc::EvalResult;
-use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, Arg, Function, Context};
+use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, Arg, Function, VarContext};
 use incrust::types::abc::{AsComposable, IComposable};
 
 #[derive(Debug, Clone)]
@@ -70,7 +70,7 @@ fn invokables() {
     incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
-    fn title<'res>(_: &[Arg<'res>], _: &'res Context<'res>) -> EvalResult<Arg<'res>> {
+    fn title<'res>(_: &[Arg<'res>], _: &'res VarContext<'res>) -> EvalResult<Arg<'res>> {
         Ok(Some(ex("fruits")))
     }
 

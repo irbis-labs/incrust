@@ -7,27 +7,27 @@ use {Args, Arg, Incrust, Template};
 pub type TemplateStack<'a> = Vec<&'a Template>;
 
 
-pub struct GlobalContext<'a> {
+pub struct Stack<'a> {
     env: &'a Incrust,
-    stack: Vec<Cow<'a, Template>>,
+    template_stack: Vec<Cow<'a, Template>>,
     args: &'a Args<'a>,
 }
 
 
-pub struct Context<'a> {
-    global: &'a GlobalContext<'a>,
-    parent: Option<&'a Context<'a>>,
+pub struct VarContext<'a> {
+    global: &'a Stack<'a>,
+    parent: Option<&'a VarContext<'a>>,
     args: &'a Args<'a>,
 }
 
 
-impl <'a> GlobalContext<'a> {
+impl <'a> Stack<'a> {
     pub fn new(env: &'a Incrust, template: &'a Template, args: &'a Args<'a>) -> RenderResult<Self> {
         use ::renderer::evaluator::eval_expr;
 
-        let mut context = GlobalContext {
+        let mut context = Stack {
             env: env,
-            stack: vec![Cow::Borrowed(template)],
+            template_stack: vec![Cow::Borrowed(template)],
             args: args,
         };
 
@@ -40,22 +40,22 @@ impl <'a> GlobalContext<'a> {
                     .ok_or(LoadError::BadName("Name is not string".into()))?;
                 Cow::Owned(env.parse(&env.load(&name)?)?)
             };
-            context.stack.push(template);
+            context.template_stack.push(template);
         }
 
         Ok(context)
     }
 
-    pub fn top_scope(&'a self) -> Context<'a> {
-         Context::new(self, self.args)
+    pub fn top_scope(&'a self) -> VarContext<'a> {
+         VarContext::new(self, self.args)
     }
 
     pub fn template(&'a self) -> &'a Template {
-        self.stack.last().unwrap()
+        self.template_stack.last().unwrap()
     }
 
     pub fn stack(&'a self) -> &'a [Cow<'a, Template>] {
-        &self.stack
+        &self.template_stack
     }
 
     pub fn env(&self) -> &'a Incrust {
@@ -64,9 +64,9 @@ impl <'a> GlobalContext<'a> {
 }
 
 
-impl <'a> Context<'a> {
-    pub fn new(global: &'a GlobalContext<'a>, args: &'a Args<'a>) -> Self {
-        Context {
+impl <'a> VarContext<'a> {
+    pub fn new(global: &'a Stack<'a>, args: &'a Args<'a>) -> Self {
+        VarContext {
             global: global,
             parent: None,
             args: args
@@ -74,7 +74,7 @@ impl <'a> Context<'a> {
     }
 
     pub fn nested_scope(&'a self, args: &'a Args<'a>) -> Self {
-        Context {
+        VarContext {
             global: self.global,
             parent: Some(self),
             args: args
@@ -85,7 +85,7 @@ impl <'a> Context<'a> {
         self.global.template()
     }
 
-    pub fn global(&self) -> &'a GlobalContext<'a> {
+    pub fn global(&self) -> &'a Stack<'a> {
         self.global
     }
 
@@ -93,7 +93,7 @@ impl <'a> Context<'a> {
         self.global.env()
     }
 
-    pub fn get(&'a self, id: &str) -> Option<Arg<'a>> {
+    pub fn get(&self, id: &str) -> Option<Arg<'a>> {
         self.args.get(id).map(Arg::from)
             .or_else(|| self.parent
                 .and_then(|p| p.get(id))

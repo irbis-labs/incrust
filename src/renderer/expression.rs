@@ -1,11 +1,11 @@
 use std::fmt;
 
 use abc::RenderResult;
-use Context;
+use VarContext;
 use container::expression::*;
 
 
-pub fn render_expr<W: fmt::Write>(writer: &mut W, context: &Context, expr: &DisjExpr) -> RenderResult<()> {
+pub fn render_expr<W: fmt::Write>(writer: &mut W, context: &VarContext, expr: &DisjExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -19,7 +19,7 @@ pub fn render_expr<W: fmt::Write>(writer: &mut W, context: &Context, expr: &Disj
         } } }
 
 
-pub fn render_conj<W: fmt::Write>(writer: &mut W, context: &Context, expr: &ConjExpr) -> RenderResult<()> {
+pub fn render_conj<W: fmt::Write>(writer: &mut W, context: &VarContext, expr: &ConjExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -33,7 +33,7 @@ pub fn render_conj<W: fmt::Write>(writer: &mut W, context: &Context, expr: &Conj
         } } }
 
 
-pub fn render_cmp<W: fmt::Write>(writer: &mut W, context: &Context, expr: &CmpExpr) -> RenderResult<()> {
+pub fn render_cmp<W: fmt::Write>(writer: &mut W, context: &VarContext, expr: &CmpExpr) -> RenderResult<()> {
     let mut itr = expr.list.iter();
     match itr.next() {
         None => unreachable!(),
@@ -57,7 +57,7 @@ pub fn render_cmp<W: fmt::Write>(writer: &mut W, context: &Context, expr: &CmpEx
         } } }
 
 
-pub fn render_sum<W: fmt::Write>(writer: &mut W, context: &Context, expr: &Expr) -> RenderResult<()> {
+pub fn render_sum<W: fmt::Write>(writer: &mut W, context: &VarContext, expr: &Expr) -> RenderResult<()> {
     let mut itr = expr.sum.iter();
     match itr.next() {
         None => unreachable!(),
@@ -75,7 +75,7 @@ pub fn render_sum<W: fmt::Write>(writer: &mut W, context: &Context, expr: &Expr)
         } } }
 
 
-pub fn render_prod<W: fmt::Write>(writer: &mut W, context: &Context, term: &Term) -> RenderResult<()> {
+pub fn render_prod<W: fmt::Write>(writer: &mut W, context: &VarContext, term: &Term) -> RenderResult<()> {
     let mut itr = term.mul.iter();
     match itr.next() {
         None => unreachable!(),
@@ -93,7 +93,7 @@ pub fn render_prod<W: fmt::Write>(writer: &mut W, context: &Context, term: &Term
         } } }
 
 
-pub fn render_factor<W: fmt::Write>(writer: &mut W, context: &Context, fctr: &Factor) -> RenderResult<()> {
+pub fn render_factor<W: fmt::Write>(writer: &mut W, context: &VarContext, fctr: &Factor) -> RenderResult<()> {
     match *fctr {
         Factor::Literal(ref lit) => {
             render_literal(writer, lit)?;

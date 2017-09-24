@@ -8,7 +8,7 @@ use std::slice::Iter;
 use abc::EvalResult;
 use renderer::Writer;
 use Arg;
-use Context;
+use VarContext;
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ pub trait IArithm {
 }
 
 pub trait IInvokable {
-    fn invoke<'r: 'rr, 'rr>(&self, args: &'rr [Arg<'r>], context: &'r Context<'r>) -> EvalResult<Arg<'r>>;
+    fn invoke<'r: 'a + 'c, 'a, 'c>(&self, args: &'a [Arg<'r>], context: &'c VarContext<'r>) -> EvalResult<Arg<'r>>;
 }
 
 pub trait IIterable {

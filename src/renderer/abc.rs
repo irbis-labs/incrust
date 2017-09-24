@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::fmt;
 
 use abc::*;
-use {Arg, Context};
+use {Arg, VarContext};
 
 
 pub type EvalResult<T> = Result<Option<T>, EvalError>;
@@ -55,7 +55,7 @@ impl From<fmt::Error>  for FilterError { fn from(err: fmt::Error)  -> Self { Fil
 
 
 pub trait Filter: fmt::Debug + Send + Sync {
-    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context<'a>, value: Option<Arg<'a>>) -> FilterResult<Arg<'a>>;
+    fn filter<'s: 'a, 'a>(&'s self, context: &'a VarContext<'a>, value: Option<Arg<'a>>) -> FilterResult<Arg<'a>>;
 }
 
 

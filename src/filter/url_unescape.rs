@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use abc::{Filter, FilterResult, FilterError};
 use renderer::Writer;
-use {Context, ex, Arg};
+use {VarContext, ex, Arg};
 
 
 #[derive(Debug)]
@@ -10,7 +10,7 @@ pub struct UrlUnescape;
 
 impl Filter for UrlUnescape {
     #[allow(unused_variables)]
-    fn filter<'s: 'a, 'a>(&'s self, context: &'a Context, value: Option<Arg<'a>>) -> FilterResult<Arg<'a>> {
+    fn filter<'s: 'a, 'a>(&'s self, context: &'a VarContext, value: Option<Arg<'a>>) -> FilterResult<Arg<'a>> {
         use url::percent_encoding::percent_decode;
 
         match value {
