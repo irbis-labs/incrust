@@ -35,7 +35,7 @@ named!(pub filter<&[u8], FilterItem>, do_parse!(
 
 named!(pub identifier<&[u8], String>, do_parse!(
     res: map_res!(
-        recognize!(do_parse!(alpha >> many0!(alt!(tag!("_") | alphanumeric)) >> (()) )),
+        recognize!(do_parse!(alpha >> many0!(alt!(tag!("_") | alphanumeric)) >> () )),
         str::from_utf8
     ) >>
     ( res.to_string() )
@@ -107,9 +107,9 @@ named!(factor<&[u8], Factor>, do_parse!(
         let res = b.into_iter().fold(a, |acc, rf| {
             trace!("::: acc, rf: {:?}, {:?}", acc, rf);
             match rf {
-                RevFactor::Attribute(id) => Factor::Attribute(Attribute { id: id, on: box acc }),
+                RevFactor::Attribute(id) => Factor::Attribute(Attribute { id, on: box acc }),
                 RevFactor::Index(expr) => Factor::Index(Index { index: box expr, on: box acc }),
-                RevFactor::Invocation(args) => Factor::Invocation(Invocation { args: args, on: box acc }),
+                RevFactor::Invocation(args) => Factor::Invocation(Invocation { args, on: box acc }),
             }
         } );
         trace!("::: factor: {:?}", res);
@@ -154,7 +154,7 @@ named!(variable<&[u8], Factor>, do_parse!(
     ({
         let var = Factor::Variable(id);
         let v = match inv {
-            Some(args) => Invocation { on: Box::new(var), args: args } .into(),
+            Some(args) => Invocation { on: Box::new(var), args } .into(),
             None => var
         };
         trace!("::: v: {:?}", v);

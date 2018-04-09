@@ -15,7 +15,7 @@ impl LoopState {
         LoopState {
             index: 0,
             is_first: true,
-            is_last: is_last,
+            is_last,
         }
     }
 
@@ -23,7 +23,7 @@ impl LoopState {
         LoopState {
             index: self.index + 1,
             is_first: false,
-            is_last: is_last,
+            is_last,
         }
     }
 }

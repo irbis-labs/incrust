@@ -70,7 +70,7 @@ fn invokables() {
     incrust.loaders.push(FilesystemLoader::new(&Path::new("./assets/tpl/simple")));
     let sample_loader = FilesystemLoader::new(&Path::new("./assets/html/simple"));
 
-    fn title<'res>(_: &[Arg<'res>], _: &'res VarContext<'res>) -> EvalResult<Arg<'res>> {
+    fn title<'res, 'ctx>(_: &[Arg<'res>], _: &'ctx VarContext<'res>) -> EvalResult<Arg<'res>> {
         Ok(Some(ex("fruits")))
     }
 

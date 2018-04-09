@@ -1,7 +1,10 @@
 
 ![](https://img.shields.io/crates/l/incrust.svg)
 [![crates.io](https://img.shields.io/crates/v/incrust.svg)](https://crates.io/crates/incrust)
-[![Build Status](https://travis-ci.org/alexander-irbis/robots_txt.svg)](https://travis-ci.org/alexander-irbis/incrust)
+
+[![Build Status](https://travis-ci.org/alexander-irbis/incrust.svg)](https://travis-ci.org/alexander-irbis/incrust)
+![Minimal rust version -](https://img.shields.io/badge/stable-_--_-red.svg)
+![Nightly rust version from April 08, 2018](https://img.shields.io/badge/nightly-2018--04--08-yellow.svg)
 
 ## {% Incrust %}
 
@@ -267,7 +270,7 @@ If you are looking for a template engine for your project, you may also look at 
 
 ## License
 
-Licensed under either of
+This project is licensed under either of
  * Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
  * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 at your option.
