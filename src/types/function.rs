@@ -8,14 +8,14 @@ use Arg;
 
 
 pub struct Function {
-    pub f: for <'res: 'ctx, 'ctx> fn(&[Arg<'res>], &'ctx VarContext<'res>) -> EvalResult<Arg<'res>>,
+    pub f: for <'res, 'ctx> fn(&[Arg<'res>], &'ctx VarContext<'res>) -> EvalResult<Arg<'res>>,
 }
 
 impl Function {
     // TODO update API to satisfy convention
     #[cfg_attr(feature = "cargo-clippy", allow(new_ret_no_self))]
-    pub fn new(f: for <'res: 'ctx, 'ctx> fn(&[Arg<'res>], &'ctx VarContext<'res>) -> EvalResult<Arg<'res>>) -> Arg<'static> {
-        Arg::Owned(box Function { f: f })
+    pub fn new(f: for <'res, 'ctx> fn(&[Arg<'res>], &'ctx VarContext<'res>) -> EvalResult<Arg<'res>>) -> Arg<'static> {
+        Arg::Owned(box Function { f })
     }
 }
 

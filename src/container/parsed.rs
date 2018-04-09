@@ -110,13 +110,13 @@ impl Default for NamedStatement {
 //    }
 //}
 
-impl Mustache { pub fn new(expr: FullExpression) -> Self { Mustache { expr: expr } } }
+impl Mustache { pub fn new(expr: FullExpression) -> Self { Mustache { expr } } }
 impl From<Mustache> for ParsedNode { fn from(v: Mustache) -> Self { ParsedNode::Mustache(v) } }
 
 
 impl FullExpression {
     pub fn new(expr: DisjExpr, filters: Vec<FilterItem>) -> Self {
-        FullExpression { expr: expr, filters: filters }
+        FullExpression { expr, filters }
     }
 }
 

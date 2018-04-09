@@ -30,7 +30,7 @@ quiet           = []
 
 [dependencies]
 marksman_escape = "0.1.2"
-log             = "0.3"
-maplit          = "0.1"
+log             = "0.4"
+maplit          = "1.0"
 nom             = { version = "^3.0", features = ["verbose-errors"] }
-url             = "^1.4"
+url             = "1.4"

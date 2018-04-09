@@ -103,9 +103,9 @@ pub fn render_block<W: fmt::Write>(writer: &mut W, context: &VarContext, name: &
 
 pub fn render_include<W: fmt::Write>(writer: &mut W, context: &VarContext, expr: &FullExpression) -> RenderResult<()> {
     let name = eval_expr(context, &expr.expr)?
-        .ok_or(LoadError::BadName("Can't evaluate name (None result)".into()))?;
+        .ok_or_else(|| LoadError::BadName("Can't evaluate name (None result)".into()))?;
     let name = name.try_as_string()
-        .ok_or(LoadError::BadName("Name is not string".into()))?;
+        .ok_or_else(|| LoadError::BadName("Name is not string".into()))?;
     let template = context.global().env().get_template(&name)?;
     // FIXME Base context
     // render_text(writer, &context.global().top_scope(), template.root.as_slice())

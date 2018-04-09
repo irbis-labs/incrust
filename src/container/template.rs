@@ -51,7 +51,7 @@ impl Template {
                 pub fn new(need_strip_left: bool) -> Self {
                     TextCompleter {
                         text: Default::default(),
-                        need_strip_left: need_strip_left,
+                        need_strip_left,
                     }
                 }
 
@@ -145,8 +145,8 @@ impl Template {
                             None => None,
                         };
                         nodes.push(IfStatement {
-                            if_branches: if_branches,
-                            else_branch: else_branch,
+                            if_branches,
+                            else_branch,
                         }.into());
                     },
                     ParsedNode::Block(node) => {
@@ -193,9 +193,9 @@ impl Template {
         Ok(if let Some(fe) = self.extends.as_ref() {
             Some({
                 let name = eval_expr(context, &fe.expr)?
-                    .ok_or(LoadError::BadName("Can't evaluate name (None result)".into()))?;
+                    .ok_or_else(|| LoadError::BadName("Can't evaluate name (None result)".into()))?;
                 let name = name.try_as_string()
-                    .ok_or(LoadError::BadName("Name is not string".into()))?;
+                    .ok_or_else(|| LoadError::BadName("Name is not string".into()))?;
                 context.env().get_template(&name)?
             })
         } else {
