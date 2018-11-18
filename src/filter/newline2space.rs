@@ -31,7 +31,7 @@ fn is_nl(c: char) -> bool {
 
 #[cfg(test)]
 mod tests {
-    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
+    #![allow(clippy::used_underscore_binding)]
 
     use {Incrust, ex, Args};
 

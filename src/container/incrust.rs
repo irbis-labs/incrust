@@ -116,7 +116,7 @@ impl Incrust {
 
 #[cfg(test)]
 mod tests {
-    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
+    #![allow(clippy::used_underscore_binding)]
     use super::*;
 
     #[test]

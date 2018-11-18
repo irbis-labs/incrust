@@ -18,7 +18,7 @@ struct Fruit {
 }
 
 impl Fruit {
-    pub fn new(title: &str, price: f64) -> Fruit { Fruit { title: title.to_owned(), price: price } }
+    pub fn new(title: &str, price: f64) -> Fruit { Fruit { title: title.to_owned(), price } }
 }
 
 impl <'t> Type<'t> for Fruit {

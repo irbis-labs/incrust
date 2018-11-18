@@ -131,7 +131,7 @@ impl Template {
                         };
                         let strip_left: Vec<bool> = node.if_branches.iter().skip(1)
                             .map(|next| next.begin.strip_left)
-                            .chain(last_strip_left.into_iter().cloned())
+                            .chain(last_strip_left.iter().cloned())
                             .collect();
                         let mut if_branches = Vec::with_capacity(node.if_branches.len());
                         for (branch, strip_left) in node.if_branches.into_iter().zip(strip_left.into_iter()) {
