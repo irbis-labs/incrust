@@ -117,7 +117,7 @@ mod tests {
     #[test]
     fn literal_str() {
         use container::expression::Literal::Str;
-        assert_eq!(Done(&b""[..], Str(r#" {{ "#.into()).into()),        super::lit_str(br#"" {{ ""#));
+        assert_eq!(Done(&b""[..], Str(r#" {{ "#.into())),               super::lit_str(br#"" {{ ""#));
         assert_eq!(Done(&b""[..], Str(r#" {{ "#.into()).into()),        super::literal(br#"" {{ ""#));
         assert_eq!(Done(&b""[..], Str(r#"{{"#.into()).into()),          super::literal(br#""{{""#));
         assert_eq!(Done(&b""[..], Str("New\nline".into()).into()),      super::literal(br#""New\nline""#));
@@ -134,14 +134,14 @@ mod tests {
         assert_eq!(Ok('\\'),                                super::parse_char("\\"));
         assert_eq!(Ok('\n'),                                super::parse_char("\n"));
 
-        assert_eq!(Done(&b""[..], Char('\\').into()),       super::lit_char(br#"'\\'"#));
-        assert_eq!(Done(&b""[..], Char('\'').into()),       super::lit_char(br#"'\''"#));
-        assert_eq!(Done(&b""[..], Char('"') .into()),       super::lit_char(br#"'\"'"#));
-        assert_eq!(Done(&b""[..], Char('"') .into()),       super::lit_char(br#"'"'"#));
-        assert_eq!(Done(&b""[..], Char('\t').into()),       super::lit_char(br#"'\t'"#));
-        assert_eq!(Done(&b""[..], Char('\r').into()),       super::lit_char(br#"'\r'"#));
-        assert_eq!(Done(&b""[..], Char('\n').into()),       super::lit_char(br#"'\n'"#));
-        assert_eq!(Done(&b""[..], Char(' ') .into()),       super::lit_char(br#"' '"#));
+        assert_eq!(Done(&b""[..], Char('\\')),              super::lit_char(br#"'\\'"#));
+        assert_eq!(Done(&b""[..], Char('\'')),              super::lit_char(br#"'\''"#));
+        assert_eq!(Done(&b""[..], Char('"') ),              super::lit_char(br#"'\"'"#));
+        assert_eq!(Done(&b""[..], Char('"') ),              super::lit_char(br#"'"'"#));
+        assert_eq!(Done(&b""[..], Char('\t')),              super::lit_char(br#"'\t'"#));
+        assert_eq!(Done(&b""[..], Char('\r')),              super::lit_char(br#"'\r'"#));
+        assert_eq!(Done(&b""[..], Char('\n')),              super::lit_char(br#"'\n'"#));
+        assert_eq!(Done(&b""[..], Char(' ') ),              super::lit_char(br#"' '"#));
 
         assert!(super::lit_char(br#"''"#).is_err());
         assert!(super::lit_char(br#"'  '"#).is_err());
@@ -150,25 +150,25 @@ mod tests {
     #[test]
     fn literal_int() {
         use container::expression::Literal::Int;
-        assert_eq!(Ok(Int(42)),                             super::parse_int("42"));
-        assert_eq!(Done(&b""[..], Int(42).into()),          super::lit_num(b"42"));
-        assert_eq!(Done(&b""[..], Int(42).into()),          super::literal(b"42"));
+        assert_eq!(Ok(Int(42)),                                 super::parse_int("42"));
+        assert_eq!(Done(&b""[..], Int(42)),                     super::lit_num(b"42"));
+        assert_eq!(Done(&b""[..], Int(42).into()),              super::literal(b"42"));
     }
 
     #[test]
     fn literal_real() {
-        #![cfg_attr(feature = "cargo-clippy", allow(approx_constant))]
+        #![allow(clippy::approx_constant)]
         use container::expression::Literal::Real;
-        assert_eq!(Ok(Real(3.1415926)),                     super::parse_float("3.1415926"));
-        assert_eq!(Ok(Real(0.1)),                           super::parse_float(".1"));
-        assert_eq!(Ok(Real(1.0)),                           super::parse_float("1."));
+        assert_eq!(Ok(Real(3.141_592_6)),                       super::parse_float("3.1415926"));
+        assert_eq!(Ok(Real(0.1)),                               super::parse_float(".1"));
+        assert_eq!(Ok(Real(1.0)),                               super::parse_float("1."));
 
-        assert_eq!(Done(&b""[..], Real(3.1415926).into()),  super::lit_num(b"3.1415926"));
-        assert_eq!(Done(&b""[..], Real(0.1).into()),        super::lit_num(b".1"));
-        assert_eq!(Done(&b""[..], Real(1.0).into()),        super::lit_num(b"1."));
+        assert_eq!(Done(&b""[..], Real(3.141_592_6)),           super::lit_num(b"3.1415926"));
+        assert_eq!(Done(&b""[..], Real(0.1)),                   super::lit_num(b".1"));
+        assert_eq!(Done(&b""[..], Real(1.0)),                   super::lit_num(b"1."));
 
-        assert_eq!(Done(&b""[..], Real(3.1415926).into()),  super::literal(b"3.1415926"));
-        assert_eq!(Done(&b""[..], Real(0.1).into()),        super::literal(b".1"));
-        assert_eq!(Done(&b""[..], Real(1.0).into()),        super::literal(b"1."));
+        assert_eq!(Done(&b""[..], Real(3.141_592_6).into()),    super::literal(b"3.1415926"));
+        assert_eq!(Done(&b""[..], Real(0.1).into()),            super::literal(b".1"));
+        assert_eq!(Done(&b""[..], Real(1.0).into()),            super::literal(b"1."));
     }
 }

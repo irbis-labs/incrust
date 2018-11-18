@@ -207,7 +207,7 @@ pub fn literal(l: &Literal) -> EvalResult<Arg<'static>> {
 
 #[cfg(test)]
 mod tests {
-    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
+    #![allow(clippy::used_underscore_binding)]
     use nom::IResult;
     use std::fmt::Debug;
 

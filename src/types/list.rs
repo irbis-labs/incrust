@@ -8,7 +8,7 @@ impl <'r, 't> Type<'t> for Vec<Arg<'r>> {
 //    }
     fn clone_type(&self) -> Arg<'static> {
         Arg::Owned(
-            box self.into_iter()
+            box self.iter()
                 .map(|v| (*v).clone_type())
                 .collect::<Vec<Arg<'static>>>()
         )
@@ -118,7 +118,7 @@ impl <'r, 't> Type<'t> for &'r [Arg<'r>] {
     //    }
     fn clone_type(&self) -> Arg<'static> {
         Arg::Owned(
-            box self.into_iter()
+            box self.iter()
                 .map(|v| (*v).clone_type())
                 .collect::<Vec<Arg<'static>>>()
         )

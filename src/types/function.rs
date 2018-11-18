@@ -13,7 +13,7 @@ pub struct Function {
 
 impl Function {
     // TODO update API to satisfy convention
-    #[cfg_attr(feature = "cargo-clippy", allow(new_ret_no_self))]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(f: for <'res, 'ctx> fn(&[Arg<'res>], &'ctx VarContext<'res>) -> EvalResult<Arg<'res>>) -> Arg<'static> {
         Arg::Owned(box Function { f })
     }

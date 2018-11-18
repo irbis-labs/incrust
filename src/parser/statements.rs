@@ -171,7 +171,7 @@ named!(pub include_block<&[u8], ParsedNode>, do_parse!(
 
 #[cfg(test)]
 mod tests {
-    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
+    #![allow(clippy::used_underscore_binding)]
 
     use nom::IResult::Done;
     use container::expression::*;

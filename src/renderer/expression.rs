@@ -143,7 +143,7 @@ pub fn render_literal<W: fmt::Write>(writer: &mut W, l: &Literal) -> RenderResul
 
 #[cfg(test)]
 mod tests {
-    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
+    #![allow(clippy::used_underscore_binding)]
     use std::fmt::Debug;
 
     use nom::IResult;
