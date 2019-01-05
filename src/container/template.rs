@@ -65,8 +65,8 @@ impl Template {
 
                     let txt: Cow<str> = match (self.need_strip_left, need_strip_right) {
                         (true, true) => txt.trim().into(),
-                        (true, false) => txt.trim_left().into(),
-                        (false, true) => txt.trim_right().into(),
+                        (true, false) => txt.trim_start().into(),
+                        (false, true) => txt.trim_end().into(),
                         (false, false) => txt.into(),
                     };
 
