@@ -2,8 +2,8 @@ use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
 
-use container::expression::Factor;
-use container::expression::Literal;
+use crate::container::expression::Factor;
+use crate::container::expression::Literal;
 
 
 pub fn literal(input: &[u8]) -> IResult<&[u8], Factor> {
@@ -116,7 +116,7 @@ mod tests {
 
     #[test]
     fn literal_str() {
-        use container::expression::Literal::Str;
+        use crate::container::expression::Literal::Str;
         assert_eq!(Done(&b""[..], Str(r#" {{ "#.into())),               super::lit_str(br#"" {{ ""#));
         assert_eq!(Done(&b""[..], Str(r#" {{ "#.into()).into()),        super::literal(br#"" {{ ""#));
         assert_eq!(Done(&b""[..], Str(r#"{{"#.into()).into()),          super::literal(br#""{{""#));
@@ -126,7 +126,7 @@ mod tests {
 
     #[test]
     fn literal_char() {
-        use container::expression::Literal::Char;
+        use crate::container::expression::Literal::Char;
         assert_eq!("\\\\",                                  r#"\\"#);
 
         assert_eq!(Done(&b""[..], r#"\"#),                  super::char_escaped(br#"\\"#));
@@ -149,7 +149,7 @@ mod tests {
 
     #[test]
     fn literal_int() {
-        use container::expression::Literal::Int;
+        use crate::container::expression::Literal::Int;
         assert_eq!(Ok(Int(42)),                                 super::parse_int("42"));
         assert_eq!(Done(&b""[..], Int(42)),                     super::lit_num(b"42"));
         assert_eq!(Done(&b""[..], Int(42).into()),              super::literal(b"42"));
@@ -158,7 +158,7 @@ mod tests {
     #[test]
     fn literal_real() {
         #![allow(clippy::approx_constant)]
-        use container::expression::Literal::Real;
+        use crate::container::expression::Literal::Real;
         assert_eq!(Ok(Real(3.141_592_6)),                       super::parse_float("3.1415926"));
         assert_eq!(Ok(Real(0.1)),                               super::parse_float(".1"));
         assert_eq!(Ok(Real(1.0)),                               super::parse_float("1."));

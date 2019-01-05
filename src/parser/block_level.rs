@@ -2,12 +2,12 @@ use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
 
-use container::expression::Mustache;
-use container::parsed::ParsedNode;
+use crate::container::expression::Mustache;
+use crate::container::parsed::ParsedNode;
 
-use parser::statements::statement;
-use parser::statements::stmt_edge;
-use parser::expressions::full_expression;
+use crate::parser::statements::statement;
+use crate::parser::statements::stmt_edge;
+use crate::parser::expressions::full_expression;
 
 
 named!(pub text<&[u8], Vec<ParsedNode> >, terminated!( nodes, eof!() ) );

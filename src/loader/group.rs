@@ -1,4 +1,4 @@
-use ::abc::{Loader, LoadResult, LoadError};
+use crate::abc::{Loader, LoadResult, LoadError};
 
 pub type GroupLoader = Vec<Box<Loader>>;
 

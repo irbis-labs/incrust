@@ -1,8 +1,8 @@
 use std::fmt;
 
-use abc::RenderResult;
-use VarContext;
-use container::expression::*;
+use crate::abc::RenderResult;
+use crate::VarContext;
+use crate::container::expression::*;
 
 
 pub fn render_expr<W: fmt::Write>(writer: &mut W, context: &VarContext, expr: &DisjExpr) -> RenderResult<()> {
@@ -148,8 +148,8 @@ mod tests {
 
     use nom::IResult;
 
-    use {Incrust, Args, ex, Template};
-    use parser::expressions::expression as parse_expr;
+    use crate::{Incrust, Args, ex, Template};
+    use crate::parser::expressions::expression as parse_expr;
 
     fn unwrap_iresult<B: Debug, T>(result: IResult<B, T>) -> T {
         match result {

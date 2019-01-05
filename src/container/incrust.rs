@@ -1,9 +1,9 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use abc::*;
-use loader::GroupLoader;
-use {Args, Arg, ex, Stack, VarContext, Template};
+use crate::abc::*;
+use crate::loader::GroupLoader;
+use crate::{Args, Arg, ex, Stack, VarContext, Template};
 
 
 #[derive(Debug)]
@@ -16,7 +16,7 @@ pub struct Incrust {
 
 impl Default for Incrust {
     fn default() -> Self {
-        use ::filter::*;
+        use crate::filter::*;
 
         let mut filters: HashMap<Cow<'static, str>, Box<Filter>> = HashMap::new();
 
@@ -101,7 +101,7 @@ impl Incrust {
     }
 
     pub fn render_prepared<'r>(&self, context: &'r VarContext<'r>) -> RenderResult<String> {
-        ::renderer::text(context)
+        crate::renderer::text(context)
             .map_err(|err| {
                 debug!("Render error: {:?}", err);
                 err

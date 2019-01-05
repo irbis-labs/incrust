@@ -1,10 +1,10 @@
 use std::fmt;
 
-use abc::*;
-use container::expression::*;
-use container::template::*;
-use renderer::Writer;
-use {Arg, Args, VarContext};
+use crate::abc::*;
+use crate::container::expression::*;
+use crate::container::template::*;
+use crate::renderer::Writer;
+use crate::{Arg, Args, VarContext};
 
 use super::eval_expr;
 
@@ -55,7 +55,7 @@ pub fn render_for<W: fmt::Write>(writer: &mut W, context: &VarContext, stmt: &Fo
     // FIXME implement instead: expression(&stmt.begin.expression, context)
     if let Some(value) = eval_expr(context, &stmt.expression.expr)? {
         if let Some(iterable) = value.try_as_iterable() {
-            use container::cycle::LoopState;
+            use crate::container::cycle::LoopState;
             // TODO the "last" marker in a loop
             let mut state = LoopState::new(false);
             for v in iterable.ivalues() {

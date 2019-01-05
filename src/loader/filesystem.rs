@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
-use ::abc::{Loader, LoadResult, LoadError};
+use crate::abc::{Loader, LoadResult, LoadError};
 
 #[derive(Debug)]
 pub struct FilesystemLoader {

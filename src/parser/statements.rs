@@ -2,8 +2,8 @@ use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
 
-use container::expression::*;
-use container::parsed::*;
+use crate::container::expression::*;
+use crate::container::parsed::*;
 
 use super::block_level::nodes;
 
@@ -174,9 +174,9 @@ mod tests {
     #![allow(clippy::used_underscore_binding)]
 
     use nom::IResult::Done;
-    use container::expression::*;
-    use container::parsed::*;
-    use container::parsed::ParsedNode::*;
+    use crate::container::expression::*;
+    use crate::container::parsed::*;
+    use crate::container::parsed::ParsedNode::*;
 
     #[test]
     fn statement() {

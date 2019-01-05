@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
-use abc::*;
-use {Args, Arg, Incrust, Template};
+use crate::abc::*;
+use crate::{Args, Arg, Incrust, Template};
 
 
 pub type TemplateStack<'a> = Vec<&'a Template>;

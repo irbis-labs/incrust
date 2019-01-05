@@ -1,5 +1,5 @@
-use abc::{Filter, FilterResult};
-use {VarContext, ex, Arg};
+use crate::abc::{Filter, FilterResult};
+use crate::{VarContext, ex, Arg};
 
 
 #[derive(Debug)]
@@ -33,7 +33,7 @@ fn is_nl(c: char) -> bool {
 mod tests {
     #![allow(clippy::used_underscore_binding)]
 
-    use {Incrust, ex, Args};
+    use crate::{Incrust, ex, Args};
 
     #[test]
     fn it_works() {

@@ -16,6 +16,7 @@ exclude = [
     "appveyor.yml",
 ]
 #build = "build.rs"
+edition = "2018"
 publish = true
 
 [badges]

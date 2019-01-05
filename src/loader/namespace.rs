@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use ::abc::{Loader, LoadResult, LoadError};
+use crate::abc::{Loader, LoadResult, LoadError};
 
 
 #[derive(Debug)]

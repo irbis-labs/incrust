@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::convert::AsRef;
 use std::ops::Deref;
 
-use types::abc::Type;
+use crate::types::abc::Type;
 
 
 pub type EntityId<'a> = Cow<'a, str>;

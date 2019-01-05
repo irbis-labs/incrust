@@ -1,6 +1,6 @@
-use abc::{EvalResult, EvalError, InvokeError};
-use container::expression::*;
-use {Arg, VarContext};
+use crate::abc::{EvalResult, EvalError, InvokeError};
+use crate::container::expression::*;
+use crate::{Arg, VarContext};
 
 
 pub fn eval_expr<'r: 'c, 'c>(context: &'c VarContext<'r>, disj_expr: &DisjExpr) -> EvalResult<Arg<'r>> {
@@ -211,9 +211,9 @@ mod tests {
     use nom::IResult;
     use std::fmt::Debug;
 
-    use abc::*;
-    use {Incrust, Arg, Args, VarContext, ex, Template};
-    use parser::expressions::expression as parse_expr;
+    use crate::abc::*;
+    use crate::{Incrust, Arg, Args, VarContext, ex, Template};
+    use crate::parser::expressions::expression as parse_expr;
     use super::eval_expr;
 
 
@@ -251,7 +251,7 @@ mod tests {
 
     #[test]
     fn eval_factor() {
-        use container::expression::{Factor, Literal};
+        use crate::container::expression::{Factor, Literal};
         use super::eval_factor;
 
         let int_one: Factor = Literal::Int(1_i64).into();

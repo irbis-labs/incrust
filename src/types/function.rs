@@ -1,10 +1,10 @@
 use std::fmt::{Debug, Formatter, Error};
 
-use abc::EvalResult;
-use VarContext;
+use crate::abc::EvalResult;
+use crate::VarContext;
 
-use types::abc::*;
-use Arg;
+use crate::types::abc::*;
+use crate::Arg;
 
 
 pub struct Function {

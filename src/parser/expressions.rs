@@ -2,9 +2,9 @@ use std::str;
 #[allow(unused_imports)]
 use nom::{IResult, alpha, alphanumeric, space, multispace};
 
-use container::expression::*;
+use crate::container::expression::*;
 
-use parser::literals::literal;
+use crate::parser::literals::literal;
 
 
 // ---------------------------------------------------------------------------
@@ -268,7 +268,7 @@ mod tests {
 
     #[test]
     fn format() {
-        use container::expression::FilterItem::Simple;
+        use crate::container::expression::FilterItem::Simple;
         assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"|e"));
         assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"| e"));
         assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"|  e"));

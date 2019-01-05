@@ -21,7 +21,7 @@ macro_rules! stmt_simple {
 macro_rules! stmt_named {
     ( $i:expr, $cmd: expr ) => ({
         use nom::multispace;
-        use parser::expressions::identifier;
+        use crate::parser::expressions::identifier;
 
         do_parse!($i,
             tag!("{%")          >>
@@ -43,7 +43,7 @@ macro_rules! stmt_named {
 macro_rules! stmt_expr {
     ( $i:expr, $cmd: expr ) => ({
         use nom::multispace;
-        use parser::expressions::full_expression;
+        use crate::parser::expressions::full_expression;
 
         do_parse!($i,
             tag!("{%")          >>

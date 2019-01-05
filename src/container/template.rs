@@ -2,10 +2,10 @@ use std::convert::AsRef;
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use abc::*;
-use container::expression::*;
-use container::parsed::{ParsedNodes, ParsedNode};
-use container::stack::VarContext;
+use crate::abc::*;
+use crate::container::expression::*;
+use crate::container::parsed::{ParsedNodes, ParsedNode};
+use crate::container::stack::VarContext;
 
 
 pub type Nodes = Vec<Node>;
@@ -28,7 +28,7 @@ impl Template {
     pub fn parse(templ: &str) -> TemplateParseResult<Template> {
         use nom::IResult::*;
 
-        let nodes = ::parser::text(templ.as_bytes());
+        let nodes = crate::parser::text(templ.as_bytes());
         // trace!(" == parsed == {:?}", &parsed);
         match nodes {
             Incomplete(_) => unreachable!(),
@@ -188,7 +188,7 @@ impl Template {
     }
 
     pub fn get_parent(&self, context: &VarContext) -> RenderResult<Option<Self>> {
-        use ::renderer::evaluator::eval_expr;
+        use crate::renderer::evaluator::eval_expr;
 
         Ok(if let Some(fe) = self.extends.as_ref() {
             Some({

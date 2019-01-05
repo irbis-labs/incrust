@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::collections::hash_map::{HashMap};
 use std::hash::BuildHasher;
 
-use ::abc::{Loader, LoadResult, LoadError};
+use crate::abc::{Loader, LoadResult, LoadError};
 
 pub type DictLoader = HashMap<Cow<'static, str>, Cow<'static, str>>;
 

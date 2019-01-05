@@ -1,9 +1,9 @@
 use std::borrow::Cow;
 use std::cmp::Ordering;
 
-use types::abc::*;
+use crate::types::abc::*;
 //use types::function::Function;
-use {Arg, ex};
+use crate::{Arg, ex};
 
 
 impl <'t> Type<'t> for String {

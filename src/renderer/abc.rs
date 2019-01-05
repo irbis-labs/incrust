@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 use std::fmt;
 
-use abc::*;
-use {Arg, VarContext};
+use crate::abc::*;
+use crate::{Arg, VarContext};
 
 
 pub type EvalResult<T> = Result<Option<T>, EvalError>;
