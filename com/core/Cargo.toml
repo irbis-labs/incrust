@@ -33,7 +33,7 @@ quiet           = []
 marksman_escape = "0.1.2"
 log             = "0.4"
 maplit          = "1.0"
-nom             = { version = "^3.0", features = ["verbose-errors"] }
+nom             = { version = "4.0", features = ["verbose-errors"] }
 url             = "1.4"
 
 format = { package = "incrust-format", path = "../format" }

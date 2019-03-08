@@ -1,6 +1,6 @@
 use std::str;
 #[allow(unused_imports)]
-use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
+use nom::{IResult, Err as NomErr, Context, ErrorKind, alpha, alphanumeric, space, multispace};
 
 use crate::container::expression::Mustache;
 use crate::container::parsed::ParsedNode;
@@ -15,7 +15,7 @@ named!(pub text<&[u8], Vec<ParsedNode> >, terminated!( nodes, eof!() ) );
 
 pub fn nodes(input: &[u8]) -> IResult<&[u8], Vec<ParsedNode> > {
     let (i, list) = try_parse!(input, many0!(node) );
-    IResult::Done(i, list)
+    Ok((i, list))
 }
 
 
@@ -41,7 +41,7 @@ fn comment(input: &[u8]) -> IResult<&[u8], ParsedNode> {
             tag!("#}")
         )
     );
-    IResult::Done(i, ParsedNode::Comment(comment.to_owned()))
+    Ok((i, ParsedNode::Comment(comment.to_owned())))
 }
 
 
@@ -61,11 +61,11 @@ fn plain_text(input: &[u8]) -> IResult<&[u8], ParsedNode> {
     fn try_brace<'a>(input: &'a [u8]) -> IResult<&[u8], &str> {
         let b = || -> IResult<&'a [u8], ()> {
             let _ = try_parse!(input, alt!( mustache | comment | stmt_edge ) );
-            IResult::Done(input, ())
+            Ok((input, ()))
         };
-        match b().is_done() {
-            false   => IResult::Done(&input[1..], "{"),
-            true    => IResult::Error(NomErr::Code(ErrorKind::Custom(0))),
+        match b() {
+            Err(_) => Ok((&input[1..], "{")),
+            Ok((i, ())) => Err(NomErr::Error(Context::Code(i, ErrorKind::Custom(0)))),
         }
     }
 
@@ -77,7 +77,7 @@ fn plain_text(input: &[u8]) -> IResult<&[u8], ParsedNode> {
             ( v.join("") )
         )
     );
-    IResult::Done(i, ParsedNode::Text(text))
+    Ok((i, ParsedNode::Text(text)))
 }
 
 

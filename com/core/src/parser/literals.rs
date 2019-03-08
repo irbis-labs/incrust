@@ -1,6 +1,6 @@
 use std::str;
 #[allow(unused_imports)]
-use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
+use nom::{IResult, Err as NomErr, Context, ErrorKind, alpha, alphanumeric, space, multispace};
 
 use crate::container::expression::Factor;
 use crate::container::expression::Literal;
@@ -8,7 +8,7 @@ use crate::container::expression::Literal;
 
 pub fn literal(input: &[u8]) -> IResult<&[u8], Factor> {
     let (i, l) = try_parse!(input, alt!(lit_str | lit_char | lit_num) );
-    IResult::Done(i, Factor::Literal(l))
+    Ok((i, Factor::Literal(l)))
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -16,8 +16,8 @@ pub fn literal(input: &[u8]) -> IResult<&[u8], Factor> {
 pub fn lit_num(input: &[u8]) -> IResult<&[u8], Literal> {
     let (i, s) = try_parse!(input, map_res!( is_a!("0123456789."), str::from_utf8 ) );
     match parse_int(s).or_else(|_| parse_float(s)) {
-        Ok(res) => IResult::Done(i, res),
-        Err(err) => IResult::Error(NomErr::Code(ErrorKind::Custom(err))),
+        Ok(res) => Ok((i, res)),
+        Err(err) => Err(NomErr::Error(Context::Code(i, ErrorKind::Custom(err)))),
     }
 }
 
@@ -43,8 +43,8 @@ fn lit_char(input: &[u8]) -> IResult<&[u8], Literal> {
     );
     trace!("lit_char {:?}", s);
     match parse_char(s.as_str()) {
-        Ok(chr) => IResult::Done(i, Literal::Char(chr)),
-        Err(err) => IResult::Error(NomErr::Code(ErrorKind::Custom(err))),
+        Ok(chr) => Ok((i, Literal::Char(chr))),
+        Err(err) => Err(NomErr::Error(Context::Code(i, ErrorKind::Custom(err))),
     }
 }
 
@@ -103,25 +103,23 @@ named!(pub str_char<&[u8], &str>, map_res!( is_not!(r#"\""#), str::from_utf8 ) )
 
 #[cfg(test)]
 mod tests {
-    use nom::IResult::Done;
-
     #[test]
     fn literal_str_char() {
-        assert_eq!(Done(&b""[..], r#"\"#), super::char_escaped(br#"\\"#));
-        assert_eq!(Done(&b""[..], r#"""#), super::char_escaped(br#"\""#));
-        assert_eq!(Done(&b""[..], "\t"),   super::char_escaped(br#"\t"#));
-        assert_eq!(Done(&b""[..], "\r"),   super::char_escaped(br#"\r"#));
-        assert_eq!(Done(&b""[..], "\n"),   super::char_escaped(br#"\n"#));
+        assert_eq!(Ok((&b""[..], r#"\"#)), super::char_escaped(br#"\\"#));
+        assert_eq!(Ok((&b""[..], r#"""#)), super::char_escaped(br#"\""#));
+        assert_eq!(Ok((&b""[..], "\t")),   super::char_escaped(br#"\t"#));
+        assert_eq!(Ok((&b""[..], "\r")),   super::char_escaped(br#"\r"#));
+        assert_eq!(Ok((&b""[..], "\n")),   super::char_escaped(br#"\n"#));
     }
 
     #[test]
     fn literal_str() {
         use crate::container::expression::Literal::Str;
-        assert_eq!(Done(&b""[..], Str(r#" {{ "#.into())),               super::lit_str(br#"" {{ ""#));
-        assert_eq!(Done(&b""[..], Str(r#" {{ "#.into()).into()),        super::literal(br#"" {{ ""#));
-        assert_eq!(Done(&b""[..], Str(r#"{{"#.into()).into()),          super::literal(br#""{{""#));
-        assert_eq!(Done(&b""[..], Str("New\nline".into()).into()),      super::literal(br#""New\nline""#));
-        assert_eq!(Done(&b""[..], Str(r#""Quotes""#.into()).into()),    super::literal(br#""\"Quotes\"""#));
+        assert_eq!(Ok((&b""[..], Str(r#" {{ "#.into()))),               super::lit_str(br#"" {{ ""#));
+        assert_eq!(Ok((&b""[..], Str(r#" {{ "#.into()).into())),        super::literal(br#"" {{ ""#));
+        assert_eq!(Ok((&b""[..], Str(r#"{{"#.into()).into())),          super::literal(br#""{{""#));
+        assert_eq!(Ok((&b""[..], Str("New\nline".into()).into())),      super::literal(br#""New\nline""#));
+        assert_eq!(Ok((&b""[..], Str(r#""Quotes""#.into()).into())),    super::literal(br#""\"Quotes\"""#));
     }
 
     #[test]
@@ -129,19 +127,19 @@ mod tests {
         use crate::container::expression::Literal::Char;
         assert_eq!("\\\\",                                  r#"\\"#);
 
-        assert_eq!(Done(&b""[..], r#"\"#),                  super::char_escaped(br#"\\"#));
+        assert_eq!(Ok((&b""[..], r#"\"#)),                  super::char_escaped(br#"\\"#));
 
         assert_eq!(Ok('\\'),                                super::parse_char("\\"));
         assert_eq!(Ok('\n'),                                super::parse_char("\n"));
 
-        assert_eq!(Done(&b""[..], Char('\\')),              super::lit_char(br#"'\\'"#));
-        assert_eq!(Done(&b""[..], Char('\'')),              super::lit_char(br#"'\''"#));
-        assert_eq!(Done(&b""[..], Char('"') ),              super::lit_char(br#"'\"'"#));
-        assert_eq!(Done(&b""[..], Char('"') ),              super::lit_char(br#"'"'"#));
-        assert_eq!(Done(&b""[..], Char('\t')),              super::lit_char(br#"'\t'"#));
-        assert_eq!(Done(&b""[..], Char('\r')),              super::lit_char(br#"'\r'"#));
-        assert_eq!(Done(&b""[..], Char('\n')),              super::lit_char(br#"'\n'"#));
-        assert_eq!(Done(&b""[..], Char(' ') ),              super::lit_char(br#"' '"#));
+        assert_eq!(Ok((&b""[..], Char('\\'))),              super::lit_char(br#"'\\'"#));
+        assert_eq!(Ok((&b""[..], Char('\''))),              super::lit_char(br#"'\''"#));
+        assert_eq!(Ok((&b""[..], Char('"') )),              super::lit_char(br#"'\"'"#));
+        assert_eq!(Ok((&b""[..], Char('"') )),              super::lit_char(br#"'"'"#));
+        assert_eq!(Ok((&b""[..], Char('\t'))),              super::lit_char(br#"'\t'"#));
+        assert_eq!(Ok((&b""[..], Char('\r'))),              super::lit_char(br#"'\r'"#));
+        assert_eq!(Ok((&b""[..], Char('\n'))),              super::lit_char(br#"'\n'"#));
+        assert_eq!(Ok((&b""[..], Char(' ') )),              super::lit_char(br#"' '"#));
 
         assert!(super::lit_char(br#"''"#).is_err());
         assert!(super::lit_char(br#"'  '"#).is_err());
@@ -151,8 +149,8 @@ mod tests {
     fn literal_int() {
         use crate::container::expression::Literal::Int;
         assert_eq!(Ok(Int(42)),                                 super::parse_int("42"));
-        assert_eq!(Done(&b""[..], Int(42)),                     super::lit_num(b"42"));
-        assert_eq!(Done(&b""[..], Int(42).into()),              super::literal(b"42"));
+        assert_eq!(Ok((&b""[..], Int(42))),                     super::lit_num(b"42"));
+        assert_eq!(Ok((&b""[..], Int(42).into())),              super::literal(b"42"));
     }
 
     #[test]
@@ -163,12 +161,12 @@ mod tests {
         assert_eq!(Ok(Real(0.1)),                               super::parse_float(".1"));
         assert_eq!(Ok(Real(1.0)),                               super::parse_float("1."));
 
-        assert_eq!(Done(&b""[..], Real(3.141_592_6)),           super::lit_num(b"3.1415926"));
-        assert_eq!(Done(&b""[..], Real(0.1)),                   super::lit_num(b".1"));
-        assert_eq!(Done(&b""[..], Real(1.0)),                   super::lit_num(b"1."));
+        assert_eq!(Ok((&b""[..], Real(3.141_592_6))),           super::lit_num(b"3.1415926"));
+        assert_eq!(Ok((&b""[..], Real(0.1))),                   super::lit_num(b".1"));
+        assert_eq!(Ok((&b""[..], Real(1.0))),                   super::lit_num(b"1."));
 
-        assert_eq!(Done(&b""[..], Real(3.141_592_6).into()),    super::literal(b"3.1415926"));
-        assert_eq!(Done(&b""[..], Real(0.1).into()),            super::literal(b".1"));
-        assert_eq!(Done(&b""[..], Real(1.0).into()),            super::literal(b"1."));
+        assert_eq!(Ok((&b""[..], Real(3.141_592_6).into())),    super::literal(b"3.1415926"));
+        assert_eq!(Ok((&b""[..], Real(0.1).into())),            super::literal(b".1"));
+        assert_eq!(Ok((&b""[..], Real(1.0).into())),            super::literal(b"1."));
     }
 }

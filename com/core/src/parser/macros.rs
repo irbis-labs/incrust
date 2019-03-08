@@ -71,8 +71,8 @@ macro_rules! take_till_slc (
     {
       use nom::InputLength;
       match $input.iter().enumerate().position(|(i, _)| $submac!(&$input[i..], $($args)*)) {
-        Some(n) => IResult::Done(&$input[n..], &$input[..n]),
-        None    => IResult::Done(&$input[($input).input_len()..], $input)
+        Some(n) => Ok((&$input[n..], &$input[..n])),
+        None    => Ok((&$input[($input).input_len()..], $input))
       }
     }
   );

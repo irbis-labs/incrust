@@ -256,12 +256,10 @@ named!(op_mul_bin<&[u8], MulOp>, do_parse!(
 mod tests {
     #![allow(clippy::used_underscore_binding)]
 
-    use nom::IResult::Done;
-
     #[test]
     fn identifier() {
-        assert_eq!(Done(&b""[..], "var_name".to_owned()), super::identifier(b"var_name"));
-        assert_eq!(Done(&b""[..], "var_1".to_owned()),    super::identifier(b"var_1"));
+        assert_eq!(Ok((&b""[..], "var_name".to_owned())), super::identifier(b"var_name"));
+        assert_eq!(Ok((&b""[..], "var_1".to_owned())),    super::identifier(b"var_1"));
         assert!(super::identifier(b"_wrong").is_err());
         assert!(super::identifier(b"1wrong").is_err());
     }
@@ -269,9 +267,9 @@ mod tests {
     #[test]
     fn format() {
         use crate::container::expression::FilterItem::Simple;
-        assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"|e"));
-        assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"| e"));
-        assert_eq!(Done(&b""[..], Simple("e".into())), super::filter(b"|  e"));
+        assert_eq!(Ok((&b""[..], Simple("e".into()))), super::filter(b"|e"));
+        assert_eq!(Ok((&b""[..], Simple("e".into()))), super::filter(b"| e"));
+        assert_eq!(Ok((&b""[..], Simple("e".into()))), super::filter(b"|  e"));
         assert!(super::filter(b"| 1wrong").is_err());
         assert!(super::filter(b"| _wrong").is_err());
     }

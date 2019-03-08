@@ -1,6 +1,6 @@
 use std::str;
 #[allow(unused_imports)]
-use nom::{IResult, Err as NomErr, ErrorKind, alpha, alphanumeric, space, multispace};
+use nom::{IResult, Err as NomErr, Context, ErrorKind, alpha, alphanumeric, space, multispace};
 
 use crate::container::expression::*;
 use crate::container::parsed::*;
@@ -23,7 +23,7 @@ named!(pub stmt_endraw<&[u8], SimpleStatement>, stmt_simple!("endraw"));
 
 fn raw_block(input: &[u8]) -> IResult<&[u8], ParsedNode> {
     fn is_end(input: &[u8]) -> bool {
-        stmt_endraw(input).is_done()
+        stmt_endraw(input).is_ok()
     }
     do_parse!(
         input,
@@ -91,12 +91,12 @@ pub fn for_statement(input: &[u8]) -> IResult<&[u8], ParsedForStatement> {
     let (i, (b, t, e)) = try_parse!(input, tuple!( stmt_for, nodes, stmt_endfor ) );
 
     match finish(b, t, e) {
-        Some(result) => IResult::Done(i, result),
-        None => IResult::Error(NomErr::Code(ErrorKind::Custom(1331))),
+        Some(result) => Ok((i, result)),
+        None => Err(NomErr::Error(Context::Code(i, ErrorKind::Custom(1331)))),
     }
 }
 
-// --------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 named!(pub stmt_if<&[u8], ExprStatement>, stmt_expr!("if"));
 named!(pub stmt_elif<&[u8], ExprStatement>, stmt_expr!("elif"));
@@ -173,7 +173,6 @@ named!(pub include_block<&[u8], ParsedNode>, do_parse!(
 mod tests {
     #![allow(clippy::used_underscore_binding)]
 
-    use nom::IResult::Done;
     use crate::container::expression::*;
     use crate::container::parsed::*;
     use crate::container::parsed::ParsedNode::*;
@@ -185,7 +184,7 @@ mod tests {
         let empty_statement = SimpleStatement::default();
         let strip_statement = SimpleStatement { strip_left: true, strip_right: true };
 
-        let expected = |statement: &SimpleStatement| Done(&b""[..], statement.clone());
+        let expected = |statement: &SimpleStatement| Ok((&b""[..], statement.clone()));
 
 
         assert_eq!(expected(&empty_statement),  stmt_raw(b"{%raw%}"));
@@ -204,12 +203,15 @@ mod tests {
         use super::raw_block;
 
         let expected = |txt| {
-            Done(&b""[..], Raw(
-                ParsedRawStatement {
-                    begin: SimpleStatement { strip_left: false, strip_right: false },
-                    text: String::from(txt),
-                    end: SimpleStatement { strip_left: false, strip_right: false },
-                }
+            Ok((
+                &b""[..],
+                Raw(
+                    ParsedRawStatement {
+                        begin: SimpleStatement { strip_left: false, strip_right: false },
+                        text: String::from(txt),
+                        end: SimpleStatement { strip_left: false, strip_right: false },
+                    }
+                )
             ))
         };
 
@@ -248,9 +250,9 @@ mod tests {
             end: SimpleStatement::default(),
         };
 
-        assert_eq!(Done(&b""[..], sample(false)), super::if_statement(b"{% if True %}_{% endif %}"));
-        assert_eq!(Done(&b""[..], sample(true)),  super::if_statement(b"{% if True-%}_{% endif %}"));
-        assert_eq!(Done(&b""[..], sample(true)),  super::if_statement(b"{% if True -%}_{% endif %}"));
+        assert_eq!(Ok((&b""[..], sample(false))), super::if_statement(b"{% if True %}_{% endif %}"));
+        assert_eq!(Ok((&b""[..], sample(true))),  super::if_statement(b"{% if True-%}_{% endif %}"));
+        assert_eq!(Ok((&b""[..], sample(true))),  super::if_statement(b"{% if True -%}_{% endif %}"));
     }
 
     #[test]

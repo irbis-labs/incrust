@@ -26,14 +26,11 @@ impl AsRef<Template> for Template {
 
 impl Template {
     pub fn parse(templ: &str) -> TemplateParseResult<Template> {
-        use nom::IResult::*;
-
         let nodes = crate::parser::text(templ.as_bytes());
         // trace!(" == parsed == {:?}", &parsed);
         match nodes {
-            Incomplete(_) => unreachable!(),
-            Error(err) => Err(TemplateParseError::Syntax(format!("{:?}", err).into())),
-            Done(_, nodes) => Template::from_parsed(nodes),
+            Ok((_, nodes)) => Template::from_parsed(nodes),
+            Err(err) => Err(TemplateParseError::Syntax(format!("{:?}", err).into())),
         }
     }
 

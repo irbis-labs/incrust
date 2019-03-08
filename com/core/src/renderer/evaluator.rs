@@ -208,25 +208,14 @@ pub fn literal(l: &Literal) -> EvalResult<Arg<'static>> {
 #[cfg(test)]
 mod tests {
     #![allow(clippy::used_underscore_binding)]
-    use nom::IResult;
-    use std::fmt::Debug;
-
     use crate::abc::*;
     use crate::{Incrust, Arg, Args, VarContext, ex, Template};
     use crate::parser::expressions::expression as parse_expr;
     use super::eval_expr;
 
 
-    fn unwrap_iresult<B: Debug, T>(result: IResult<B, T>) -> T {
-        match result {
-            IResult::Done(_, v) => v,
-            IResult::Error(e) => panic!("{:?}", e),
-            IResult::Incomplete(i) => panic!("{:?}", i),
-        }
-    }
-
     fn test_eval_expr(context: &VarContext, a: &str, b: &[u8]) {
-        let b = unwrap_iresult(parse_expr(b));
+        let (_, b) = parse_expr(b).expect("parse expr");
         let r = eval_expr(&context, &b);
         let res = r.unwrap().unwrap()
             .try_as_string()

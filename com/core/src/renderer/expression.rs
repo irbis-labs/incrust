@@ -144,20 +144,8 @@ pub fn render_literal<W: fmt::Write>(writer: &mut W, l: &Literal) -> RenderResul
 #[cfg(test)]
 mod tests {
     #![allow(clippy::used_underscore_binding)]
-    use std::fmt::Debug;
-
-    use nom::IResult;
-
     use crate::{Incrust, Args, ex, Template};
     use crate::parser::expressions::expression as parse_expr;
-
-    fn unwrap_iresult<B: Debug, T>(result: IResult<B, T>) -> T {
-        match result {
-            IResult::Done(_, v) => v,
-            IResult::Error(e) => panic!("{:?}", e),
-            IResult::Incomplete(i) => panic!("{:?}", i),
-        }
-    }
 
     #[test]
     fn eval_expr() {
@@ -173,7 +161,7 @@ mod tests {
         let context = incrust.create_global_context(&template, &args).unwrap();
         let context = context.top_scope();
 
-        let parse = |s| unwrap_iresult(parse_expr(s));
+        let parse = |s| parse_expr(s).expect("parse expr").1;
         let test = |s, b| {
             let mut buf = String::new();
             render_expr(&mut buf, &context, &parse(b)).unwrap();
