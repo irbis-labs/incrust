@@ -1,9 +1,7 @@
-#[macro_use]
-extern crate maplit;
-extern crate incrust;
-
 use std::path::Path;
-use incrust::{Incrust, ex, Loader, FilesystemLoader, NamespaceLoader};
+
+use incrust_core::{Incrust, ex, Loader, FilesystemLoader, NamespaceLoader};
+use maplit::hashmap;
 
 
 #[test]

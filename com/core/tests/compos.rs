@@ -1,15 +1,21 @@
 #![feature(box_syntax)]
 #![feature(specialization)]
 
-#[macro_use]
-extern crate maplit;
-extern crate incrust;
-
 use std::path::Path;
 
-use incrust::abc::EvalResult;
-use incrust::{Incrust, ex, Loader, FilesystemLoader, Type, Arg, Function, VarContext};
-use incrust::types::abc::{AsComposable, IComposable};
+use incrust_core::{
+    abc::EvalResult,
+    Incrust,
+    ex,
+    Loader,
+    FilesystemLoader,
+    Type,
+    Arg,
+    Function,
+    VarContext,
+    types::abc::{AsComposable, IComposable}
+};
+use maplit::hashmap;
 
 #[derive(Debug, Clone)]
 struct Fruit {
