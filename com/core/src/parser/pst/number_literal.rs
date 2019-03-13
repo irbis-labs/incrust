@@ -1,5 +1,3 @@
-use std::str;
-
 use nom::{
     Context::*,
     Err::*,
@@ -10,7 +8,7 @@ use nom::{
 
 use crate::container::pst::{self, ErrorKind::*};
 
-pub fn number_literal(input: Slice) -> nom::IResult<Slice, pst::Node, pst::ErrorKind> {
+pub fn number_literal(input: Slice) -> nom::IResult<Slice, pst::NumberLiteral, pst::ErrorKind> {
     // TODO allow underscore separator, e.g. 1_000_000
     let (next, part1) = complete!(input, digit)
         .map_err(|_| Error(Code(input, Custom(NotRecognized))))?;
@@ -25,11 +23,11 @@ pub fn number_literal(input: Slice) -> nom::IResult<Slice, pst::Node, pst::Error
             )
         )
     )
-        .map_err(|e| Failure(Code(input, Custom(IncorrectNumberLiteral))))?;
+        .map_err(|_| Failure(Code(input, Custom(IncorrectNumberLiteral))))?;
 
     let len = part1.len() + part2.len();
     let slice = &input[..len];
-    Ok((output, pst::Node::NumberLiteral(slice)))
+    Ok((output, pst::NumberLiteral(slice)))
 }
 
 #[cfg(test)]
@@ -41,7 +39,7 @@ mod tests {
     fn good(sample: &str) {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
-            Ok((Slice(EMPTY), pst::Node::NumberLiteral(&sample[..]))),
+            Ok((Slice(EMPTY), pst::NumberLiteral(&sample[..]))),
             number_literal(sample),
         );
     }
@@ -54,7 +52,7 @@ mod tests {
         );
     }
 
-    fn incorrect(sample: &str) {
+    fn _incorrect(sample: &str) {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
             Err(Failure(Code(sample, Custom(IncorrectNumberLiteral)))),

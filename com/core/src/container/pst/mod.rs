@@ -1,18 +1,3 @@
-#[derive(Debug, Clone, PartialEq)]
-pub enum Node<'i> {
-    CharLiteral(&'i [u8]),
-    Comment(&'i [u8]),
-    Identifier(&'i [u8]),
-    NumberLiteral(&'i [u8]),
-    Statement(
-        Box<Node<'i>>, // statement expression.
-        bool, // strip_before.
-        bool, // strip_after.
-    ),
-    StatementExpression(Box<Node<'i>>),
-    StringLiteral(&'i [u8]),
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
     IncorrectCharLiteral,
@@ -30,5 +15,36 @@ pub enum ErrorKind {
 impl From<u32> for ErrorKind {
     fn from(code: u32) -> Self {
         ErrorKind::NomCode(code)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CharLiteral<'i>(pub &'i [u8]);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Comment<'i>(pub &'i [u8]);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Identifier<'i>(pub &'i [u8]);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NumberLiteral<'i>(pub &'i [u8]);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StringLiteral<'i>(pub &'i [u8]);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StatementExpression<'i>(pub Identifier<'i>);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Statement<'i>{
+    pub expression: StatementExpression<'i>,
+    pub strip_left: bool,
+    pub strip_right: bool,
+}
+
+impl<'i> Statement<'i> {
+    pub fn new(expression: StatementExpression<'i>, strip_left: bool, strip_right: bool) -> Self {
+        Statement { expression, strip_left, strip_right }
     }
 }

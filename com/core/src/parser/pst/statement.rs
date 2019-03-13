@@ -3,16 +3,8 @@ use nom::{Context::*, Err::*, ErrorKind::*, types::CompleteByteSlice as Slice};
 use crate::container::pst::{self, ErrorKind::*};
 use crate::parser::pst::*;
 
-fn b2u(b: bool) -> usize {
-    if b {
-        1
-    } else {
-        0
-    }
-}
-
-pub fn statement(input: Slice) -> nom::IResult<Slice, pst::Node, pst::ErrorKind> {
-    let (next, tag1) = complete!(input, tag!("{%"))
+pub fn statement(input: Slice) -> nom::IResult<Slice, pst::Statement, pst::ErrorKind> {
+    let (next, _tag1) = complete!(input, tag!("{%"))
         .map_err(|_| Error(Code(input, Custom(NotRecognized))))?;
 
     let (next, strip_before) = opt!(next, tag!("-"))
@@ -26,13 +18,13 @@ pub fn statement(input: Slice) -> nom::IResult<Slice, pst::Node, pst::ErrorKind>
         .map(|(o, sa)| (o, sa.is_some()))
         .expect("spaces");
 
-    let (output, tag2) = tag!(next, "%}")
+    let (output, _tag2) = tag!(next, "%}")
         .map_err(|_| Failure(Code(input, Custom(UnclosedStatement))))?;
 
-    Ok((output, pst::Node::Statement(box stmt, strip_before, strip_after)))
+    Ok((output, pst::Statement::new(stmt, strip_before, strip_after)))
 }
 
-fn statement_expression(input: Slice) -> nom::IResult<Slice, pst::Node, pst::ErrorKind> {
+fn statement_expression(input: Slice) -> nom::IResult<Slice, pst::StatementExpression, pst::ErrorKind> {
     let (next, _) = opt!(input, nom::multispace).expect("spaces");
 
     let (next, ident) = identifier(next)
@@ -40,7 +32,7 @@ fn statement_expression(input: Slice) -> nom::IResult<Slice, pst::Node, pst::Err
 
     let (output, _) = opt!(next, nom::multispace).expect("spaces");
 
-    Ok((output, pst::Node::StatementExpression(box ident)))
+    Ok((output, pst::StatementExpression(ident)))
 }
 
 
@@ -52,10 +44,10 @@ mod tests {
 
     fn good(sample: &str, ident: &[u8], strip_before: bool, strip_after: bool) {
         let sample = Slice(sample.as_bytes());
-        let ident = box pst::Node::Identifier(ident);
-        let stmt = box pst::Node::StatementExpression(ident);
+        let ident = pst::Identifier(ident);
+        let expression = pst::StatementExpression(ident);
         assert_eq!(
-            Ok((Slice(EMPTY), pst::Node::Statement(stmt, strip_before, strip_after))),
+            Ok((Slice(EMPTY), pst::Statement::new(expression, strip_before, strip_after))),
             statement(sample),
         );
     }

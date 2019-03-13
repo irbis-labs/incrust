@@ -30,6 +30,7 @@ quiet           = []
 
 
 [dependencies]
+derive_more     = "0.14"
 log             = "0.4"
 maplit          = "1.0"
 marksman_escape = "0.1.2"

@@ -1,5 +1,3 @@
-use std::str;
-
 use nom::{
     Context::*,
     Err::*,
@@ -15,14 +13,14 @@ pub fn is_anu(ch: u8) -> bool {
     ch == b'_' || (ch as char).is_ascii_alphanumeric()
 }
 
-pub fn identifier(input: Slice) -> nom::IResult<Slice, pst::Node, pst::ErrorKind> {
+pub fn identifier(input: Slice) -> nom::IResult<Slice, pst::Identifier, pst::ErrorKind> {
     do_parse!(
         input,
         identifier: recognize!(do_parse!(
             take_while_m_n!(1, 1, is_alphabetic) >>
             take_while!(is_anu) >>
             (()) )) >>
-        ( pst::Node::Identifier(&identifier[..]) )
+        ( pst::Identifier(&identifier[..]) )
     )
         .map_err(|_| Error(Code(input, Custom(NotRecognized))))
 }
@@ -37,7 +35,7 @@ mod tests {
     fn good(sample: &str) {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
-            Ok((Slice(EMPTY), pst::Node::Identifier(&sample[..]))),
+            Ok((Slice(EMPTY), pst::Identifier(&sample[..]))),
             identifier(sample),
         );
     }

@@ -1,5 +1,3 @@
-use std::str;
-
 use nom::{
     Context::*,
     Err::*,
@@ -9,17 +7,17 @@ use nom::{
 
 use crate::container::pst::{self, ErrorKind::*};
 
-pub fn char_literal(input: Slice) -> nom::IResult<Slice, pst::Node, pst::ErrorKind> {
+pub fn char_literal(input: Slice) -> nom::IResult<Slice, pst::CharLiteral, pst::ErrorKind> {
     let (next, _) = complete!(input, char!('\''))
         .map_err(|_| Error(Code(input, Custom(NotRecognized))))?;
 
     let (next, string) = recognize!(next, check_char)
-        .map_err(|e| Failure(Code(input, Custom(IncorrectCharLiteral))))?;
+        .map_err(|_| Failure(Code(input, Custom(IncorrectCharLiteral))))?;
 
     let (output, _) = char!(next, '\'')
         .map_err(|_| Failure(Code(input, Custom(UnclosedCharLiteral))))?;
 
-    Ok((output, pst::Node::CharLiteral(&string[..])))
+    Ok((output, pst::CharLiteral(&string[..])))
 }
 
 fn check_char(input: Slice) -> nom::IResult<Slice, (), pst::ErrorKind> {
@@ -37,9 +35,9 @@ fn check_char(input: Slice) -> nom::IResult<Slice, (), pst::ErrorKind> {
             )
         ),
         (),
-        |a, i| ()
+        |_a, _i| ()
     )
-        .map_err(|e| Failure(Code(input, Custom(IncorrectCharLiteral))))?;
+        .map_err(|_| Failure(Code(input, Custom(IncorrectCharLiteral))))?;
 
     Ok((output, ()))
 }
@@ -53,7 +51,7 @@ mod tests {
     fn good(sample: &str) {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
-            Ok((Slice(EMPTY), pst::Node::CharLiteral(&sample[1..sample.len() - 1]))),
+            Ok((Slice(EMPTY), pst::CharLiteral(&sample[1..sample.len() - 1]))),
             char_literal(sample),
         );
     }
@@ -66,7 +64,7 @@ mod tests {
         );
     }
 
-    fn incorrect(sample: &str) {
+    fn _incorrect(sample: &str) {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
             Err(Failure(Code(sample, Custom(IncorrectCharLiteral)))),

@@ -2,7 +2,7 @@ use nom::{Context::*, Err::*, ErrorKind::*, types::CompleteByteSlice as Slice};
 
 use crate::container::pst::{self, ErrorKind::*};
 
-pub fn comment(input: Slice) -> nom::IResult<Slice, pst::Node, pst::ErrorKind> {
+pub fn comment(input: Slice) -> nom::IResult<Slice, pst::Comment, pst::ErrorKind> {
     let (next, tag1) = complete!(input, tag!("{#"))
         .map_err(|_| Error(Code(input, Custom(NotRecognized))))?;
 
@@ -14,7 +14,7 @@ pub fn comment(input: Slice) -> nom::IResult<Slice, pst::Node, pst::ErrorKind> {
 
     let len = tag1.len() + comment.len() + tag2.len();
     let slice = &input[..len];
-    Ok((output, pst::Node::Comment(slice)))
+    Ok((output, pst::Comment(slice)))
 }
 
 #[cfg(test)]
@@ -26,7 +26,7 @@ mod tests {
     fn good(sample: &str) {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
-            Ok((Slice(EMPTY), pst::Node::Comment(&sample[..]))),
+            Ok((Slice(EMPTY), pst::Comment(&sample[..]))),
             comment(sample),
         );
     }
