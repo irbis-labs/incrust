@@ -58,37 +58,58 @@ fn mustache(input: &[u8]) -> IResult<&[u8], ParsedNode> {
 
 
 fn plain_text(input: &[u8]) -> IResult<&[u8], ParsedNode> {
-    fn try_brace<'a>(input: &'a [u8]) -> IResult<&[u8], &str> {
-        let b = || -> IResult<&'a [u8], ()> {
-            let _ = try_parse!(input, alt!( mustache | comment | stmt_edge ) );
-            Ok((input, ()))
-        };
-        match b() {
+    fn try_brace(input: &[u8]) -> IResult<&[u8], &str> {
+        match do_parse!(input, alt!( mustache | comment | stmt_edge ) >> ( () ) ) {
             Err(_) => Ok((&input[1..], "{")),
             Ok((i, ())) => Err(NomErr::Error(Context::Code(i, ErrorKind::Custom(0)))),
         }
     }
 
-    let (i, text) = try_parse!(input,
-        do_parse!(
-            v: many1!(
-                alt!( map_res!( is_not!("{"), str::from_utf8 ) | try_brace )
-            ) >>
-            ( v.join("") )
-        )
-    );
-    Ok((i, ParsedNode::Text(text)))
+    do_parse!(
+        input,
+        v: many1!(
+            alt!( map_res!( is_not!("{"), str::from_utf8 ) | try_brace )
+        ) >>
+        ( ParsedNode::Text(v.join("")) )
+    )
 }
 
+//fn plain_text(input: &[u8]) -> IResult<&[u8], ParsedNode> {
+//    fn try_brace(input: &[u8]) -> IResult<&[u8], &str> {
+//        match do_parse!(input, alt!( mustache | comment | stmt_edge ) >> ( () ) ) {
+//            Err(_) => Ok((&input[1..], "{")),
+//            Ok((i, ())) => Err(NomErr::Error(Context::Code(i, ErrorKind::Custom(0)))),
+//        }
+//    }
+//
+//    do_parse!(
+//        input,
+//        v: many1!(
+//            alt!( map_res!( is_not!("{"), str::from_utf8 ) | try_brace )
+//        ) >>
+//        ( ParsedNode::Text(v.join("")) )
+//    )
+//}
+//
 
 
 // ---------------------------------------------------------------------------
 
 
-//#[cfg(test)]
-//mod tests {
-//    #![cfg_attr(feature = "cargo-clippy", allow(used_underscore_binding))]
-//
-//    use nom::IResult::Done;
-//
-//}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_plain_text() {
+        assert_eq!(
+            plain_text(&b""[..]),
+            Err(nom::Err::Incomplete(nom::Needed::Size(1))),
+        );
+
+        assert_eq!(
+            plain_text(&b" "[..]),
+            Ok((&b""[..], ParsedNode::Text(" ".into()))),
+        );
+    }
+}

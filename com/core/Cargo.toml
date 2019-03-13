@@ -30,9 +30,9 @@ quiet           = []
 
 
 [dependencies]
-marksman_escape = "0.1.2"
 log             = "0.4"
 maplit          = "1.0"
+marksman_escape = "0.1.2"
 nom             = { version = "4.0", features = ["verbose-errors"] }
 url             = "1.4"
 
