@@ -48,3 +48,29 @@ impl<'i> Statement<'i> {
         Statement { expression, strip_left, strip_right }
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum UnaryOperator {
+    Minus,
+    Not,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BinaryOperator {
+    Eq,
+    NotEq,
+    Gt,
+    Gte,
+    Lt,
+    Lte,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+    And,
+    Or,
+    Xor,
+    In,
+    NotIn,
+}
