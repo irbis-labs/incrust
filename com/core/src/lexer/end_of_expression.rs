@@ -36,8 +36,6 @@ pub fn is_end_of_expression(input: Slice) -> bool {
 mod tests {
     use super::*;
 
-    const EMPTY: &[u8] = &[];
-
     fn end(sample: &str) {
         let sample = Slice(sample.as_bytes());
         assert_eq!(

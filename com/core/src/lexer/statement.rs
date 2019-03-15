@@ -1,7 +1,7 @@
 use nom::{Context::*, Err::*, ErrorKind::*, types::CompleteByteSlice as Slice};
 
 use crate::container::pst::{self, ErrorKind::*};
-use crate::parser::pst::*;
+use crate::lexer::*;
 
 pub fn statement(input: Slice) -> nom::IResult<Slice, pst::Statement, pst::ErrorKind> {
     let (next, _tag1) = complete!(input, tag!("{%"))

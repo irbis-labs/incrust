@@ -7,7 +7,7 @@ use nom::{
 
 use crate::{
     container::pst::{self, ErrorKind::*},
-    parser::pst::is_end_of_token,
+    lexer::is_end_of_token,
 };
 
 pub fn unary_operator(input: Slice) -> nom::IResult<Slice, pst::UnaryOperator, pst::ErrorKind> {

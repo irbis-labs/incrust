@@ -27,6 +27,7 @@ extern crate nom;
 pub mod abc;
 pub mod container;
 pub mod loader;
+pub mod lexer;
 pub mod filter;
 pub mod parser;
 pub mod renderer;

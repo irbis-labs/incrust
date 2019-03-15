@@ -3,11 +3,10 @@ use nom::{
     Err::*,
     ErrorKind::*,
     types::CompleteByteSlice as Slice,
-    multispace,
 };
 
 use crate::container::pst::{self, ErrorKind::*};
-use crate::parser::pst::end_of_expression::is_end_of_expression;
+use crate::lexer::end_of_expression::is_end_of_expression;
 
 pub fn end_of_token(input: Slice) -> nom::IResult<Slice, (), pst::ErrorKind> {
     if is_end_of_token(input) {
@@ -53,8 +52,6 @@ pub fn is_end_of_token(input: Slice) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    const EMPTY: &[u8] = &[];
 
     fn end(sample: &str) {
         let sample = Slice(sample.as_bytes());
