@@ -8,42 +8,42 @@ use nom::{
 use crate::container::pst::{self, ErrorKind::*};
 use crate::lexer::end_of_expression::is_end_of_expression;
 
-pub fn end_of_token(input: Slice) -> nom::IResult<Slice, (), pst::ErrorKind> {
-    if is_end_of_token(input) {
+pub fn end_of_identifier(input: Slice) -> nom::IResult<Slice, (), pst::ErrorKind> {
+    if is_end_of_identifier(input) {
         Ok((input, ()))
     } else {
         Err(Error(Code(input, Custom(NotRecognized))))
     }
 }
 
-pub fn is_end_of_token(input: Slice) -> bool {
+pub fn is_end_of_identifier(input: Slice) -> bool {
     let res: nom::IResult<Slice, _> = peek!(input,
         alt!(
-            char!(' ') |
-            char!('\n') |
-            char!('\t') |
-            char!('\r') |
-            char!('\r') |
-            char!('+') |
-            char!('-') |
-            char!('*') |
-            char!('/') |
-            char!('%') |
-            char!('=') |
-            char!('<') |
-            char!('>') |
-            char!('(') |
-            char!(')') |
-            char!('[') |
-            char!(']') |
-            char!('{') |
-            char!('}') |
-            char!(':') |
-            char!('.') |
-            char!(',') |
-            char!(';') |
-            char!('"') |
-            char!('\'')
+            char!(' ') => { drop } |
+            char!('\n') => { drop } |
+            char!('\t') => { drop } |
+            char!('\r') => { drop } |
+            char!('\r') => { drop } |
+            char!('+') => { drop } |
+            char!('-') => { drop } |
+            char!('*') => { drop } |
+            char!('/') => { drop } |
+            char!('%') => { drop } |
+            char!('=') => { drop } |
+            char!('<') => { drop } |
+            char!('>') => { drop } |
+            char!('(') => { drop } |
+            char!(')') => { drop } |
+            char!('[') => { drop } |
+            char!(']') => { drop } |
+            char!('{') => { drop } |
+            char!('}') => { drop } |
+            char!(':') => { drop } |
+            char!('.') => { drop } |
+            char!(',') => { drop } |
+            char!(';') => { drop } |
+            char!('"') => { drop } |
+            char!('\'') => { drop }
         )
     );
     res.is_ok() || is_end_of_expression(input)
@@ -57,7 +57,7 @@ mod tests {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
             true,
-            is_end_of_token(sample),
+            is_end_of_identifier(sample),
         );
     }
 
@@ -65,7 +65,7 @@ mod tests {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
             false,
-            is_end_of_token(sample),
+            is_end_of_identifier(sample),
         );
     }
 

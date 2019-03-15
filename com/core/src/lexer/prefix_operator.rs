@@ -7,20 +7,21 @@ use nom::{
 
 use crate::{
     container::pst::{self, ErrorKind::*},
-    lexer::is_end_of_token,
+    lexer::is_end_of_identifier,
 };
 
-pub fn unary_operator(input: Slice) -> nom::IResult<Slice, pst::UnaryOperator, pst::ErrorKind> {
+pub fn prefix_operator(input: Slice) -> nom::IResult<Slice, pst::PrefixOperator, pst::ErrorKind> {
     let (output, op) = alt!(input,
-        char!('-') => { |_| pst::UnaryOperator::Minus } |
-        tag!("not") => { |_| pst::UnaryOperator::Not }
+        char!('-') => { |_| pst::PrefixOperator::Minus } |
+        tag!("not") => { |_| pst::PrefixOperator::Not }
     )
         .map_err(|_| Error(Code(input, Custom(NotRecognized))))?;
 
-    if is_end_of_token(output) {
-        Ok((output, op))
-    } else {
-        Err(Error(Code(input, Custom(NotRecognized))))
+    match op {
+        pst::PrefixOperator::Not if !is_end_of_identifier(output) => {
+            Err(Error(Code(input, Custom(NotRecognized))))
+        }
+        _ => Ok((output, op)),
     }
 }
 
@@ -30,11 +31,11 @@ mod tests {
 
     const EMPTY: &[u8] = &[];
 
-    fn good(sample: &str, op: pst::UnaryOperator) {
+    fn good(sample: &str, op: pst::PrefixOperator) {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
             Ok((Slice(EMPTY), op)),
-            unary_operator(sample),
+            prefix_operator(sample),
         );
     }
 
@@ -42,14 +43,14 @@ mod tests {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
             Err(Error(Code(sample, Custom(NotRecognized)))),
-            unary_operator(sample),
+            prefix_operator(sample),
         );
     }
 
     #[test]
     fn test() {
-        good(r#"-"#, pst::UnaryOperator::Minus);
-        good(r#"not"#, pst::UnaryOperator::Not);
+        good(r#"-"#, pst::PrefixOperator::Minus);
+        good(r#"not"#, pst::PrefixOperator::Not);
 
         not_recognized(r#""#);
         not_recognized(r#" "#);

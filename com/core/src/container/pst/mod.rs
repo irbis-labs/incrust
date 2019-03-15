@@ -1,3 +1,5 @@
+use derive_more::From;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
     IncorrectCharLiteral,
@@ -50,13 +52,13 @@ impl<'i> Statement<'i> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum UnaryOperator {
+pub enum PrefixOperator {
     Minus,
     Not,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BinaryOperator {
+pub enum InfixOperator {
     Eq,
     NotEq,
     Gt,
@@ -73,4 +75,13 @@ pub enum BinaryOperator {
     Xor,
     In,
     NotIn,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, From)]
+pub enum Operand<'i> {
+    CharLiteral(CharLiteral<'i>),
+    Identifier(Identifier<'i>),
+    NumberLiteral(NumberLiteral<'i>),
+    StringLiteral(StringLiteral<'i>),
+    Prefix(PrefixOperator, Box<Operand<'i>>),
 }
