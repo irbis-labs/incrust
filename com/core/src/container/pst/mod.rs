@@ -10,6 +10,7 @@ pub enum ErrorKind {
     NotRecognized,
     UnclosedCharLiteral,
     UnclosedComment,
+    UnclosedOperation,
     UnclosedStatement,
     UnclosedStringLiteral,
 }
@@ -57,6 +58,16 @@ pub enum PrefixOperator {
     Not,
 }
 
+impl PrefixOperator {
+    pub fn is_keyword(&self) -> bool {
+        use self::PrefixOperator::*;
+        match self {
+            Not => true,
+            Minus => false,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InfixOperator {
     Eq,
@@ -77,6 +88,16 @@ pub enum InfixOperator {
     NotIn,
 }
 
+impl InfixOperator {
+    pub fn is_keyword(&self) -> bool {
+        use self::InfixOperator::*;
+        match self {
+            And | Or | Xor | In | NotIn => true,
+            Eq | NotEq | Gt | Gte | Lt | Lte | Add | Sub | Mul | Div | Mod => false,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, From)]
 pub enum Operand<'i> {
     CharLiteral(CharLiteral<'i>),
@@ -85,3 +106,6 @@ pub enum Operand<'i> {
     StringLiteral(StringLiteral<'i>),
     Prefix(PrefixOperator, Box<Operand<'i>>),
 }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Operations<'i>(pub Operand<'i>, pub Vec<(InfixOperator, Operand<'i>)>);

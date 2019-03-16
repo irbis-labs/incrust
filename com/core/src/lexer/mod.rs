@@ -6,6 +6,7 @@ mod identifier;
 mod infix_operator;
 mod number_literal;
 mod operand;
+mod operation;
 mod prefix_operator;
 mod statement;
 mod string_literal;
@@ -19,6 +20,7 @@ pub use self::{
     infix_operator::*,
     number_literal::*,
     operand::*,
+    operation::*,
     prefix_operator::*,
     statement::*,
     string_literal::*,

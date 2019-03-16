@@ -17,11 +17,10 @@ pub fn prefix_operator(input: Slice) -> nom::IResult<Slice, pst::PrefixOperator,
     )
         .map_err(|_| Error(Code(input, Custom(NotRecognized))))?;
 
-    match op {
-        pst::PrefixOperator::Not if !is_end_of_identifier(output) => {
-            Err(Error(Code(input, Custom(NotRecognized))))
-        }
-        _ => Ok((output, op)),
+    if op.is_keyword() && !is_end_of_identifier(output) {
+        Err(Error(Code(input, Custom(NotRecognized))))
+    } else {
+        Ok((output, op))
     }
 }
 

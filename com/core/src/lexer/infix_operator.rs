@@ -14,8 +14,8 @@ use crate::{
 pub fn infix_operator(input: Slice) -> nom::IResult<Slice, pst::InfixOperator, pst::ErrorKind> {
     let (output, op) = alt!(input,
         tuple!(tag!("not"), multispace1, tag!("in")) => { |_| pst::InfixOperator::NotIn } |
-        tag!("xor") => { |_| pst::InfixOperator::Xor } |
         tag!("and") => { |_| pst::InfixOperator::And } |
+        tag!("xor") => { |_| pst::InfixOperator::Xor } |
         tag!("==") => { |_| pst::InfixOperator::Eq } |
         tag!("!=") => { |_| pst::InfixOperator::NotEq } |
         tag!("<=") => { |_| pst::InfixOperator::Lte } |
@@ -32,10 +32,10 @@ pub fn infix_operator(input: Slice) -> nom::IResult<Slice, pst::InfixOperator, p
     )
         .map_err(|_| Error(Code(input, Custom(NotRecognized))))?;
 
-    if is_end_of_identifier(output) {
-        Ok((output, op))
-    } else {
+    if op.is_keyword() && !is_end_of_identifier(output) {
         Err(Error(Code(input, Custom(NotRecognized))))
+    } else {
+        Ok((output, op))
     }
 }
 
