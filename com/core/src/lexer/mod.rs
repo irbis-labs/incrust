@@ -12,6 +12,7 @@ mod plain_text;
 mod prefix_operator;
 mod statement_tag;
 mod string_literal;
+mod template;
 
 pub use self::{
     char_literal::*,
@@ -28,4 +29,5 @@ pub use self::{
     prefix_operator::*,
     statement_tag::*,
     string_literal::*,
+    template::*,
 };

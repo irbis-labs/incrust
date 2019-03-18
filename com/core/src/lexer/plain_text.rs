@@ -19,7 +19,11 @@ pub fn plaintext(input: Slice) -> nom::IResult<Slice, pst::PlainText, pst::Error
         next = Slice(&next[1..]);
         len += 1;
     }
-    Ok((next, pst::PlainText(&input[..len])))
+    let slice = &input[..len];
+    if slice.is_empty() {
+        Err(Error(Code(input, Custom(NotRecognized))))?;
+    }
+    Ok((next, pst::PlainText(slice)))
 }
 
 fn end_of_plaintext(input: Slice) -> bool {

@@ -127,3 +127,14 @@ impl<'i> StatementTag<'i> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StringLiteral<'i>(pub &'i [u8]);
+
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct Template<'i>(pub Vec<TemplatePart<'i>>);
+
+#[derive(Debug, Clone, PartialEq, Eq, From)]
+pub enum TemplatePart<'i>{
+    Comment(Comment<'i>),
+    ExpressionTag(ExpressionTag<'i>),
+    PlainText(PlainText<'i>),
+    StatementTag(StatementTag<'i>),
+}
