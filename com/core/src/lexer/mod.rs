@@ -8,6 +8,7 @@ mod infix_operator;
 mod number_literal;
 mod operand;
 mod operation;
+mod plain_text;
 mod prefix_operator;
 mod statement_tag;
 mod string_literal;
@@ -23,6 +24,7 @@ pub use self::{
     number_literal::*,
     operand::*,
     operation::*,
+    plain_text::*,
     prefix_operator::*,
     statement_tag::*,
     string_literal::*,
