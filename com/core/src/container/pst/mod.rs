@@ -37,7 +37,7 @@ pub struct NumberLiteral<'i>(pub &'i [u8]);
 pub struct StringLiteral<'i>(pub &'i [u8]);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StatementExpression<'i>(pub Identifier<'i>);
+pub struct StatementExpression<'i>(pub Identifier<'i>, pub Option<Operations<'i>>);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Statement<'i>{

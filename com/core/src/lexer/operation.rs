@@ -22,8 +22,11 @@ pub fn operation_fold0<'i>(input: Slice<'i>) -> nom::IResult<Slice<'i>, Operatio
 }
 
 fn operation(input: Slice) -> nom::IResult<Slice, (InfixOperator, Operand), ErrorKind> {
-    let (next, _) = multispace0(input).expect("multispace0");
-    let (next, op) = infix_operator(next)?;
+    let (base, _) = multispace0(input).expect("multispace0");
+    let (next, op) = infix_operator(base)?;
+    if (op == InfixOperator::Sub || op == InfixOperator::Mod) && is_end_of_expression(base) {
+        Err(Error(Code(input, Custom(NotRecognized))))?;
+    }
     let (next, _) = multispace0(next).expect("multispace0");
     let (output, right) = operand(next).map_err(|e| match e {
         Error(Code(_, Custom(NotRecognized))) => Failure(Code(input, Custom(UnclosedOperation))),
@@ -39,10 +42,16 @@ mod tests {
     const EMPTY: &[u8] = &[];
 
     fn good_fold(sample: &str, check: Operations) {
-        let sample = Slice(sample.as_bytes());
         assert_eq!(
             Ok((Slice(EMPTY), check)),
-            operation_fold0(sample),
+            operation_fold0(Slice(sample.as_bytes())),
+        );
+    }
+
+    fn good_fold_rest(sample: &str, rest: &str, check: Operations) {
+        assert_eq!(
+            Ok((Slice(rest.as_bytes()), check)),
+            operation_fold0(Slice(sample.as_bytes())),
         );
     }
 
@@ -94,6 +103,14 @@ mod tests {
         good_fold(r#"identifier"#, op_simple(Identifier(b"identifier")));
         good_fold(r#"-identifier"#, op_simple(prefix(PrefixOperator::Minus, Identifier(b"identifier"))));
         good_fold(r#"- identifier"#, op_simple(prefix(PrefixOperator::Minus, Identifier(b"identifier"))));
+        good_fold_rest(r#"42-}}"#, "-}}", op_simple(NumberLiteral(b"42")));
+        good_fold_rest(r#"42 -}}"#, " -}}", op_simple(NumberLiteral(b"42")));
+        good_fold_rest(r#"identifier-}}"#, "-}}", op_simple(Identifier(b"identifier")));
+        good_fold_rest(r#"identifier -}}"#, " -}}", op_simple(Identifier(b"identifier")));
+        good_fold_rest(r#"42-%}"#, "-%}", op_simple(NumberLiteral(b"42")));
+        good_fold_rest(r#"42 -%}"#, " -%}", op_simple(NumberLiteral(b"42")));
+        good_fold_rest(r#"identifier-%}"#, "-%}", op_simple(Identifier(b"identifier")));
+        good_fold_rest(r#"identifier -%}"#, " -%}", op_simple(Identifier(b"identifier")));
 
         not_recognized(r#""#);
         not_recognized(r#"_42"#);
@@ -123,6 +140,13 @@ mod tests {
 
         unclosed(r#"1 +"#);
         unclosed(r#"1 + _2"#);
+        unclosed(r#"1+}}"#);
+        unclosed(r#"1+ }}"#);
+        unclosed(r#"1 +}}"#);
         unclosed(r#"1 + }}"#);
+        unclosed(r#"1- }}"#);
+        unclosed(r#"1 - }}"#);
+        unclosed(r#"1% }}"#);
+        unclosed(r#"1 % }}"#);
     }
 }

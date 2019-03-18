@@ -22,8 +22,10 @@ pub fn is_end_of_expression(input: Slice) -> bool {
             opt!(multispace) >>
             alt!(
                 tag!("|") |
-                tag!("%}") |
                 tag!("}}") |
+                tag!("%}") |
+                tag!("-}}") |
+                tag!("-%}") |
                 eof!()
             ) >>
             (())
