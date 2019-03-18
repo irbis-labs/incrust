@@ -3,7 +3,7 @@ use nom::{Context::*, Err::*, ErrorKind::*, types::CompleteByteSlice as Slice};
 use crate::container::pst::{*, ErrorKind::*};
 use crate::lexer::*;
 
-pub fn statement(input: Slice) -> nom::IResult<Slice, Statement, ErrorKind> {
+pub fn statement_tag(input: Slice) -> nom::IResult<Slice, StatementTag, ErrorKind> {
     let (next, _tag1) = complete!(input, tag!("{%"))
         .map_err(|_| Error(Code(input, Custom(NotRecognized))))?;
 
@@ -23,9 +23,9 @@ pub fn statement(input: Slice) -> nom::IResult<Slice, Statement, ErrorKind> {
         .expect("strip right");
 
     let (output, _tag2) = tag!(next, "%}")
-        .map_err(|_| Failure(Code(input, Custom(UnclosedStatement))))?;
+        .map_err(|_| Failure(Code(input, Custom(UnclosedStatementTag))))?;
 
-    Ok((output, Statement::new(stmt, strip_before, strip_after)))
+    Ok((output, StatementTag::new(stmt, strip_before, strip_after)))
 }
 
 fn statement_expression(input: Slice) -> nom::IResult<Slice, StatementExpression, ErrorKind> {
@@ -59,16 +59,16 @@ mod tests {
 
     fn good(sample: &str, expr: StatementExpression, strip_before: bool, strip_after: bool) {
         assert_eq!(
-            Ok((Slice(EMPTY), Statement::new(expr, strip_before, strip_after))),
-            statement(Slice(sample.as_bytes())),
+            Ok((Slice(EMPTY), StatementTag::new(expr, strip_before, strip_after))),
+            statement_tag(Slice(sample.as_bytes())),
         );
     }
 
     fn unclosed(sample: &str) {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
-            Err(Failure(Code(sample, Custom(UnclosedStatement)))),
-            statement(sample),
+            Err(Failure(Code(sample, Custom(UnclosedStatementTag)))),
+            statement_tag(sample),
         );
     }
 
@@ -76,7 +76,7 @@ mod tests {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
             Err(Error(Code(sample, Custom(NotRecognized)))),
-            statement(sample),
+            statement_tag(sample),
         );
     }
 
@@ -84,7 +84,7 @@ mod tests {
         let sample = Slice(sample.as_bytes());
         assert_eq!(
             Err(Failure(Code(sample, Custom(IncorrectStatement)))),
-            statement(sample),
+            statement_tag(sample),
         );
     }
 

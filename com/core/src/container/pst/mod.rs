@@ -4,14 +4,16 @@ use derive_more::From;
 pub enum ErrorKind {
     IncorrectCharLiteral,
     IncorrectNumberLiteral,
+    IncorrectExpression,
     IncorrectStatement,
     IncorrectStringLiteral,
     NomCode(u32),
     NotRecognized,
     UnclosedCharLiteral,
     UnclosedComment,
+    UnclosedExpressionTag,
     UnclosedOperation,
-    UnclosedStatement,
+    UnclosedStatementTag,
     UnclosedStringLiteral,
 }
 
@@ -40,15 +42,28 @@ pub struct StringLiteral<'i>(pub &'i [u8]);
 pub struct StatementExpression<'i>(pub Identifier<'i>, pub Option<Operations<'i>>);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Statement<'i>{
+pub struct StatementTag<'i>{
     pub expression: StatementExpression<'i>,
-    pub strip_left: bool,
-    pub strip_right: bool,
+    pub strip_before: bool,
+    pub strip_after: bool,
 }
 
-impl<'i> Statement<'i> {
-    pub fn new(expression: StatementExpression<'i>, strip_left: bool, strip_right: bool) -> Self {
-        Statement { expression, strip_left, strip_right }
+impl<'i> StatementTag<'i> {
+    pub fn new(expression: StatementExpression<'i>, strip_before: bool, strip_after: bool) -> Self {
+        StatementTag { expression, strip_before, strip_after }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionTag<'i>{
+    pub expression: Operations<'i>,
+    pub strip_before: bool,
+    pub strip_after: bool,
+}
+
+impl<'i> ExpressionTag<'i> {
+    pub fn new(expression: Operations<'i>, strip_before: bool, strip_after: bool) -> Self {
+        ExpressionTag { expression, strip_before, strip_after }
     }
 }
 

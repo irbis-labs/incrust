@@ -2,13 +2,14 @@ mod char_literal;
 mod comment;
 mod end_of_expression;
 mod end_of_identifier;
+mod expression_tag;
 mod identifier;
 mod infix_operator;
 mod number_literal;
 mod operand;
 mod operation;
 mod prefix_operator;
-mod statement;
+mod statement_tag;
 mod string_literal;
 
 pub use self::{
@@ -16,12 +17,13 @@ pub use self::{
     comment::*,
     end_of_expression::*,
     end_of_identifier::*,
+    expression_tag::*,
     identifier::*,
     infix_operator::*,
     number_literal::*,
     operand::*,
     operation::*,
     prefix_operator::*,
-    statement::*,
+    statement_tag::*,
     string_literal::*,
 };
