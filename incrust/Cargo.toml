@@ -1,0 +1,30 @@
+[package]
+name = "incrust"
+version = "0.5.0"
+authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
+license = "MIT/Apache-2.0"
+description = "Template engine inspired by Jinja2"
+keywords = ["template", "jinja2", "django", "twig", "swig"]
+categories = ["parser-implementations", "template-engine", "web-programming"]
+readme = "README.md"
+homepage = "https://github.com/alexander-irbis/incrust"
+repository = "https://github.com/alexander-irbis/incrust"
+documentation = "https://docs.rs/incrust/"
+edition = "2018"
+publish = false
+
+
+[workspace]
+members = [
+#    "core",
+    "format",
+]
+
+
+[badges]
+travis-ci = { repository = "alexander-irbis/incrust" }
+
+
+[dependencies]
+#incrust-core = { package = "incrust-core", path = "core" }
+format = { package = "incrust-format", path = "format" }
