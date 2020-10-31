@@ -40,7 +40,7 @@ where
     }
 
     pub fn expression(
-        mut self,
+        self,
         expression: Expression<'static>,
         filters: Vec<Box<dyn AbstractFilterFactory>>,
     ) -> Self {

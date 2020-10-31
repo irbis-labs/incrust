@@ -3,18 +3,22 @@ use std::fmt;
 use format::AbstractFilterFactory;
 
 use crate::args::Args;
-use crate::evaluate::{EvalError, EvalResult};
+use crate::evaluate::EvalResult;
 use crate::template::ast::Expression;
 use crate::value::Value;
 
 pub struct RenderExpression<'a> {
     pub expression: &'a Expression<'a>,
     pub filters: &'a Vec<Box<dyn AbstractFilterFactory>>,
-    pub args: &'a Args,
+    pub args: &'a Args<'a>,
 }
 
 impl<'a> RenderExpression<'a> {
-    pub fn new(expression: &'a Expression, filters: &'a Vec<Box<dyn AbstractFilterFactory>>, args: &'a Args) -> Self {
+    pub fn new(
+        expression: &'a Expression,
+        filters: &'a Vec<Box<dyn AbstractFilterFactory>>,
+        args: &'a Args<'a>,
+    ) -> Self {
         RenderExpression {
             expression,
             filters,
@@ -33,11 +37,11 @@ impl<'a> fmt::Display for RenderExpression<'a> {
         match value {
             Ok(value) => {
                 let mut filter: Box<dyn fmt::Display + 'a> = Box::new(value);
-                for f in self.filters {
-                    filter = f.pipe(filter);
+                for factory in self.filters {
+                    filter = factory.pipe(filter);
                 }
                 filter.fmt(f)?
-            },
+            }
             Err(err) => log::debug!("{}", err),
         }
         Ok(())
@@ -51,11 +55,14 @@ mod tests {
     use crate::args::Args;
     use crate::template::ast::{BinOp, Expression, TemplateBlock as TB};
     use crate::template::Template;
-    use crate::value::{Integer, NativeValue};
+    use crate::value::{Integer, NativeValue, Value};
 
     #[test]
     fn render_template() {
-        let args = Args {};
+        let mut args = Args::new();
+        args.insert("issue", &"answer");
+        args.insert("left", Integer::from(6));
+        args.insert("right", Value::from(7));
         let content = vec![
             TB::PlainText {
                 content: "<html>".to_string(),
@@ -67,7 +74,7 @@ mod tests {
                         content: "<title>The ".to_string(),
                     },
                     TB::Expression {
-                        expression: Expression::value("answer".to_string()),
+                        expression: Expression::arg("issue"),
                         filters: vec![Box::new(CapitalizeFactory)],
                     },
                     TB::PlainText {
@@ -76,8 +83,8 @@ mod tests {
                     TB::Expression {
                         expression: Expression::bin_op(
                             BinOp::Mul,
-                            Expression::value(Integer::from(6)),
-                            Expression::value(Integer::from(7)),
+                            Expression::arg("left"),
+                            Expression::arg("right"),
                         ),
                         filters: vec![],
                     },

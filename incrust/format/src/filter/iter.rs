@@ -1,12 +1,12 @@
 use std::fmt;
 
-pub struct Join<Sep, Iter> (pub Sep, pub Iter);
+pub struct Join<Sep, Iter>(pub Sep, pub Iter);
 
 impl<Sep, Iter, Item> fmt::Display for Join<Sep, Iter>
-    where
-        Sep: fmt::Display,
-        Iter: Iterator<Item=Item> + Clone,
-        Item: fmt::Display,
+where
+    Sep: fmt::Display,
+    Iter: Iterator<Item = Item> + Clone,
+    Item: fmt::Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut it = self.1.clone();

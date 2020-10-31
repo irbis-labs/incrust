@@ -1,7 +1,7 @@
-pub mod format_pipe;
 pub mod factory;
 pub mod filter;
+pub mod format_pipe;
 
-pub use self::format_pipe::FormatPipe;
-pub use self::factory::{FilterFactory, AbstractFilterFactory};
+pub use self::factory::{AbstractFilterFactory, FilterFactory};
 pub use self::filter::*;
+pub use self::format_pipe::FormatPipe;

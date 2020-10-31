@@ -13,5 +13,5 @@ pub enum TemplateBlock {
     Expression {
         expression: Expression<'static>,
         filters: Vec<Box<dyn AbstractFilterFactory>>,
-    }
+    },
 }

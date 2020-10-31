@@ -1,7 +1,7 @@
 use std::fmt;
 use std::fmt::Write;
 
-use crate::{FormatPipe, FilterFactory, AbstractFilterFactory};
+use crate::{AbstractFilterFactory, FilterFactory, FormatPipe};
 
 pub struct Capitalize<T: fmt::Display>(pub T);
 

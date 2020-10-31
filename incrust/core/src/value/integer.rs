@@ -67,9 +67,12 @@ impl fmt::Display for Integer {
     }
 }
 
-impl From<Integer> for Value<'static> {
-    fn from(v: Integer) -> Self {
-        Value::Integer(v)
+impl<T> From<T> for Value<'static>
+where
+    Integer: From<T>,
+{
+    fn from(v: T) -> Value<'static> {
+        Value::Integer(Integer::from(v))
     }
 }
 

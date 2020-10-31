@@ -6,4 +6,6 @@ pub type EvalResult<T> = Result<T, EvalError>;
 pub enum EvalError {
     #[error("not allowed operation")]
     NotAllowedOperation,
+    #[error("unknown variable")]
+    UnknownVariable,
 }

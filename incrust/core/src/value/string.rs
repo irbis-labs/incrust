@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::fmt;
 
-use crate::value::{NativeValue, Integer, Value};
+use crate::value::{Integer, NativeValue, Value};
 
 impl<'a> From<&'a &str> for Value<'a> {
     fn from(v: &'a &str) -> Self {

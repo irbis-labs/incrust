@@ -1,10 +1,10 @@
-pub mod uppercase;
-pub mod lowercase;
 pub mod capitalize;
+pub mod lowercase;
+pub mod uppercase;
 
-pub use self::uppercase::*;
-pub use self::lowercase::*;
 pub use self::capitalize::*;
+pub use self::lowercase::*;
+pub use self::uppercase::*;
 
 #[cfg(test)]
 mod tests {
@@ -12,7 +12,7 @@ mod tests {
 
     use std::fmt;
 
-    use crate::{FilterFactory, AbstractFilterFactory};
+    use crate::{AbstractFilterFactory, FilterFactory};
 
     #[test]
     fn literal_chain() {
@@ -29,7 +29,8 @@ mod tests {
 
     #[test]
     fn abstract_pipeline() {
-        let filters: Vec<Box<dyn AbstractFilterFactory>> = vec![Box::new(LowercaseFactory), Box::new(CapitalizeFactory)];
+        let filters: Vec<Box<dyn AbstractFilterFactory>> =
+            vec![Box::new(LowercaseFactory), Box::new(CapitalizeFactory)];
         let mut filter: Box<dyn fmt::Display> = Box::new("WORD".to_string());
         for f in &filters {
             filter = f.pipe(filter);

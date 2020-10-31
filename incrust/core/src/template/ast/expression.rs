@@ -1,10 +1,13 @@
-use crate::args::Args;
-use crate::evaluate::EvalResult;
+use crate::args::{Args, Identifier};
+use crate::evaluate::{EvalError, EvalResult};
 use crate::value::Value;
 
 pub enum Expression<'a> {
     Value {
         value: Value<'a>,
+    },
+    Arg {
+        name: Identifier,
     },
     // UnOp {
     //     op: UnOp,
@@ -47,6 +50,11 @@ impl<'a> Expression<'a> {
         Expression::Value { value }
     }
 
+    pub fn arg(name: impl Into<Identifier>) -> Self {
+        let name = name.into();
+        Expression::Arg { name }
+    }
+
     pub fn bin_op(op: BinOp, left: Expression<'a>, right: Expression<'a>) -> Self {
         let left = Box::new(left);
         let right = Box::new(right);
@@ -56,6 +64,9 @@ impl<'a> Expression<'a> {
     pub fn eval(&'a self, args: &'a Args) -> EvalResult<Value<'a>> {
         Ok(match &self {
             Expression::Value { value } => value.copy_ref(),
+            Expression::Arg { name } => {
+                args.get(name).ok_or(EvalError::UnknownVariable)?.copy_ref()
+            }
             Expression::BinOp { op, left, right } => {
                 let left = left.eval(args)?;
                 let right = right.eval(args)?;

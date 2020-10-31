@@ -4,15 +4,15 @@ pub mod render;
 
 use self::ast::TemplateBlock;
 use crate::args::Args;
-use crate::template::render::RenderContent;
 use crate::template::builder::content::ContentBuilder;
+use crate::template::render::RenderContent;
 
 pub struct Template {
     content: Vec<TemplateBlock>,
 }
 
 impl Template {
-    pub fn builder() -> ContentBuilder<impl FnOnce(Vec<TemplateBlock>) -> Self>  {
+    pub fn builder() -> ContentBuilder<impl FnOnce(Vec<TemplateBlock>) -> Self> {
         ContentBuilder::new(move |content| Template { content })
     }
 

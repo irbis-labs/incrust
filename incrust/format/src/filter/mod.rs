@@ -19,6 +19,5 @@ mod tests {
         let iter = source.split(" ").map(Lowercase).map(Capitalize);
 
         assert_eq!(sample, Join(" ", iter).to_string());
-
     }
 }

@@ -1,12 +1,8 @@
-use std::{
-    fmt,
-    fmt::Write,
-};
+use std::{fmt, fmt::Write};
 
 pub struct FormatPipe<F>(pub F)
 where
-    F: FnMut(&str) -> fmt::Result,
-;
+    F: FnMut(&str) -> fmt::Result;
 
 impl<F> fmt::Write for FormatPipe<F>
 where

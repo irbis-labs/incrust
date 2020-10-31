@@ -1,15 +1,12 @@
-mod native;
-mod integer;
-mod string;
 use std::borrow::Cow;
-
 use std::fmt;
-// use std::any::Any;
 
-use crate::evaluate::{EvalError, EvalResult};
+mod integer;
+mod native;
+mod string;
 
-pub use self::native::NativeValue;
 pub use self::integer::Integer;
+pub use self::native::NativeValue;
 
 pub enum Value<'a> {
     Integer(Integer),
@@ -76,8 +73,8 @@ mod tests {
     use crate::args::Args;
     use crate::template::ast::{Expression, TemplateBlock as TB};
     use crate::template::Template;
-    use crate::value::{NativeValue, Integer};
     use crate::value::Value;
+    use crate::value::{Integer, NativeValue};
 
     fn test_render(sample: &str, value: Value) {
         let result = value.to_string();

@@ -6,7 +6,7 @@ use crate::template::render::RenderExpression;
 
 pub struct RenderContent<'a> {
     content: &'a [TemplateBlock],
-    args: &'a Args,
+    args: &'a Args<'a>,
 }
 
 impl<'a> RenderContent<'a> {
@@ -87,7 +87,7 @@ mod tests {
 
     #[test]
     fn build_and_render_template() {
-        let args = Args {};
+        let args = Args::new();
         let template = Template::builder()
             .plain_text("<html>")
             .block("title")

@@ -1,7 +1,7 @@
 use std::fmt;
 use std::fmt::Write;
 
-use crate::{FormatPipe, FilterFactory, AbstractFilterFactory};
+use crate::{AbstractFilterFactory, FilterFactory, FormatPipe};
 
 pub struct Lowercase<T: fmt::Display>(pub T);
 
@@ -14,7 +14,8 @@ impl<T: fmt::Display> fmt::Display for Lowercase<T> {
                 f.write_char(c)?;
             }
             Ok(())
-        }).process(&self.0)
+        })
+        .process(&self.0)
     }
 }
 
@@ -31,8 +32,6 @@ impl AbstractFilterFactory for LowercaseFactory {
         Box::new(self.create(input))
     }
 }
-
-
 
 #[cfg(test)]
 mod tests {
