@@ -11,10 +11,11 @@ impl<Sep, Iter, Item> fmt::Display for Join<Sep, Iter>
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut it = self.1.clone();
         if let Some(item) = it.next() {
-            write!(f, "{}", item)?;
+            item.fmt(f)?;
         }
         for item in it {
-            write!(f, "{}{}", self.0, item)?;
+            self.0.fmt(f)?;
+            item.fmt(f)?;
         }
         Ok(())
     }

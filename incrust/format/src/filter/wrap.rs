@@ -7,7 +7,7 @@ impl<'a, T: fmt::Display> fmt::Display for WrapTag<'a, T> {
         f.write_str("<")?;
         f.write_str(self.0)?;
         f.write_str(">")?;
-        write!(f, "{}", self.1)?;
+        self.1.fmt(f)?;
         f.write_str("</")?;
         f.write_str(self.0)?;
         f.write_str(">")?;
@@ -20,7 +20,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn to_upper() {
-        assert_eq!("<em>word</em>", format!("{}", WrapTag("em", "word")));
+    fn wrap() {
+        assert_eq!("<em>word</em>", WrapTag("em", "word").to_string());
     }
 }

@@ -1,5 +1,5 @@
 [package]
-name = "incrust"
+name = "incrust-core"
 version = "0.5.0"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
@@ -10,21 +10,26 @@ readme = "README.md"
 homepage = "https://github.com/alexander-irbis/incrust"
 repository = "https://github.com/alexander-irbis/incrust"
 documentation = "https://docs.rs/incrust/"
+exclude = [
+    ".gitignore",
+    ".travis.yml",
+    "appveyor.yml",
+]
+#build = "build.rs"
 edition = "2018"
 publish = false
-
-
-[workspace]
-members = [
-    "core",
-    "format",
-]
-
 
 [badges]
 travis-ci = { repository = "alexander-irbis/incrust" }
 
 
 [dependencies]
-core = { package = "incrust-core", path = "core" }
-format = { package = "incrust-format", path = "format" }
+bigdecimal = "0.2"
+derive_more = "0.99"
+log = "0.4"
+#nom = { version = "4.0", features = ["verbose-errors"] }
+num-bigint = "0.3"
+thiserror = "1.0"
+url = "2"
+
+format = { package = "incrust-format", path = "../format" }

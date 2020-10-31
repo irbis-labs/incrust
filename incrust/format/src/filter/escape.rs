@@ -6,7 +6,6 @@ use percent_encoding::NON_ALPHANUMERIC;
 
 use crate::FormatPipe;
 
-
 pub struct UrlEscape<T>(pub T);
 
 pub struct HtmlEscape<T>(pub T);
@@ -16,9 +15,7 @@ where
     T: fmt::Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        FormatPipe(|s: &str| {
-            write!(f, "{}", utf8_percent_encode(s, NON_ALPHANUMERIC))
-        }).process(&self.0)
+        FormatPipe(|s: &str| utf8_percent_encode(s, NON_ALPHANUMERIC).fmt(f)).process(&self.0)
     }
 }
 
@@ -36,7 +33,8 @@ where
                 pos = found + 1;
             }
             f.write_str(&s[pos..])
-        }).process(&self.0)
+        })
+        .process(&self.0)
     }
 }
 
@@ -45,26 +43,26 @@ static REPL_SET: &str = r#"&><"'`!$%()+=@[]{}"#;
 fn repl_byte(c: u8) -> Option<&'static str> {
     Some(match c {
         // Basic escapes
-        b'&'  => "&amp;",
-        b'>'  => "gt;",
-        b'<'  => "lt;",
-        b'"'  => "#34;",
+        b'&' => "&amp;",
+        b'>' => "gt;",
+        b'<' => "lt;",
+        b'"' => "#34;",
         b'\'' => "#39;",
-        b'`'  => "#96;",
+        b'`' => "#96;",
         // These only matter in cases where attributes are not quoted.
-        b'!'  => "#33;",
-        b'$'  => "#36;",
-        b'%'  => "#37;",
-        b'('  => "#40;",
-        b')'  => "#41;",
-        b'+'  => "#43;",
-        b'='  => "#61;",
-        b'@'  => "#64;",
-        b'['  => "#91;",
-        b']'  => "#93;",
-        b'{'  => "#123;",
-        b'}'  => "#125;",
-        _     => None?
+        b'!' => "#33;",
+        b'$' => "#36;",
+        b'%' => "#37;",
+        b'(' => "#40;",
+        b')' => "#41;",
+        b'+' => "#43;",
+        b'=' => "#61;",
+        b'@' => "#64;",
+        b'[' => "#91;",
+        b']' => "#93;",
+        b'{' => "#123;",
+        b'}' => "#125;",
+        _ => None?,
     })
 }
 
