@@ -70,11 +70,7 @@ impl<'a> Value<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::args::Args;
-    use crate::template::ast::{Expression, TemplateBlock as TB};
-    use crate::template::Template;
-    use crate::value::Value;
-    use crate::value::{Integer, NativeValue};
+    use crate::value::{Integer, Value};
 
     fn test_render(sample: &str, value: Value) {
         let result = value.to_string();
@@ -109,21 +105,4 @@ mod tests {
         test_render(sample, Value::Native(Box::new(42)));
         test_render(sample, Value::NativeRef(&42));
     }
-
-    // #[test]
-    // fn build_and_render_template() {
-    //     let args = Args {};
-    //     let template = Template::builder()
-    //         .plain_text("<html>")
-    //         .block("title")
-    //         .plain_text("<title>")
-    //         .expression(Expression::value(Value::String("Title".to_string())))
-    //         .plain_text("</title>")
-    //         .finish()
-    //         .plain_text("</html>")
-    //         .finish();
-    //     let sample = "<html><title>Title</title></html>";
-    //     let result = template.render(&args).to_string();
-    //     assert_eq!(sample, result)
-    // }
 }

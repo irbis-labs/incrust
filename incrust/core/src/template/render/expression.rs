@@ -55,7 +55,7 @@ mod tests {
     use crate::args::Args;
     use crate::template::ast::{BinOp, Expression, TemplateBlock as TB};
     use crate::template::Template;
-    use crate::value::{Integer, NativeValue, Value};
+    use crate::value::{Integer, Value};
 
     #[test]
     fn render_template() {
