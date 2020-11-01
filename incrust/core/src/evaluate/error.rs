@@ -8,4 +8,6 @@ pub enum EvalError {
     NotAllowedOperation,
     #[error("unknown variable")]
     UnknownVariable,
+    #[error("boolean value expected")]
+    BooleanExpected,
 }

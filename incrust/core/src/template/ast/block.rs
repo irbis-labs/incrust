@@ -14,4 +14,15 @@ pub enum TemplateBlock {
         expression: Expression<'static>,
         filters: Vec<Box<dyn AbstractFilterFactory>>,
     },
+    Conditional(Conditional),
+}
+
+pub struct Conditional {
+    pub branches: Vec<Branch>,
+    pub fallback: Vec<TemplateBlock>,
+}
+
+pub struct Branch {
+    pub condition: Expression<'static>,
+    pub content: Vec<TemplateBlock>,
 }

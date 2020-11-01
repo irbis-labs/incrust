@@ -50,11 +50,13 @@ where
         })
     }
 
-    // pub fn expression(
-    //     mut self,
-    // ) -> ExpressionBuilder<impl FnOnce(Expression) -> Self> {
-    //     ExpressionBuilder::new(move |expression| {
-    //         let block = TemplateBlock::Expression { expression };
+    // pub fn conditional(
+    //     self,
+    //     condition: Expression<'static>,
+    // ) -> ContentBuilder<impl FnOnce(Vec<TemplateBlock>) -> Self> {
+    //     ContentBuilder::new(move |content| {
+    //         let name = name.into();
+    //         let block = TemplateBlock::Block { name, content };
     //         self.push(block)
     //     })
     // }

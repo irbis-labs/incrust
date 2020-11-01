@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::args::Args;
 use crate::template::ast::TemplateBlock;
-use crate::template::render::RenderExpression;
+use crate::template::render::{RenderConditional, RenderExpression};
 
 pub struct RenderContent<'a> {
     content: &'a [TemplateBlock],
@@ -23,22 +23,16 @@ impl<'a> fmt::Display for RenderContent<'a> {
                     content.fmt(f)?;
                 }
                 TemplateBlock::Block { name: _, content } => {
-                    let render = RenderContent {
-                        content: &content,
-                        args: self.args,
-                    };
-                    render.fmt(f)?;
+                    RenderContent::new(content, self.args).fmt(f)?;
                 }
                 TemplateBlock::Expression {
                     expression,
                     filters,
                 } => {
-                    let render = RenderExpression {
-                        expression,
-                        filters,
-                        args: self.args,
-                    };
-                    render.fmt(f)?;
+                    RenderExpression::new(expression, filters, self.args).fmt(f)?;
+                }
+                TemplateBlock::Conditional(conditional) => {
+                    RenderConditional::new(conditional, self.args).fmt(f)?;
                 }
             }
         }

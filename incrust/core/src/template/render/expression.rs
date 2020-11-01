@@ -33,8 +33,7 @@ impl<'a> RenderExpression<'a> {
 
 impl<'a> fmt::Display for RenderExpression<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let value = self.eval();
-        match value {
+        match self.eval() {
             Ok(value) => {
                 let mut filter: Box<dyn fmt::Display + 'a> = Box::new(value);
                 for factory in self.filters {
