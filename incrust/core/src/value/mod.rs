@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::fmt;
 
+mod boolean;
 mod integer;
 mod native;
 mod string;
@@ -9,6 +10,7 @@ pub use self::integer::Integer;
 pub use self::native::NativeValue;
 
 pub enum Value<'a> {
+    Boolean(bool),
     Integer(Integer),
     IntegerRef(&'a Integer),
     Display(Box<dyn fmt::Display + 'a>),
@@ -20,6 +22,7 @@ pub enum Value<'a> {
 impl<'a> fmt::Display for Value<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Value::Boolean(v) => v.fmt(f),
             Value::Integer(v) => v.fmt(f),
             Value::IntegerRef(v) => v.fmt(f),
             Value::Display(v) => v.fmt(f),
@@ -33,6 +36,7 @@ impl<'a> fmt::Display for Value<'a> {
 impl<'a> Value<'a> {
     pub fn copy_ref(&'a self) -> Value<'a> {
         match self {
+            Value::Boolean(v) => Value::Boolean(*v),
             Value::Integer(v) => match v {
                 Integer::Primitive(n) => Value::Integer(Integer::Primitive(*n)),
                 Integer::Big(_) => Value::IntegerRef(v),
@@ -43,6 +47,10 @@ impl<'a> Value<'a> {
             Value::Native(v) => Value::NativeRef(v),
             Value::NativeRef(v) => Value::NativeRef(*v),
         }
+    }
+
+    pub fn is_boolean(&self) -> bool {
+        matches!(self, Value::Boolean(_))
     }
 
     pub fn is_integer(&self) -> bool {
@@ -57,13 +65,24 @@ impl<'a> Value<'a> {
         matches!(self, Value::Native(_) | Value::NativeRef(_))
     }
 
+    pub fn to_boolean(&self) -> Option<bool> {
+        match self {
+            Value::Boolean(v) => Some(*v),
+            Value::Native(v) => v.to_boolean(),
+            Value::NativeRef(v) => v.to_boolean(),
+            Value::Integer(_) | Value::IntegerRef(_) | Value::Display(_) | Value::DisplayRef(_) => {
+                None
+            }
+        }
+    }
+
     pub fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         match self {
             Value::Integer(v) => Some(Cow::Borrowed(v)),
             Value::IntegerRef(v) => Some(Cow::Borrowed(v)),
             Value::Native(v) => v.to_integer(),
             Value::NativeRef(v) => v.to_integer(),
-            Value::Display(_) | Value::DisplayRef(_) => None,
+            Value::Boolean(_) | Value::Display(_) | Value::DisplayRef(_) => None,
         }
     }
 }

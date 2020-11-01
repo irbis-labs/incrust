@@ -32,9 +32,9 @@ pub enum BinOp {
     Mul,
     Div,
     Rem,
-    // // Boolean.
-    // And,
-    // Or,
+    // Boolean.
+    And,
+    Or,
     // // Comparison.
     // Eq,
     // Ne,
@@ -71,47 +71,24 @@ impl<'a> Expression<'a> {
                 let left = left.eval(args)?;
                 let right = right.eval(args)?;
                 match (left, right) {
+                    (Value::Boolean(left), Value::Boolean(right)) => match op {
+                        BinOp::And => Value::Boolean(left && right),
+                        BinOp::Or => Value::Boolean(left || right),
+                        BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Rem => {
+                            Err(EvalError::NotAllowedOperation)?
+                        }
+                    },
                     (Value::Integer(left), Value::Integer(right)) => match op {
                         BinOp::Add => Value::Integer(left.add(&right)?),
                         BinOp::Sub => Value::Integer(left.sub(&right)?),
                         BinOp::Mul => Value::Integer(left.mul(&right)?),
                         BinOp::Div => Value::Integer(left.div(&right)?),
                         BinOp::Rem => Value::Integer(left.rem(&right)?),
+                        BinOp::And | BinOp::Or => Err(EvalError::NotAllowedOperation)?,
                     },
                     _ => unimplemented!(),
                 }
             }
         })
     }
-
-    // pub fn evaluate(&self) -> EvalResult<Value> {
-    //     Ok(match self {
-    //         Expression::Value { value } => value.clone(),
-    //         Expression::Sum { first, list } => {
-    //             assert!(!list.is_empty());
-    //             let mut sum = first.evaluate()?;
-    //             for (op, x) in list {
-    //                 let x = x.evaluate()?;
-    //                 sum = match op {
-    //                     SumOp::Add => sum.add(&x)?,
-    //                     SumOp::Sub => sum.sub(&x)?,
-    //                 };
-    //             }
-    //             sum
-    //         }
-    //         Expression::Prod { first, list } => {
-    //             assert!(!list.is_empty());
-    //             let mut prod = first.evaluate()?;
-    //             for (op, x) in list {
-    //                 let x = x.evaluate()?;
-    //                 prod = match op {
-    //                     ProdOp::Mul => prod.mul(&x)?,
-    //                     ProdOp::Div => prod.div(&x)?,
-    //                     ProdOp::Rem => prod.rem(&x)?,
-    //                 };
-    //             }
-    //             prod
-    //         }
-    //     })
-    // }
 }

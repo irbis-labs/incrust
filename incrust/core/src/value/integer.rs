@@ -77,6 +77,10 @@ where
 }
 
 impl NativeValue for i8 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
     }
@@ -87,6 +91,10 @@ impl NativeValue for i8 {
 }
 
 impl NativeValue for u8 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
     }
@@ -97,6 +105,10 @@ impl NativeValue for u8 {
 }
 
 impl NativeValue for i16 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
     }
@@ -107,6 +119,10 @@ impl NativeValue for i16 {
 }
 
 impl NativeValue for u16 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
     }
@@ -117,6 +133,10 @@ impl NativeValue for u16 {
 }
 
 impl NativeValue for i32 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
     }
@@ -127,6 +147,10 @@ impl NativeValue for i32 {
 }
 
 impl NativeValue for u32 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
     }
@@ -137,6 +161,10 @@ impl NativeValue for u32 {
 }
 
 impl NativeValue for i64 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
     }
@@ -147,6 +175,10 @@ impl NativeValue for i64 {
 }
 
 impl NativeValue for u64 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::Big(BigInt::from(*self))))
     }
@@ -157,6 +189,10 @@ impl NativeValue for u64 {
 }
 
 impl NativeValue for i128 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::Big(BigInt::from(*self))))
     }
@@ -167,6 +203,10 @@ impl NativeValue for i128 {
 }
 
 impl NativeValue for u128 {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::Big(BigInt::from(*self))))
     }

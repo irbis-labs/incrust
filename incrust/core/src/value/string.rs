@@ -10,6 +10,10 @@ impl<'a> From<&'a &str> for Value<'a> {
 }
 
 impl<'a> NativeValue for &'a str {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         None
     }
@@ -26,6 +30,10 @@ impl From<Box<str>> for Value<'static> {
 }
 
 impl NativeValue for Box<str> {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         None
     }
@@ -42,6 +50,10 @@ impl From<String> for Value<'static> {
 }
 
 impl NativeValue for String {
+    fn to_boolean(&self) -> Option<bool> {
+        None
+    }
+
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         None
     }

@@ -102,4 +102,42 @@ mod tests {
         let result = template.render(&args).to_string();
         assert_eq!(sample, result)
     }
+
+    #[test]
+    fn render_condition() {
+        let mut args = Args::new();
+        args.insert("a", true);
+        args.insert("b", false);
+        let content = vec![
+            TB::PlainText {
+                content: "True and False: ".to_string(),
+            },
+            TB::Expression {
+                expression: Expression::bin_op(
+                    BinOp::And,
+                    Expression::arg("a"),
+                    Expression::arg("b"),
+                ),
+                filters: vec![Box::new(CapitalizeFactory)],
+            },
+            TB::PlainText {
+                content: "\nTrue or False: ".to_string(),
+            },
+            TB::Expression {
+                expression: Expression::bin_op(
+                    BinOp::Or,
+                    Expression::arg("a"),
+                    Expression::arg("b"),
+                ),
+                filters: vec![Box::new(CapitalizeFactory)],
+            },
+            TB::PlainText {
+                content: "\n".to_string(),
+            },
+        ];
+        let template = Template::new(content);
+        let sample = "True and False: False\nTrue or False: True\n";
+        let result = template.render(&args).to_string();
+        assert_eq!(sample, result)
+    }
 }
