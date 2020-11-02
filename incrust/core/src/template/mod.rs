@@ -2,10 +2,10 @@ pub mod ast;
 pub mod builder;
 pub mod render;
 
-use self::ast::TemplateBlock;
-use crate::args::Args;
+use crate::template::ast::TemplateBlock;
 use crate::template::builder::content::ContentBuilder;
 use crate::template::render::RenderContent;
+use crate::Context;
 
 pub struct Template {
     content: Vec<TemplateBlock>,
@@ -20,7 +20,7 @@ impl Template {
         Template { content }
     }
 
-    pub fn render<'s: 'a, 'a>(&'s self, args: &'a Args) -> RenderContent<'a> {
-        RenderContent::new(&self.content, args)
+    pub fn render<'s: 'a, 'a>(&'s self, context: &'a Context<'a>) -> RenderContent<'a> {
+        RenderContent::new(&self.content, context)
     }
 }

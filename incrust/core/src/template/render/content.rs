@@ -1,17 +1,17 @@
 use std::fmt;
 
-use crate::args::Args;
 use crate::template::ast::TemplateBlock;
 use crate::template::render::{RenderConditional, RenderExpression};
+use crate::Context;
 
 pub struct RenderContent<'a> {
     content: &'a [TemplateBlock],
-    args: &'a Args<'a>,
+    context: &'a Context<'a>,
 }
 
 impl<'a> RenderContent<'a> {
-    pub fn new(content: &'a [TemplateBlock], args: &'a Args) -> Self {
-        RenderContent { content, args }
+    pub fn new(content: &'a [TemplateBlock], context: &'a Context<'a>) -> Self {
+        RenderContent { content, context }
     }
 }
 
@@ -23,16 +23,16 @@ impl<'a> fmt::Display for RenderContent<'a> {
                     content.fmt(f)?;
                 }
                 TemplateBlock::Block { name: _, content } => {
-                    RenderContent::new(content, self.args).fmt(f)?;
+                    RenderContent::new(content, self.context).fmt(f)?;
                 }
                 TemplateBlock::Expression {
                     expression,
                     filters,
                 } => {
-                    RenderExpression::new(expression, filters, self.args).fmt(f)?;
+                    RenderExpression::new(expression, filters, self.context).fmt(f)?;
                 }
                 TemplateBlock::Conditional(conditional) => {
-                    RenderConditional::new(conditional, self.args).fmt(f)?;
+                    RenderConditional::new(conditional, self.context).fmt(f)?;
                 }
             }
         }
@@ -42,13 +42,12 @@ impl<'a> fmt::Display for RenderContent<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::args::Args;
     use crate::template::ast::Expression;
     use crate::template::Template;
+    use crate::{Args, Incrust};
 
     #[test]
     fn build_and_render_template() {
-        let args = Args::new();
         let template = Template::builder()
             .plain_text("<html>")
             .block("title")
@@ -59,7 +58,12 @@ mod tests {
             .plain_text("</html>")
             .finish();
         let sample = "<html><title>Title</title></html>";
-        let result = template.render(&args).to_string();
+
+        let env = Incrust::new();
+        let args = Args::new();
+        let context = env.context(&args);
+
+        let result = template.render(&context).to_string();
         assert_eq!(sample, result)
     }
 }

@@ -1,4 +1,4 @@
-use crate::args::{Args, Identifier};
+use crate::{Identifier, Context};
 use crate::evaluate::{EvalError, EvalResult};
 use crate::value::Value;
 
@@ -6,7 +6,7 @@ pub enum Expression<'a> {
     Value {
         value: Value<'a>,
     },
-    Arg {
+    Var {
         name: Identifier,
     },
     // UnOp {
@@ -50,9 +50,9 @@ impl<'a> Expression<'a> {
         Expression::Value { value }
     }
 
-    pub fn arg(name: impl Into<Identifier>) -> Self {
+    pub fn var(name: impl Into<Identifier>) -> Self {
         let name = name.into();
-        Expression::Arg { name }
+        Expression::Var { name }
     }
 
     pub fn bin_op(op: BinOp, left: Expression<'a>, right: Expression<'a>) -> Self {
@@ -61,15 +61,15 @@ impl<'a> Expression<'a> {
         Expression::BinOp { op, left, right }
     }
 
-    pub fn eval(&'a self, args: &'a Args) -> EvalResult<Value<'a>> {
+    pub fn eval(&'a self, context: &'a Context<'a>) -> EvalResult<Value<'a>> {
         Ok(match &self {
             Expression::Value { value } => value.copy_ref(),
-            Expression::Arg { name } => {
-                args.get(name).ok_or(EvalError::UnknownVariable)?.copy_ref()
+            Expression::Var { name } => {
+                context.var(name).ok_or(EvalError::UnknownVariable)?.copy_ref()
             }
             Expression::BinOp { op, left, right } => {
-                let left = left.eval(args)?;
-                let right = right.eval(args)?;
+                let left = left.eval(context)?;
+                let right = right.eval(context)?;
                 match (left, right) {
                     (Value::Boolean(left), Value::Boolean(right)) => match op {
                         BinOp::And => Value::Boolean(left && right),

@@ -1,22 +1,22 @@
 use std::fmt;
 
-use crate::args::Args;
 use crate::template::ast::{Conditional, Expression};
 use crate::template::render::RenderContent;
+use crate::Context;
 use crate::{EvalError, EvalResult};
 
 pub struct RenderConditional<'a> {
     block: &'a Conditional,
-    args: &'a Args<'a>,
+    context: &'a Context<'a>,
 }
 
 impl<'a> RenderConditional<'a> {
-    pub fn new(block: &'a Conditional, args: &'a Args) -> Self {
-        RenderConditional { block, args }
+    pub fn new(block: &'a Conditional, context: &'a Context<'a>) -> Self {
+        RenderConditional { block, context }
     }
 
     fn eval_condition(&self, condition: &Expression<'static>) -> EvalResult<bool> {
-        let result = condition.eval(self.args)?;
+        let result = condition.eval(self.context)?;
         Ok(result.to_boolean().ok_or(EvalError::BooleanExpected)?)
     }
 }
@@ -27,23 +27,23 @@ impl<'a> fmt::Display for RenderConditional<'a> {
             match self.eval_condition(&branch.condition) {
                 Ok(result) => {
                     if result {
-                        RenderContent::new(&branch.content, self.args).fmt(f)?;
+                        RenderContent::new(&branch.content, self.context).fmt(f)?;
                         return Ok(());
                     }
                 }
                 Err(err) => log::debug!("{}", err),
             }
         }
-        RenderContent::new(&self.block.fallback, self.args).fmt(f)?;
+        RenderContent::new(&self.block.fallback, self.context).fmt(f)?;
         Ok(())
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::args::Args;
     use crate::template::ast::{Branch, Conditional, Expression, TemplateBlock as TB};
     use crate::template::Template;
+    use crate::{Args, Incrust};
 
     #[test]
     fn build_and_render_template() {
@@ -54,7 +54,7 @@ mod tests {
             },
             TB::Conditional(Conditional {
                 branches: vec![Branch {
-                    condition: Expression::arg("result"),
+                    condition: Expression::var("result"),
                     content: vec![TB::PlainText {
                         content: "yes".to_string(),
                     }],
@@ -65,15 +65,16 @@ mod tests {
             }),
         ];
         let template = Template::new(content);
+        let env = Incrust::new();
 
         args.insert("result", true);
         let sample = "Result: yes";
-        let result = template.render(&args).to_string();
+        let result = template.render(&env.context(&args)).to_string();
         assert_eq!(sample, result);
 
         args.insert("result", false);
         let sample = "Result: no";
-        let result = template.render(&args).to_string();
+        let result = template.render(&env.context(&args)).to_string();
         assert_eq!(sample, result);
     }
 }

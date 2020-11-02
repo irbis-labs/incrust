@@ -2,32 +2,32 @@ use std::fmt;
 
 use format::AbstractFilterFactory;
 
-use crate::args::Args;
 use crate::evaluate::EvalResult;
 use crate::template::ast::Expression;
 use crate::value::Value;
+use crate::Context;
 
 pub struct RenderExpression<'a> {
     pub expression: &'a Expression<'a>,
     pub filters: &'a Vec<Box<dyn AbstractFilterFactory>>,
-    pub args: &'a Args<'a>,
+    pub context: &'a Context<'a>,
 }
 
 impl<'a> RenderExpression<'a> {
     pub fn new(
         expression: &'a Expression,
         filters: &'a Vec<Box<dyn AbstractFilterFactory>>,
-        args: &'a Args<'a>,
+        context: &'a Context<'a>,
     ) -> Self {
         RenderExpression {
             expression,
             filters,
-            args,
+            context,
         }
     }
 
     pub fn eval(&self) -> EvalResult<Value<'a>> {
-        self.expression.eval(&self.args)
+        self.expression.eval(self.context)
     }
 }
 
@@ -51,10 +51,10 @@ impl<'a> fmt::Display for RenderExpression<'a> {
 mod tests {
     use format::CapitalizeFactory;
 
-    use crate::args::Args;
     use crate::template::ast::{BinOp, Expression, TemplateBlock as TB};
     use crate::template::Template;
     use crate::value::{Integer, Value};
+    use crate::{Args, Incrust};
 
     #[test]
     fn render_template() {
@@ -73,7 +73,7 @@ mod tests {
                         content: "<title>The ".to_string(),
                     },
                     TB::Expression {
-                        expression: Expression::arg("issue"),
+                        expression: Expression::var("issue"),
                         filters: vec![Box::new(CapitalizeFactory)],
                     },
                     TB::PlainText {
@@ -82,8 +82,8 @@ mod tests {
                     TB::Expression {
                         expression: Expression::bin_op(
                             BinOp::Mul,
-                            Expression::arg("left"),
-                            Expression::arg("right"),
+                            Expression::var("left"),
+                            Expression::var("right"),
                         ),
                         filters: vec![],
                     },
@@ -97,8 +97,10 @@ mod tests {
             },
         ];
         let template = Template::new(content);
+        let env = Incrust::new();
+
         let sample = "<html><title>The Answer is: 42</title></html>";
-        let result = template.render(&args).to_string();
+        let result = template.render(&env.context(&args)).to_string();
         assert_eq!(sample, result)
     }
 
@@ -114,8 +116,8 @@ mod tests {
             TB::Expression {
                 expression: Expression::bin_op(
                     BinOp::And,
-                    Expression::arg("a"),
-                    Expression::arg("b"),
+                    Expression::var("a"),
+                    Expression::var("b"),
                 ),
                 filters: vec![Box::new(CapitalizeFactory)],
             },
@@ -125,8 +127,8 @@ mod tests {
             TB::Expression {
                 expression: Expression::bin_op(
                     BinOp::Or,
-                    Expression::arg("a"),
-                    Expression::arg("b"),
+                    Expression::var("a"),
+                    Expression::var("b"),
                 ),
                 filters: vec![Box::new(CapitalizeFactory)],
             },
@@ -135,8 +137,10 @@ mod tests {
             },
         ];
         let template = Template::new(content);
+        let env = Incrust::new();
+
         let sample = "True and False: False\nTrue or False: True\n";
-        let result = template.render(&args).to_string();
+        let result = template.render(&env.context(&args)).to_string();
         assert_eq!(sample, result)
     }
 }
