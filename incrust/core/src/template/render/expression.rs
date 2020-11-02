@@ -67,7 +67,7 @@ mod tests {
                 content: "<html>".to_string(),
             },
             TB::Block {
-                name: "title".to_string(),
+                name: "title".into(),
                 content: vec![
                     TB::PlainText {
                         content: "<title>The ".to_string(),
@@ -141,6 +141,41 @@ mod tests {
 
         let sample = "True and False: False\nTrue or False: True\n";
         let result = template.render(&env.context(&args)).to_string();
+        assert_eq!(sample, result)
+    }
+
+    #[test]
+    fn render_include() {
+        let mut env = Incrust::new();
+        let body = Template::new(vec![
+            TB::PlainText {
+                content: "<body>".to_string(),
+            },
+            TB::Include {
+                name: "header".into(),
+            },
+            TB::PlainText {
+                content: "</body>".to_string(),
+            },
+        ]);
+        let header = Template::new(vec![
+            TB::PlainText {
+                content: "<header>".to_string(),
+            },
+            TB::Expression {
+                expression: Expression::var("title"),
+                filters: vec![],
+            },
+            TB::PlainText {
+                content: "</header>".to_string(),
+            },
+        ]);
+        env.register_template("header", header).unwrap();
+
+        let mut args = Args::new();
+        args.insert("title", &"Title");
+        let sample = "<body><header>Title</header></body>";
+        let result = body.render(&env.context(&args)).to_string();
         assert_eq!(sample, result)
     }
 }

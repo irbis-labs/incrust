@@ -12,7 +12,11 @@ impl Incrust {
         Incrust::default()
     }
 
-    pub fn register_template(&mut self, name: Identifier, template: Template) -> Result<(), ()> {
+    pub fn register_template(&mut self, name: impl Into<Identifier>, template: Template) -> Result<(), ()> {
+        self.register_template_(name.into(), template)
+    }
+
+    fn register_template_(&mut self, name: Identifier, template: Template) -> Result<(), ()> {
         use std::collections::hash_map::Entry;
 
         match self.templates.entry(name) {

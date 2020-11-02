@@ -1,6 +1,7 @@
 use format::AbstractFilterFactory;
 
 use crate::template::ast::{Expression, TemplateBlock};
+use crate::Identifier;
 
 pub struct ContentBuilder<Fun> {
     complete: Fun,
@@ -30,7 +31,7 @@ where
 
     pub fn block(
         self,
-        name: impl Into<String>,
+        name: impl Into<Identifier>,
     ) -> ContentBuilder<impl FnOnce(Vec<TemplateBlock>) -> Self> {
         ContentBuilder::new(move |content| {
             let name = name.into();

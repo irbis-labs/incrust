@@ -1,13 +1,17 @@
 use format::AbstractFilterFactory;
 
 use crate::template::ast::Expression;
+use crate::Identifier;
 
 pub enum TemplateBlock {
     PlainText {
         content: String,
     },
+    Include {
+        name: Identifier,
+    },
     Block {
-        name: String,
+        name: Identifier,
         content: Vec<TemplateBlock>,
     },
     Expression {

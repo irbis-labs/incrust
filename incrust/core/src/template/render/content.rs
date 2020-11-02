@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::template::ast::TemplateBlock;
 use crate::template::render::{RenderConditional, RenderExpression};
-use crate::Context;
+use crate::{Context, EvalError};
 
 pub struct RenderContent<'a> {
     content: &'a [TemplateBlock],
@@ -21,6 +21,15 @@ impl<'a> fmt::Display for RenderContent<'a> {
             match block {
                 TemplateBlock::PlainText { content } => {
                     content.fmt(f)?;
+                }
+                TemplateBlock::Include { name } => {
+                    match self.context.template(name) {
+                        Some(template) => template.render(self.context).fmt(f)?,
+                        None => {
+                            let err = EvalError::UnknownTemplate;
+                            unimplemented!("{:?}", err)
+                        }
+                    };
                 }
                 TemplateBlock::Block { name: _, content } => {
                     RenderContent::new(content, self.context).fmt(f)?;
