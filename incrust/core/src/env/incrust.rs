@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{Identifier, Template, Args, Context};
+use crate::{Args, Context, Identifier, Template};
 
 #[derive(Default)]
 pub struct Incrust {
@@ -12,7 +12,11 @@ impl Incrust {
         Incrust::default()
     }
 
-    pub fn register_template(&mut self, name: impl Into<Identifier>, template: Template) -> Result<(), ()> {
+    pub fn register_template(
+        &mut self,
+        name: impl Into<Identifier>,
+        template: Template,
+    ) -> Result<(), ()> {
         self.register_template_(name.into(), template)
     }
 
@@ -30,7 +34,7 @@ impl Incrust {
         self.templates.get(name)
     }
 
-    pub fn context<'a>(&'a self, args: &'a Args<'a>) -> Context<'a> {
-        Context::new(self, args)
+    pub fn context<'a>(&'a self, args: impl Into<Option<&'a Args<'a>>>) -> Context<'a> {
+        Context::new(self, args.into())
     }
 }

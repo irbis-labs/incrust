@@ -3,8 +3,7 @@ use std::fmt;
 
 use crate::{Integer, NativeValue, Value};
 
-impl From<bool> for Value<'static>
-{
+impl From<bool> for Value<'static> {
     fn from(v: bool) -> Value<'static> {
         Value::Boolean(v)
     }

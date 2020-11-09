@@ -9,5 +9,5 @@ mod value;
 
 pub use self::env::*;
 pub use self::evaluate::*;
-pub use self::template::*;
+pub use self::template::Template;
 pub use self::value::*;

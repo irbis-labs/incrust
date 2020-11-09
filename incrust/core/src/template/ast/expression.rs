@@ -1,6 +1,6 @@
-use crate::{Identifier, Context};
 use crate::evaluate::{EvalError, EvalResult};
 use crate::value::Value;
+use crate::{Context, Identifier};
 
 pub enum Expression<'a> {
     Value {
@@ -64,9 +64,10 @@ impl<'a> Expression<'a> {
     pub fn eval(&'a self, context: &'a Context<'a>) -> EvalResult<Value<'a>> {
         Ok(match &self {
             Expression::Value { value } => value.copy_ref(),
-            Expression::Var { name } => {
-                context.var(name).ok_or(EvalError::UnknownVariable)?.copy_ref()
-            }
+            Expression::Var { name } => context
+                .var(name)
+                .ok_or(EvalError::UnknownVariable)?
+                .copy_ref(),
             Expression::BinOp { op, left, right } => {
                 let left = left.eval(context)?;
                 let right = right.eval(context)?;

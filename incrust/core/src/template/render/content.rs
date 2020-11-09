@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::template::ast::TemplateBlock;
-use crate::template::render::{RenderConditional, RenderExpression};
+use crate::template::render::{RenderBlock, RenderConditional, RenderExpression};
 use crate::{Context, EvalError};
 
 pub struct RenderContent<'a> {
@@ -31,8 +31,9 @@ impl<'a> fmt::Display for RenderContent<'a> {
                         }
                     };
                 }
-                TemplateBlock::Block { name: _, content } => {
-                    RenderContent::new(content, self.context).fmt(f)?;
+                TemplateBlock::Block { name, content } => {
+                    RenderBlock::new(name, content, self.context).fmt(f)?;
+                    // RenderContent::new(content, self.context).fmt(f)?;
                 }
                 TemplateBlock::Expression {
                     expression,

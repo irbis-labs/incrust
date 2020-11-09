@@ -64,7 +64,7 @@ mod tests {
                 }],
             }),
         ];
-        let template = Template::new(content);
+        let template = Template::new(None, content);
         let env = Incrust::new();
 
         args.insert("result", true);

@@ -96,7 +96,7 @@ mod tests {
                 content: "</html>".to_string(),
             },
         ];
-        let template = Template::new(content);
+        let template = Template::new(None, content);
         let env = Incrust::new();
 
         let sample = "<html><title>The Answer is: 42</title></html>";
@@ -136,7 +136,7 @@ mod tests {
                 content: "\n".to_string(),
             },
         ];
-        let template = Template::new(content);
+        let template = Template::new(None, content);
         let env = Incrust::new();
 
         let sample = "True and False: False\nTrue or False: True\n";
@@ -147,29 +147,35 @@ mod tests {
     #[test]
     fn render_include() {
         let mut env = Incrust::new();
-        let body = Template::new(vec![
-            TB::PlainText {
-                content: "<body>".to_string(),
-            },
-            TB::Include {
-                name: "header".into(),
-            },
-            TB::PlainText {
-                content: "</body>".to_string(),
-            },
-        ]);
-        let header = Template::new(vec![
-            TB::PlainText {
-                content: "<header>".to_string(),
-            },
-            TB::Expression {
-                expression: Expression::var("title"),
-                filters: vec![],
-            },
-            TB::PlainText {
-                content: "</header>".to_string(),
-            },
-        ]);
+        let body = Template::new(
+            None,
+            vec![
+                TB::PlainText {
+                    content: "<body>".to_string(),
+                },
+                TB::Include {
+                    name: "header".into(),
+                },
+                TB::PlainText {
+                    content: "</body>".to_string(),
+                },
+            ],
+        );
+        let header = Template::new(
+            None,
+            vec![
+                TB::PlainText {
+                    content: "<header>".to_string(),
+                },
+                TB::Expression {
+                    expression: Expression::var("title"),
+                    filters: vec![],
+                },
+                TB::PlainText {
+                    content: "</header>".to_string(),
+                },
+            ],
+        );
         env.register_template("header", header).unwrap();
 
         let mut args = Args::new();
