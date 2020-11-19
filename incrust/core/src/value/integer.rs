@@ -3,8 +3,8 @@ use std::fmt;
 
 use num_bigint::BigInt;
 
-use crate::evaluate::EvalResult;
 use crate::value::{NativeValue, Value};
+use crate::EvalResult;
 
 #[derive(Clone)]
 pub enum Integer {
@@ -85,6 +85,10 @@ impl NativeValue for i8 {
         Some(Cow::Owned(Integer::from(*self)))
     }
 
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
+    }
+
     fn display(&self) -> &dyn fmt::Display {
         self
     }
@@ -97,6 +101,10 @@ impl NativeValue for u8 {
 
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
+    }
+
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
     }
 
     fn display(&self) -> &dyn fmt::Display {
@@ -113,6 +121,10 @@ impl NativeValue for i16 {
         Some(Cow::Owned(Integer::from(*self)))
     }
 
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
+    }
+
     fn display(&self) -> &dyn fmt::Display {
         self
     }
@@ -125,6 +137,10 @@ impl NativeValue for u16 {
 
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
+    }
+
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
     }
 
     fn display(&self) -> &dyn fmt::Display {
@@ -141,6 +157,10 @@ impl NativeValue for i32 {
         Some(Cow::Owned(Integer::from(*self)))
     }
 
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
+    }
+
     fn display(&self) -> &dyn fmt::Display {
         self
     }
@@ -153,6 +173,10 @@ impl NativeValue for u32 {
 
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::from(*self)))
+    }
+
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
     }
 
     fn display(&self) -> &dyn fmt::Display {
@@ -169,6 +193,10 @@ impl NativeValue for i64 {
         Some(Cow::Owned(Integer::from(*self)))
     }
 
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
+    }
+
     fn display(&self) -> &dyn fmt::Display {
         self
     }
@@ -181,6 +209,10 @@ impl NativeValue for u64 {
 
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::Big(BigInt::from(*self))))
+    }
+
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
     }
 
     fn display(&self) -> &dyn fmt::Display {
@@ -197,6 +229,10 @@ impl NativeValue for i128 {
         Some(Cow::Owned(Integer::Big(BigInt::from(*self))))
     }
 
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
+    }
+
     fn display(&self) -> &dyn fmt::Display {
         self
     }
@@ -209,6 +245,10 @@ impl NativeValue for u128 {
 
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
         Some(Cow::Owned(Integer::Big(BigInt::from(*self))))
+    }
+
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
     }
 
     fn display(&self) -> &dyn fmt::Display {

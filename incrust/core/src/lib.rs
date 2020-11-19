@@ -3,11 +3,11 @@
 #![allow(clippy::match_bool)]
 
 mod env;
-mod evaluate;
+mod error;
 mod template;
 mod value;
 
 pub use self::env::*;
-pub use self::evaluate::*;
+pub use self::error::*;
 pub use self::template::Template;
 pub use self::value::*;

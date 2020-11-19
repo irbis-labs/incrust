@@ -18,6 +18,10 @@ impl<'a> NativeValue for &'a str {
         None
     }
 
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
+    }
+
     fn display(&self) -> &dyn fmt::Display {
         self
     }
@@ -38,6 +42,10 @@ impl NativeValue for Box<str> {
         None
     }
 
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
+    }
+
     fn display(&self) -> &dyn fmt::Display {
         &*self
     }
@@ -55,6 +63,10 @@ impl NativeValue for String {
     }
 
     fn to_integer(&self) -> Option<Cow<'_, Integer>> {
+        None
+    }
+
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
         None
     }
 

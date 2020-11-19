@@ -18,6 +18,10 @@ impl NativeValue for bool {
         None
     }
 
+    fn to_iterator(&self) -> Option<Box<dyn Iterator<Item = Value>>> {
+        None
+    }
+
     fn display(&self) -> &dyn fmt::Display {
         self
     }

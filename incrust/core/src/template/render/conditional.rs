@@ -46,7 +46,7 @@ mod tests {
     use crate::{Args, Incrust};
 
     #[test]
-    fn build_and_render_template() {
+    fn render_template() {
         let mut args = Args::new();
         let content = vec![
             TB::PlainText {

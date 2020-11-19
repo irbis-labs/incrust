@@ -4,6 +4,7 @@ use std::fmt;
 mod boolean;
 mod integer;
 mod native;
+mod slice;
 mod string;
 
 pub use self::integer::Integer;
@@ -84,6 +85,18 @@ impl<'a> Value<'a> {
             Value::NativeRef(v) => v.to_integer(),
             Value::Boolean(_) | Value::Display(_) | Value::DisplayRef(_) => None,
         }
+    }
+
+    pub fn as_native(&self) -> Option<&dyn NativeValue> {
+        Some(match self {
+            Value::Native(v) => &**v,
+            Value::NativeRef(v) => *v,
+            Value::Boolean(_)
+            | Value::Integer(_)
+            | Value::IntegerRef(_)
+            | Value::Display(_)
+            | Value::DisplayRef(_) => None?,
+        })
     }
 }
 

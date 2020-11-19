@@ -2,10 +2,10 @@ use std::fmt;
 
 use format::AbstractFilterFactory;
 
-use crate::evaluate::EvalResult;
 use crate::template::ast::Expression;
 use crate::value::Value;
 use crate::Context;
+use crate::EvalResult;
 
 pub struct RenderExpression<'a> {
     pub expression: &'a Expression<'a>,

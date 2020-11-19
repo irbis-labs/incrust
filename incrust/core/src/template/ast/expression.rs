@@ -1,6 +1,6 @@
-use crate::evaluate::{EvalError, EvalResult};
 use crate::value::Value;
 use crate::{Context, Identifier};
+use crate::{EvalError, EvalResult};
 
 pub enum Expression<'a> {
     Value {
