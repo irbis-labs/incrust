@@ -10,6 +10,8 @@ pub struct UrlEscape<T>(pub T);
 
 pub struct HtmlEscape<T>(pub T);
 
+pub struct HtmlEscapeBadAttr<T>(pub T);
+
 pub struct HtmlUnescape<T>(pub T);
 
 impl<T> fmt::Display for UrlEscape<T>
@@ -32,6 +34,27 @@ where
                 let found = found + pos;
                 f.write_str(&s[pos..found])?;
                 f.write_str(html_escape_byte(s.as_bytes()[found]).expect("just found"))?;
+                pos = found + 1;
+            }
+            f.write_str(&s[pos..])
+        })
+        .process(&self.0)
+    }
+}
+
+impl<T> fmt::Display for HtmlEscapeBadAttr<T>
+where
+    T: fmt::Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        FormatPipe(|s: &str| {
+            let mut pos = 0;
+            while let Some(found) =
+                s.as_bytes()[pos..].find_byteset(HTML_ESCAPE_SET_BAD_ATTR.as_bytes())
+            {
+                let found = found + pos;
+                f.write_str(&s[pos..found])?;
+                f.write_str(html_escape_byte_bad_attr(s.as_bytes()[found]).expect("just found"))?;
                 pos = found + 1;
             }
             f.write_str(&s[pos..])
@@ -64,7 +87,8 @@ where
     }
 }
 
-static HTML_ESCAPE_SET: &str = r#"&><"'`!$%()+=@[]{}"#;
+static HTML_ESCAPE_SET: &str = r#"&><"'"#;
+static HTML_ESCAPE_SET_BAD_ATTR: &str = r#"`!$%()+=@[]{}"#;
 static HTML_UNESCAPE_SET: &str = r"&#";
 
 fn html_escape_byte(c: u8) -> Option<&'static str> {
@@ -76,6 +100,12 @@ fn html_escape_byte(c: u8) -> Option<&'static str> {
         b'"' => "#34;",
         b'\'' => "#39;",
         b'`' => "#96;",
+        _ => None?,
+    })
+}
+
+fn html_escape_byte_bad_attr(c: u8) -> Option<&'static str> {
+    Some(match c {
         // These only matter in cases where attributes are not quoted.
         b'!' => "#33;",
         b'$' => "#36;",
