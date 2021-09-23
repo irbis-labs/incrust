@@ -10,6 +10,8 @@ pub struct UrlEscape<T>(pub T);
 
 pub struct HtmlEscape<T>(pub T);
 
+pub struct HtmlUnescape<T>(pub T);
+
 impl<T> fmt::Display for UrlEscape<T>
 where
     T: fmt::Display,
@@ -26,10 +28,10 @@ where
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         FormatPipe(|s: &str| {
             let mut pos = 0;
-            while let Some(found) = s.as_bytes()[pos..].find_byteset(REPL_SET.as_bytes()) {
+            while let Some(found) = s.as_bytes()[pos..].find_byteset(HTML_ESCAPE_SET.as_bytes()) {
                 let found = found + pos;
                 f.write_str(&s[pos..found])?;
-                f.write_str(repl_byte(s.as_bytes()[found]).expect("just found"))?;
+                f.write_str(html_escape_byte(s.as_bytes()[found]).expect("just found"))?;
                 pos = found + 1;
             }
             f.write_str(&s[pos..])
@@ -38,14 +40,39 @@ where
     }
 }
 
-static REPL_SET: &str = r#"&><"'`!$%()+=@[]{}"#;
+impl<T> fmt::Display for HtmlUnescape<T>
+where
+    T: fmt::Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        FormatPipe(|s: &str| {
+            let mut pos = 0;
+            while let Some(found) = s.as_bytes()[pos..].find_byteset(HTML_UNESCAPE_SET.as_bytes()) {
+                let found = found + pos;
+                f.write_str(&s[pos..found])?;
+                if let Some((shift, repl)) = html_unescape_substr(&s[found..]) {
+                    pos = found + shift;
+                    f.write_str(repl)?;
+                } else {
+                    pos = found + 1;
+                    f.write_str(&s[found..pos])?;
+                }
+            }
+            f.write_str(&s[pos..])
+        })
+        .process(&self.0)
+    }
+}
 
-fn repl_byte(c: u8) -> Option<&'static str> {
+static HTML_ESCAPE_SET: &str = r#"&><"'`!$%()+=@[]{}"#;
+static HTML_UNESCAPE_SET: &str = r"&#";
+
+fn html_escape_byte(c: u8) -> Option<&'static str> {
     Some(match c {
         // Basic escapes
         b'&' => "&amp;",
-        b'>' => "gt;",
-        b'<' => "lt;",
+        b'>' => "&gt;",
+        b'<' => "&lt;",
         b'"' => "#34;",
         b'\'' => "#39;",
         b'`' => "#96;",
@@ -66,6 +93,32 @@ fn repl_byte(c: u8) -> Option<&'static str> {
     })
 }
 
+fn html_unescape_substr(s: &str) -> Option<(usize, &'static str)> {
+    Some(match s {
+        // Basic escapes
+        s if s.starts_with("&amp;") => (5, "&"),
+        s if s.starts_with("&gt;") => (4, ">"),
+        s if s.starts_with("&lt;") => (4, "<"),
+        s if s.starts_with("#34;") => (4, "\""),
+        s if s.starts_with("#39;") => (4, "'"),
+        s if s.starts_with("#96;") => (4, "`"),
+        // These only matter in cases where attributes are not quoted.
+        s if s.starts_with("#33;") => (4, "!"),
+        s if s.starts_with("#36;") => (4, "$"),
+        s if s.starts_with("#37;") => (4, "%"),
+        s if s.starts_with("#40;") => (4, "("),
+        s if s.starts_with("#41;") => (4, ")"),
+        s if s.starts_with("#43;") => (4, "+"),
+        s if s.starts_with("#61;") => (4, "="),
+        s if s.starts_with("#64;") => (4, "@"),
+        s if s.starts_with("#91;") => (4, "["),
+        s if s.starts_with("#93;") => (4, "]"),
+        s if s.starts_with("#123;") => (4, "{"),
+        s if s.starts_with("#125;") => (4, "}"),
+        _ => None?,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -78,9 +131,16 @@ mod tests {
     }
 
     #[test]
-    fn html() {
+    fn html_escape() {
         let source = r#""x" + "y" = "xy""#;
         let sample = r"#34;x#34; #43; #34;y#34; #61; #34;xy#34;";
         assert_eq!(sample, HtmlEscape(source).to_string());
+    }
+
+    #[test]
+    fn html_unescape() {
+        let source = r"#34;x#34; #43; #34;y#34; #61; #34;xy#34;";
+        let sample = r#""x" + "y" = "xy""#;
+        assert_eq!(sample, HtmlUnescape(source).to_string());
     }
 }
