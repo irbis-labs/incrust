@@ -10,7 +10,7 @@ readme = "README.md"
 homepage = "https://github.com/alexander-irbis/incrust"
 repository = "https://github.com/alexander-irbis/incrust"
 documentation = "https://docs.rs/incrust/"
-edition = "2018"
+edition = "2021"
 publish = false
 
 [badges]
