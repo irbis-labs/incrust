@@ -24,6 +24,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{Capitalize, WrapTag};
+    use std::fmt::Display;
 
     #[test]
     fn join_str() {
@@ -36,6 +38,20 @@ mod tests {
     fn join_num() {
         let source = [1, 2, 3];
         let sample = "1; 2; 3";
+        assert_eq!(sample, Join("; ", source.iter()).to_string());
+    }
+
+    #[test]
+    fn join_dyn() {
+        let source: &[&dyn Display] = &[
+            &1,
+            &"banana",
+            &2,
+            &Capitalize("orange"),
+            &3,
+            &WrapTag("b", Join("-", "apple".split("").filter(|c| !c.is_empty()))),
+        ];
+        let sample = "1; banana; 2; Orange; 3; <b>a-p-p-l-e</b>";
         assert_eq!(sample, Join("; ", source.iter()).to_string());
     }
 }

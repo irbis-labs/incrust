@@ -54,4 +54,10 @@ mod tests {
         assert_eq!("Word", Capitalize("wOrD").to_string());
         assert_eq!("Word", Capitalize("WORD").to_string());
     }
+
+    #[test]
+    fn capitalize_dyn_display() {
+        let word: &dyn fmt::Display = &"word";
+        assert_eq!("Word", Capitalize(word).to_string());
+    }
 }

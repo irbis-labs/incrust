@@ -1,12 +1,12 @@
 pub mod case;
 pub mod escape;
 pub mod iter;
-pub mod wrap;
+pub mod string;
 
 pub use self::case::*;
 pub use self::escape::*;
 pub use self::iter::*;
-pub use self::wrap::*;
+pub use self::string::*;
 
 #[cfg(test)]
 mod tests {
