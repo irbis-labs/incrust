@@ -1,4 +1,4 @@
-use std::fmt;
+use crate::util::prelude::*;
 
 pub struct Join<Sep, Iter>(pub Sep, pub Iter);
 
@@ -23,9 +23,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{Capitalize, WrapTag};
     use std::fmt::Display;
+
+    use super::*;
+    use crate::Capitalize;
+    use crate::WrapSimpleTag;
 
     #[test]
     fn join_str() {
@@ -49,7 +51,7 @@ mod tests {
             &2,
             &Capitalize("orange"),
             &3,
-            &WrapTag("b", Join("-", "apple".split("").filter(|c| !c.is_empty()))),
+            &WrapSimpleTag("b", Join("-", "apple".split("").filter(|c| !c.is_empty()))),
         ];
         let sample = "1; banana; 2; Orange; 3; <b>a-p-p-l-e</b>";
         assert_eq!(sample, Join("; ", source.iter()).to_string());

@@ -1,7 +1,6 @@
-use std::fmt;
-use std::fmt::Write;
-
-use crate::{AbstractFilterFactory, FilterFactory, FormatPipe};
+use crate::util::prelude::*;
+use crate::AbstractFilterFactory;
+use crate::FilterFactory;
 
 pub struct Uppercase<T: fmt::Display>(pub T);
 
@@ -9,13 +8,13 @@ pub struct UppercaseFactory;
 
 impl<T: fmt::Display> fmt::Display for Uppercase<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        FormatPipe(|s: &str| {
+        RevFmt::new(|s: &str| {
             for c in s.chars().flat_map(char::to_uppercase) {
                 f.write_char(c)?;
             }
             Ok(())
         })
-        .process(&self.0)
+        .format(&self.0)
     }
 }
 

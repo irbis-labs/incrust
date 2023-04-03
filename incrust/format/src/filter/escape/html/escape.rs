@@ -1,19 +1,17 @@
-use std::fmt;
-
 use bstr::ByteSlice;
 
-use crate::FormatPipe;
+use crate::util::prelude::*;
 
 static HTML_ESCAPE_SET: &str = r#"&><"'"#;
 
 pub struct HtmlEscape<T>(pub T);
 
 impl<T> fmt::Display for HtmlEscape<T>
-    where
-        T: fmt::Display,
+where
+    T: fmt::Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        FormatPipe(|s: &str| {
+        RevFmt::new(|s: &str| {
             let mut pos = 0;
             while let Some(found) = s.as_bytes()[pos..].find_byteset(HTML_ESCAPE_SET.as_bytes()) {
                 let found = found + pos;
@@ -23,7 +21,7 @@ impl<T> fmt::Display for HtmlEscape<T>
             }
             f.write_str(&s[pos..])
         })
-            .process(&self.0)
+        .format(&self.0)
     }
 }
 

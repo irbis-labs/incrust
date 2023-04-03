@@ -1,8 +1,6 @@
-use std::fmt;
-
 use bstr::ByteSlice;
 
-use crate::FormatPipe;
+use crate::util::prelude::*;
 use crate::util::StrBuffer;
 
 static HTML_UNESCAPE_BEGIN_SET: &str = r"&#";
@@ -17,14 +15,14 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut buf = StrBuffer::<MAX_LEN>::new();
-        FormatPipe(|s: &str| {
+        RevFmt::new(|s: &str| {
             // eprintln!("=>: {s:?};  {:?}", buf.as_str());
             if s.is_empty() {
                 if !buf.is_empty() {
                     f.write_str(buf.as_str())?;
                     buf.clear();
                 }
-                return Ok(())
+                return Ok(());
             }
 
             let mut pos = 0;
@@ -75,12 +73,14 @@ where
                             f.write_str(repl)?;
                             buf.clear();
                         }
-                        return Ok(())
+                        return Ok(());
                     }
                 };
             }
 
-            while let Some(found) = s.as_bytes()[pos..].find_byteset(HTML_UNESCAPE_BEGIN_SET.as_bytes()) {
+            while let Some(found) =
+                s.as_bytes()[pos..].find_byteset(HTML_UNESCAPE_BEGIN_SET.as_bytes())
+            {
                 let begin = found + pos;
                 f.write_str(&s[pos..begin])?;
                 if let Some(end) = s[begin..].find(HTML_UNESCAPE_END) {
@@ -108,7 +108,7 @@ where
             f.write_str(&s[pos..])?;
             Ok(())
         })
-        .process(&self.0)
+        .format(&self.0)
     }
 }
 
@@ -141,7 +141,6 @@ fn html_unescape_substr(s: &str) -> Option<(usize, &'static str)> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::Join;
 
     #[test]

@@ -1,7 +1,6 @@
-use std::fmt;
-use std::fmt::Write;
-
-use crate::{AbstractFilterFactory, FilterFactory, FormatPipe};
+use crate::util::prelude::*;
+use crate::AbstractFilterFactory;
+use crate::FilterFactory;
 
 pub struct Capitalize<T: fmt::Display>(pub T);
 
@@ -10,7 +9,7 @@ pub struct CapitalizeFactory;
 impl<T: fmt::Display> fmt::Display for Capitalize<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut first = true;
-        FormatPipe(|s: &str| {
+        RevFmt::new(|s: &str| {
             let mut i = s.chars();
             if first {
                 for c in i.next().into_iter().flat_map(char::to_uppercase) {
@@ -23,7 +22,7 @@ impl<T: fmt::Display> fmt::Display for Capitalize<T> {
             }
             Ok(())
         })
-        .process(&self.0)?;
+        .format(&self.0)?;
         Ok(())
     }
 }

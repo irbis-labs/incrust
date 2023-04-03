@@ -1,3 +1,3 @@
-pub mod wrap_html_tag;
+pub mod wrap_simple_tag;
 
-pub use self::wrap_html_tag::*;
+pub use self::wrap_simple_tag::*;

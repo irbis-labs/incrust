@@ -8,11 +8,11 @@ pub use self::uppercase::*;
 
 #[cfg(test)]
 mod tests {
+    use core::fmt;
+
     use super::*;
-
-    use std::fmt;
-
-    use crate::{AbstractFilterFactory, FilterFactory};
+    use crate::AbstractFilterFactory;
+    use crate::FilterFactory;
 
     #[test]
     fn literal_chain() {

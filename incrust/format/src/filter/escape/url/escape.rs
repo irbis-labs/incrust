@@ -1,18 +1,16 @@
-use std::fmt;
-
 use percent_encoding::utf8_percent_encode;
 use percent_encoding::NON_ALPHANUMERIC;
 
-use crate::FormatPipe;
+use crate::util::prelude::*;
 
 pub struct UrlEscape<T>(pub T);
 
 impl<T> fmt::Display for UrlEscape<T>
-    where
-        T: fmt::Display,
+where
+    T: fmt::Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        FormatPipe(|s: &str| utf8_percent_encode(s, NON_ALPHANUMERIC).fmt(f)).process(&self.0)
+        RevFmt::new(|s: &str| utf8_percent_encode(s, NON_ALPHANUMERIC).fmt(f)).format(&self.0)
     }
 }
 
