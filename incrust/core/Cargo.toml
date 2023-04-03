@@ -16,7 +16,7 @@ exclude = [
     "appveyor.yml",
 ]
 #build = "build.rs"
-edition = "2018"
+edition = "2021"
 publish = false
 
 [badges]
@@ -24,12 +24,5 @@ travis-ci = { repository = "alexander-irbis/incrust" }
 
 
 [dependencies]
-bigdecimal = "0.2"
-derive_more = "0.99"
+#derive_more = "0.99"
 log = "0.4"
-#nom = { version = "4.0", features = ["verbose-errors"] }
-num-bigint = "0.3"
-thiserror = "1.0"
-url = "2"
-
-format = { package = "incrust-format", path = "../format" }
