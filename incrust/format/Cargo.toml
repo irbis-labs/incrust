@@ -1,20 +1,20 @@
 [package]
 name = "incrust-format"
-version = "0.5.0"
+version = "0.5.0-dev.0"
 authors = ["Alexander Irbis <irbis.labs@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Formatting routines used in the Incrust template engine."
 keywords = ["format", "text"]
 categories = ["parser-implementations", "template-engine", "web-programming"]
 readme = "README.md"
-homepage = "https://github.com/alexander-irbis/incrust"
-repository = "https://github.com/alexander-irbis/incrust"
+homepage = "https://github.com/irbis-labs/incrust"
+repository = "https://github.com/irbis-labs/incrust"
 documentation = "https://docs.rs/incrust/"
 edition = "2021"
 publish = false
 
 [badges]
-travis-ci = { repository = "alexander-irbis/incrust" }
+travis-ci = { repository = "irbis-labs/incrust" }
 
 
 [dependencies]
