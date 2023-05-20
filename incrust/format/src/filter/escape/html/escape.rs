@@ -31,9 +31,9 @@ fn html_escape_byte(c: u8) -> Option<&'static str> {
         b'&' => "&amp;",
         b'>' => "&gt;",
         b'<' => "&lt;",
-        b'"' => "#34;",
-        b'\'' => "#39;",
-        b'`' => "#96;",
+        b'"' => "&quot;",
+        b'\'' => "&apos;",
+        b'`' => "&grave;",
         _ => None?,
     })
 }
