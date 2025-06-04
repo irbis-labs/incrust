@@ -1,0 +1,10 @@
+# Local files
+/env/
+/tmp/
+/target/
+Cargo.lock
+
+# IDE files
+.idea
+*.iml
+.project

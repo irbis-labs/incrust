@@ -1,0 +1,21 @@
+[package]
+name = "incrust-format"
+version = "0.6.0-dev.0"
+authors = ["Alexander Irbis <irbis@irbis-labs.com>"]
+license = "MIT/Apache-2.0"
+description = "Composable formatting primitives for the incrust template engine, designed to enhance the ergonomics of the Display trait. Usable as a standalone crate."
+keywords = ["format", "text"]
+categories = ["text-processing", "template-engine", "value-formatting", "web-programming"]
+readme = "README.md"
+homepage = "https://github.com/irbis-labs/incrust"
+repository = "https://github.com/irbis-labs/incrust"
+documentation = "https://docs.rs/incrust/"
+edition = "2024"
+publish = false
+
+[dependencies]
+#bstr = "1"
+#log = "0.4"
+smart-string = "0.1.3"
+#percent-encoding = "2"
+#url = "2"

@@ -1,0 +1,28 @@
+[package]
+name = "incrust"
+version = "0.6.0-dev.0"
+authors = ["Alexander Irbis <irbis@irbis-labs.com>"]
+license = "MIT/Apache-2.0"
+description = "A template engine for Rust, originally inspired by Jinja2."
+keywords = ["template", "jinja2", "django", "twig", "swig"]
+categories = ["parser-implementations", "template-engine", "web-programming"]
+readme = "README.md"
+homepage = "https://github.com/irbis-labs/incrust"
+repository = "https://github.com/irbis-labs/incrust"
+documentation = "https://docs.rs/incrust/"
+edition = "2024"
+publish = false
+
+
+[workspace]
+members = [
+    "crates/filters",
+    "crates/format",
+    #"crates/engine",
+]
+
+
+[dependencies]
+filters = { package = "incrust-filters", path = "crates/filters" }
+format = { package = "incrust-format", path = "crates/format" }
+#engine = { package = "incrust-engine", path = "crates/engine" }
