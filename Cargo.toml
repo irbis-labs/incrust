@@ -16,13 +16,13 @@ publish = false
 
 [workspace]
 members = [
+    #"crates/engine",
     "crates/filters",
     "crates/format",
-    #"crates/engine",
 ]
 
 
 [dependencies]
-filters = { package = "incrust-filters", path = "crates/filters" }
-format = { package = "incrust-format", path = "crates/format" }
-#engine = { package = "incrust-engine", path = "crates/engine" }
+#incrust-engine = { path = "crates/engine" }
+incrust-filters = { path = "crates/filters" }
+incrust-format = { path = "crates/format" }
