@@ -13,11 +13,24 @@ documentation = "https://docs.rs/incrust/"
 edition = "2024"
 publish = false
 
+
+[features]
+default = []
+full = [
+    "FilterCase",
+    "FilterHtml",
+    "FilterUrl",
+    "FilterXml",
+]
+FilterCase = []
+FilterHtml = []
+FilterUrl = [
+    "percent-encoding",
+]
+FilterXml = []
+
+
 [dependencies]
 incrust-format = { path = "../format" }
 
-#bstr = "1"
-#log = "0.4"
-#smart-string = "0.1.3"
-#percent-encoding = "2"
-#url = "2"
+percent-encoding = { version = "2", optional = true }
