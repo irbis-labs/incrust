@@ -6,9 +6,11 @@ fail=0
 
 # Block pushing with active `[patch.*]` overrides in any tracked Cargo.toml.
 while IFS= read -r file; do
-  if grep -nE '^[[:space:]]*\\[patch\\.' "$file" >/dev/null; then
+  # Note: POSIX ERE escaping: `\[` matches literal `[`. Using `\\[` makes the
+  # regex invalid on macOS/BSD grep ("brackets ([ ]) not balanced").
+  if grep -nE '^[[:space:]]*\[patch\.' "$file" >/dev/null; then
     echo "ERROR: [patch.*] sections found in $file:" >&2
-    grep -nE '^[[:space:]]*\\[patch\\.' "$file" >&2 || true
+    grep -nE '^[[:space:]]*\[patch\.' "$file" >&2 || true
     fail=1
   fi
 done < <(git ls-files '*Cargo.toml')
@@ -18,22 +20,18 @@ if [ "$fail" -ne 0 ]; then
   exit 1
 fi
 
-# Enforce vendoring only for SapienTeq microservice/site repos that ship `vendor.sh`.
-if [ -f ./vendor.sh ]; then
+# Enforce vendoring for repos that have a `vendor/` tree checked in.
+# Vendoring updates are performed via: `ic vendor update`.
+if [ -d ./vendor ]; then
   if [ ! -f ./.cargo/config.toml ]; then
-    echo "ERROR: .cargo/config.toml not found. Vendoring must be configured; run ./vendor.sh." >&2
+    echo "ERROR: .cargo/config.toml not found. Vendoring must be configured (ic vendor update)." >&2
     exit 1
   fi
 
-  if ! grep -qE 'replace-with\\s*=\\s*\"vendored-sources\"' ./.cargo/config.toml; then
+  # Note: POSIX ERE does not support `\s` (only PCRE does). Use `[[:space:]]` to
+  # avoid false negatives on developer machines.
+  if ! grep -qE 'replace-with[[:space:]]*=[[:space:]]*"vendored-sources"' ./.cargo/config.toml; then
     echo "ERROR: .cargo/config.toml does not configure replace-with = \"vendored-sources\"." >&2
     exit 1
   fi
-
-  if [ ! -d ./vendor ]; then
-    echo "ERROR: vendor/ directory not found. Run ./vendor.sh." >&2
-    exit 1
-  fi
 fi
-
-

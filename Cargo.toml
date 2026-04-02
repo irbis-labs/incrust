@@ -11,6 +11,7 @@ homepage = "https://github.com/irbis-labs/incrust"
 repository = "https://github.com/irbis-labs/incrust"
 documentation = "https://docs.rs/incrust/"
 edition = "2024"
+rust-version = "1.85"
 publish = false
 
 

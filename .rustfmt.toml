@@ -3,6 +3,7 @@
 # https://github.com/rust-lang-nursery/rustfmt/blob/master/Configurations.md
 
 max_width = 100
+enum_discrim_align_threshold = 40
 format_strings = false
 group_imports = "StdExternalCrate"
 imports_granularity = "Item"

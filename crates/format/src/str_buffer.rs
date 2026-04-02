@@ -4,6 +4,12 @@ pub struct StrBuffer<const N: usize> {
     len: usize,
 }
 
+impl<const N: usize> Default for StrBuffer<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const N: usize> StrBuffer<N> {
     pub fn new() -> Self {
         StrBuffer {
@@ -26,6 +32,8 @@ impl<const N: usize> StrBuffer<N> {
     }
 
     pub fn as_str(&self) -> &str {
+        // SAFETY: `self.buf[..self.len]` is always valid UTF-8 because `push_str`
+        // only appends bytes copied from `&str` slices via `copy_from_slice`.
         unsafe { std::str::from_utf8_unchecked(&self.buf[..self.len]) }
     }
 
@@ -45,7 +53,7 @@ impl<const N: usize> StrBuffer<N> {
         if self.is_empty() {
             None
         } else {
-            self.as_str().split("").filter(|c| !c.is_empty()).next()
+            self.as_str().split("").find(|c| !c.is_empty())
         }
     }
 

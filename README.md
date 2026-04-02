@@ -1,37 +1,60 @@
 ![](https://img.shields.io/crates/l/incrust.svg)
-[![crates.io](https://img.shields.io/crates/v/incrust.svg)](https://crates.io/crates/incrust)
-
-[![Build Status](https://travis-ci.org/alexander-irbis/incrust.svg)](https://travis-ci.org/alexander-irbis/incrust)
-![Minimal rust version -](https://img.shields.io/badge/stable-_1.46.0_-green.svg)
-![Nightly rust version from October 13, 2020](https://img.shields.io/badge/nightly-2020--10--13-yellow.svg)
+![Minimum Rust version: 1.85](https://img.shields.io/badge/MSRV-1.85-blue.svg)
 
 ## {% Incrust %}
 
 > Incrust is a template engine for Rust, originally inspired by Jinja2.
 
-In fact it is a [Jinja2](http://jinja.pocoo.org/), [Django](https://docs.djangoproject.com/en/1.10/topics/templates/),
-[Twig](http://twig.sensiolabs.org/), [Swig](http://paularmstrong.github.io/swig/), [Liquid](https://shopify.github.io/liquid/)
-(and probably others) template engines constellation, which uses similar methodologies.
+The workspace contains three crates:
 
-### Unstable
+| Crate | Purpose | Status |
+|-------|---------|--------|
+| `incrust-format` | Composable `Display` primitives (`StrBuffer`, `DisplayIterator`, `Join`, `Concat`). Depends on `smart-string`. | Active |
+| `incrust-filters` | Streaming escape/transform filters: HTML, URL, XML, case. Feature-gated, usable standalone. | Active |
+| `incrust` (engine) | Template compilation and rendering. | Not yet active |
 
-The implementation is at a very early stage and the API is a subject of changes.
+The `filters` and `format` crates are independently useful outside the template engine.
 
-__Note that Incrust currently requires the nightly version of the Rust compiler.__
+## Crates
 
-## Installation
+### `incrust-filters`
 
-Incrust is [available on crates.io](https://crates.io/crates/incrust) and can be included in your Cargo enabled project
-like this:
+Composable formatting routines built on the `Display` trait. Each filter family is feature-gated:
 
-```toml
-[dependencies]
-incrust = "0.6"
+- **`FilterHtml`** — `html_escape()`, `html_escape_strict()`, `html_unescape()`, `html_attribute()`
+- **`FilterUrl`** — `url_escape()` (percent-encoding)
+- **`FilterXml`** — `xml_c_data()`
+- **`FilterCase`** — `capitalize()`, `lowercase()`, `uppercase()`
+
+Enable features individually or use `full` for all.
+
+### `incrust-format`
+
+Composable `Display` primitives:
+
+- `StrBuffer<N>` — fixed-size string buffer (const-generic)
+- `DisplayIterator` trait — `display_concat()`, `display_join()` for iterator formatting
+- Re-exports `DisplayExt` and `PascalString` from `smart-string`
+
+## Development
+
+### Quality gates
+
+```bash
+cargo +nightly fmt -- --check
+cargo check --workspace --all-targets
+cargo test --workspace --all-features
+cargo clippy --workspace --all-targets -- -D warnings
 ```
 
-## Examples
+### Git hooks
 
-TODO
+Enable repo-local hooks (once per clone):
+
+```bash
+git config core.hooksPath .githooks
+chmod +x .githooks/pre-commit .githooks/pre-push
+```
 
 ## License
 

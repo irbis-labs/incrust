@@ -2,7 +2,11 @@
 
 set -euo pipefail
 
+# Library repos must not commit Cargo.lock.
+if git diff --cached --name-only | grep -qE '(^|/)Cargo\.lock$'; then
+  echo "ERROR: Cargo.lock must not be committed in library repositories (it should be gitignored)." >&2
+  exit 1
+fi
+
 cargo fmt -- --check
 cargo check --workspace
-
-
