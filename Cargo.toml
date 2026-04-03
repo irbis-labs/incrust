@@ -13,17 +13,3 @@ documentation = "https://docs.rs/incrust/"
 edition = "2024"
 rust-version = "1.85"
 publish = false
-
-
-[workspace]
-members = [
-    #"crates/engine",
-    "crates/filters",
-    "crates/format",
-]
-
-
-[dependencies]
-#incrust-engine = { path = "crates/engine" }
-incrust-filters = { path = "crates/filters" }
-incrust-format = { path = "crates/format" }

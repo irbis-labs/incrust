@@ -5,36 +5,12 @@
 
 > Incrust is a template engine for Rust, originally inspired by Jinja2.
 
-The workspace contains three crates:
+The engine is not yet active in this version. Template compilation, AST, and
+evaluation will be designed here in future iterations.
 
-| Crate | Purpose | Status |
-|-------|---------|--------|
-| `incrust-format` | Composable `Display` primitives (`StrBuffer`, `DisplayIterator`, `Join`, `Concat`). Depends on `smart-string`. | Active |
-| `incrust-filters` | Streaming escape/transform filters: HTML, URL, XML, case. Feature-gated, usable standalone. | Active |
-| `incrust` (engine) | Template compilation and rendering. | Not yet active |
-
-The `filters` and `format` crates are independently useful outside the template engine.
-
-## Crates
-
-### `incrust-filters`
-
-Composable formatting routines built on the `Display` trait. Each filter family is feature-gated:
-
-- **`FilterHtml`** — `html_escape()`, `html_escape_strict()`, `html_unescape()`, `html_attribute()`
-- **`FilterUrl`** — `url_escape()` (percent-encoding)
-- **`FilterXml`** — `xml_c_data()`
-- **`FilterCase`** — `capitalize()`, `lowercase()`, `uppercase()`
-
-Enable features individually or use `full` for all.
-
-### `incrust-format`
-
-Composable `Display` primitives:
-
-- `StrBuffer<N>` — fixed-size string buffer (const-generic)
-- `DisplayIterator` trait — `display_concat()`, `display_join()` for iterator formatting
-- Re-exports `DisplayExt` and `PascalString` from `smart-string`
+Formatting and escaping primitives that previously lived in this workspace
+(`incrust-format`, `incrust-filters`) have been extracted into the standalone
+[`smart-format`](https://crates.io/crates/smart-format) crate.
 
 ## Development
 
@@ -42,9 +18,8 @@ Composable `Display` primitives:
 
 ```bash
 cargo +nightly fmt -- --check
-cargo check --workspace --all-targets
-cargo test --workspace --all-features
-cargo clippy --workspace --all-targets -- -D warnings
+cargo check
+cargo clippy -- -D warnings
 ```
 
 ### Git hooks
