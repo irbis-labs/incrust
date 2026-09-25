@@ -14,7 +14,7 @@ concurrency:
 jobs:
   policy:
     name: policy (no Cargo.lock)
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - name: Fail if Cargo.lock is committed
@@ -27,7 +27,7 @@ jobs:
 
   fmt:
     name: fmt
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
@@ -38,7 +38,7 @@ jobs:
 
   test:
     name: check / test / clippy
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -53,7 +53,7 @@ jobs:
 
   msrv:
     name: msrv (rustc 1.85.0)
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
